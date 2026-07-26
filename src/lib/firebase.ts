@@ -15,3 +15,7 @@ export const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
 export const db = getFirestore(app)
 export const googleProvider = new GoogleAuthProvider()
+
+// TEMPORARY debug hook, remove after diagnosing the live permission-denied issue
+;(window as unknown as { __debugDb: unknown; __debugAuth: unknown }).__debugDb = db
+;(window as unknown as { __debugDb: unknown; __debugAuth: unknown }).__debugAuth = auth
