@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import { collection, getDocs, getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -17,5 +17,18 @@ export const db = getFirestore(app)
 export const googleProvider = new GoogleAuthProvider()
 
 // TEMPORARY debug hook, remove after diagnosing the live permission-denied issue
-;(window as unknown as { __debugDb: unknown; __debugAuth: unknown }).__debugDb = db
-;(window as unknown as { __debugDb: unknown; __debugAuth: unknown }).__debugAuth = auth
+;(window as unknown as { __debugTest: (paths: string[]) => Promise<string> }).__debugTest = async (
+  paths: string[],
+) => {
+  const results: Record<string, string> = {}
+  for (const path of paths) {
+    try {
+      const snap = await getDocs(collection(db, path))
+      results[path] = `ok (${snap.size} docs)`
+    } catch (e) {
+      results[path] = `ERROR: ${e instanceof Error ? e.message : String(e)}`
+    }
+  }
+  return JSON.stringify(results, null, 2)
+}
+;(window as unknown as { __debugAuth: unknown }).__debugAuth = auth
