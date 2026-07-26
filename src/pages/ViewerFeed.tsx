@@ -1,0 +1,119 @@
+import { Link, useParams } from 'react-router-dom'
+import { Layout } from '../components/Layout'
+import { useAuction } from '../hooks/useAuction'
+import { useBids } from '../hooks/useBids'
+import { useCountdown } from '../hooks/useCountdown'
+
+export function ViewerFeed() {
+  const { auctionId } = useParams<{ auctionId: string }>()
+  const { auction, loading } = useAuction(auctionId)
+  const currentPlayer = auction?.players.find((p) => p.playerId === auction.currentPlayerId) ?? null
+  const bids = useBids(auctionId, auction?.currentPlayerId)
+  const remaining = useCountdown(auction?.timerEndsAt ?? null)
+
+  if (loading) {
+    return (
+      <Layout>
+        <p className="text-gray-500">Loading...</p>
+      </Layout>
+    )
+  }
+
+  if (!auction) {
+    return (
+      <Layout>
+        <p className="text-gray-500">No auction found for ID "{auctionId}".</p>
+      </Layout>
+    )
+  }
+
+  const sortedBids = [...(bids?.bids ?? [])].sort((a, b) => b.timestamp - a.timestamp)
+  const standings = [...auction.teamManagers].sort((a, b) => b.tokensSpent - a.tokensSpent)
+
+  return (
+    <Layout>
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              {auction.name} <span className="text-gray-400 font-mono text-lg">#{auction.auctionId}</span>
+            </h1>
+            <p className="text-sm text-gray-500">Status: {auction.status}</p>
+          </div>
+          <Link
+            to={`/results/${auction.auctionId}`}
+            className="rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            Full results
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <section className="lg:col-span-2 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Live scoreboard</h2>
+            {!currentPlayer ? (
+              <p className="mt-3 text-sm text-gray-500">Waiting for the next player...</p>
+            ) : (
+              <div className="mt-4 space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                      {currentPlayer.name}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {currentPlayer.position} · Base price {currentPlayer.basePrice}
+                    </p>
+                  </div>
+                  {remaining !== null && (
+                    <span className="text-2xl font-mono text-gray-900 dark:text-gray-100">
+                      {remaining}s
+                    </span>
+                  )}
+                </div>
+                <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-4">
+                  <p className="text-sm text-gray-500">Current bid</p>
+                  <p className="text-3xl font-bold text-red-600 dark:text-red-400">
+                    {currentPlayer.currentBid || currentPlayer.basePrice}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {currentPlayer.currentBidderName ?? 'No bids yet'}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Bid feed</h3>
+                  <ul className="mt-2 space-y-1 text-sm max-h-56 overflow-y-auto">
+                    {sortedBids.map((b, i) => (
+                      <li key={i} className="flex justify-between text-gray-600 dark:text-gray-400">
+                        <span>{b.managerName}</span>
+                        <span className="font-mono">{b.amount}</span>
+                      </li>
+                    ))}
+                    {sortedBids.length === 0 && <li className="text-gray-500">No bids yet.</li>}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Team standings</h2>
+            <ul className="mt-3 space-y-2 text-sm">
+              {standings.map((tm) => (
+                <li
+                  key={tm.managerId}
+                  className="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2"
+                >
+                  <span className="text-gray-900 dark:text-gray-100">{tm.name}</span>
+                  <span className="text-gray-500">
+                    Spent {tm.tokensSpent} · Left {tm.remainingTokens}
+                  </span>
+                </li>
+              ))}
+              {standings.length === 0 && <li className="text-sm text-gray-500">No teams yet.</li>}
+            </ul>
+          </section>
+        </div>
+      </div>
+    </Layout>
+  )
+}

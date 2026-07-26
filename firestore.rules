@@ -1,0 +1,95 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function role() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && role() == 'admin';
+    }
+
+    function isAuctionManagerOf(auction) {
+      return isSignedIn() &&
+        (role() == 'admin' || (role() == 'auctionManager' && request.auth.uid in auction.auctionManagerIds));
+    }
+
+    function isRegisteredManagerOf(auction) {
+      return isSignedIn() && role() == 'manager' && request.auth.uid in auction.teamManagerIds;
+    }
+
+    function adminNotYetClaimed() {
+      return !exists(/databases/$(database)/documents/meta/adminClaimed) ||
+        get(/databases/$(database)/documents/meta/adminClaimed).data.claimed == false;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
+      allow create: if isSignedIn() && request.auth.uid == userId &&
+        request.resource.data.assignedAuctions.size() == 0 &&
+        (request.resource.data.role == 'viewer' ||
+          (exists(/databases/$(database)/documents/invites/$(request.auth.token.email)) &&
+            request.resource.data.role ==
+              get(/databases/$(database)/documents/invites/$(request.auth.token.email)).data.role));
+      allow update: if isAdmin() ||
+        (isSignedIn() && request.auth.uid == userId &&
+          request.resource.data.role == resource.data.role &&
+          request.resource.data.assignedAuctions == resource.data.assignedAuctions) ||
+        (isSignedIn() && request.auth.uid == userId &&
+          resource.data.role != 'admin' &&
+          request.resource.data.role == 'admin' &&
+          request.resource.data.assignedAuctions == resource.data.assignedAuctions &&
+          adminNotYetClaimed());
+    }
+
+    match /teams/{teamId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /invites/{inviteId} {
+      allow get: if isSignedIn() && request.auth.token.email == inviteId;
+      allow list: if isAdmin();
+      allow create: if isAdmin();
+      allow delete: if isAdmin() || (isSignedIn() && request.auth.token.email == inviteId);
+    }
+
+    match /meta/adminClaimed {
+      allow get: if isSignedIn();
+      allow write: if isSignedIn() &&
+        adminNotYetClaimed() &&
+        request.resource.data.claimed == true;
+    }
+
+    match /auctions/{auctionId} {
+      allow get: if true;
+      allow list: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
+      allow create: if isSignedIn() && (role() == 'admin' || role() == 'auctionManager');
+      allow update: if isAuctionManagerOf(resource.data) || isRegisteredManagerOf(resource.data);
+      allow delete: if isAdmin();
+
+      match /bids/{playerId} {
+        allow get: if true;
+        allow list: if isSignedIn();
+        allow write: if isAuctionManagerOf(get(/databases/$(database)/documents/auctions/$(auctionId)).data) ||
+          isRegisteredManagerOf(get(/databases/$(database)/documents/auctions/$(auctionId)).data);
+      }
+
+      match /teams/{teamId} {
+        allow get: if true;
+        allow list: if true;
+        allow write: if isAuctionManagerOf(get(/databases/$(database)/documents/auctions/$(auctionId)).data);
+      }
+    }
+  }
+}

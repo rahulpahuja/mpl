@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light dark;
+  --bg-sky: #eef4f2;
+  --bg-ground: #e2f0e2;
+  --stripe-a: rgba(46, 125, 74, 0.08);
+  --stripe-b: rgba(46, 125, 74, 0.02);
+  --glow-teamblue: rgba(23, 74, 140, 0.16);
+  --glow-saffron: rgba(255, 140, 26, 0.14);
+  --grid-line: rgba(20, 60, 35, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-sky: #0a1120;
+    --bg-ground: #071b12;
+    --stripe-a: rgba(52, 168, 83, 0.07);
+    --stripe-b: rgba(52, 168, 83, 0.015);
+    --glow-teamblue: rgba(59, 130, 246, 0.2);
+    --glow-saffron: rgba(255, 140, 26, 0.16);
+    --grid-line: rgba(255, 255, 255, 0.045);
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg-ground);
+  background-image:
+    radial-gradient(620px circle at 6% 0%, var(--glow-teamblue), transparent 60%),
+    radial-gradient(620px circle at 100% 4%, var(--glow-saffron), transparent 55%),
+    repeating-linear-gradient(180deg, var(--stripe-a) 0 32px, var(--stripe-b) 32px 64px),
+    linear-gradient(180deg, var(--bg-sky) 0%, var(--bg-ground) 55%),
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    46px 46px,
+    46px 46px;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat;
+  background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
+}
