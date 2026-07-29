@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { signInWithGoogle } from '../lib/auth'
+import { signInTestUser, signInWithGoogle } from '../lib/auth'
+import { usingEmulators } from '../lib/firebase'
 
 export function Login() {
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [testEmail, setTestEmail] = useState('')
+  const [testName, setTestName] = useState('')
 
   async function handleSignIn() {
     setLoading(true)
@@ -15,6 +18,20 @@ export function Login() {
       navigate('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign-in failed')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleTestSignIn() {
+    if (!testEmail.trim() || !testName.trim()) return
+    setLoading(true)
+    setError(null)
+    try {
+      await signInTestUser(testEmail.trim(), testName.trim())
+      navigate('/')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Test sign-in failed')
     } finally {
       setLoading(false)
     }
@@ -41,6 +58,36 @@ export function Login() {
             Join an auction as a viewer instead
           </a>
         </div>
+
+        {usingEmulators && (
+          <div className="mt-6 rounded-lg border border-dashed border-amber-400 dark:border-amber-600 p-4">
+            <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+              Emulator test sign-in (no Google needed)
+            </p>
+            <div className="mt-2 space-y-2">
+              <input
+                value={testName}
+                onChange={(e) => setTestName(e.target.value)}
+                placeholder="Display name"
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+              />
+              <input
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="test@example.com"
+                type="email"
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+              />
+              <button
+                onClick={handleTestSignIn}
+                disabled={loading || !testEmail.trim() || !testName.trim()}
+                className="w-full rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+              >
+                Sign in as test user
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

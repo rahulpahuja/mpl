@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { useAuction } from '../hooks/useAuction'
 import { useBids } from '../hooks/useBids'
 import { useCountdown } from '../hooks/useCountdown'
 import {
+  assignUnsoldPlayer,
   markSold,
   markUnsold,
   setCurrentPlayer,
@@ -18,6 +19,12 @@ export function AuctionManagerPanel() {
   const { auction, loading } = useAuction(auctionId)
   const [timerDuration, setTimerDuration] = useState('30')
   const [busy, setBusy] = useState(false)
+  const [assignTeamByPlayer, setAssignTeamByPlayer] = useState<Record<string, string>>({})
+
+  // Re-sync only when landing on a (possibly different) auction, not on every live update.
+  useEffect(() => {
+    if (auction) setTimerDuration(String(auction.timerDurationSeconds))
+  }, [auction?.auctionId])
 
   const currentPlayer = auction?.players.find((p) => p.playerId === auction.currentPlayerId) ?? null
   const bids = useBids(auctionId, auction?.currentPlayerId)
@@ -40,7 +47,16 @@ export function AuctionManagerPanel() {
   }
 
   const queue = auction.players.filter((p) => p.status === 'open')
+  const unsold = auction.players.filter((p) => p.status === 'unsold')
   const sortedBids = [...(bids?.bids ?? [])].sort((a, b) => b.timestamp - a.timestamp)
+  const wallets = [...auction.teamManagers].sort((a, b) => b.remainingTokens - a.remainingTokens)
+
+  async function handleAssign(playerId: string) {
+    const teamId = assignTeamByPlayer[playerId]
+    if (!teamId || !auctionId) return
+    await run(() => assignUnsoldPlayer(auctionId, playerId, teamId))
+    setAssignTeamByPlayer((prev) => ({ ...prev, [playerId]: '' }))
+  }
 
   async function run(fn: () => Promise<void>) {
     setBusy(true)
@@ -196,6 +212,69 @@ export function AuctionManagerPanel() {
             </ul>
           </section>
         </div>
+
+        <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Team wallets</h2>
+          <ul className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+            {wallets.map((tm) => (
+              <li
+                key={tm.managerId}
+                className="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2"
+              >
+                <span className="text-gray-900 dark:text-gray-100">{tm.name}</span>
+                <span className="text-gray-500">
+                  Balance <span className="font-mono text-gray-900 dark:text-gray-100">{tm.remainingTokens}</span>
+                </span>
+              </li>
+            ))}
+            {wallets.length === 0 && <li className="text-sm text-gray-500">No teams added yet.</li>}
+          </ul>
+        </section>
+
+        {unsold.length > 0 && (
+          <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Unsold players</h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Assign a leftover player directly to a team at base price — useful for clearing the
+              unsold list before ending the auction.
+            </p>
+            <ul className="mt-3 space-y-2">
+              {unsold.map((p) => (
+                <li
+                  key={p.playerId}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm"
+                >
+                  <span className="text-gray-900 dark:text-gray-100">
+                    {p.name} <span className="text-gray-500">({p.position}) · Base {p.basePrice}</span>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={assignTeamByPlayer[p.playerId] ?? ''}
+                      onChange={(e) =>
+                        setAssignTeamByPlayer((prev) => ({ ...prev, [p.playerId]: e.target.value }))
+                      }
+                      className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="">Assign to team...</option>
+                      {auction.teamManagers.map((tm) => (
+                        <option key={tm.teamId} value={tm.teamId}>
+                          {tm.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => handleAssign(p.playerId)}
+                      disabled={busy || !assignTeamByPlayer[p.playerId]}
+                      className="rounded-md bg-gray-800 dark:bg-gray-200 px-3 py-1 text-xs font-medium text-white dark:text-gray-900 hover:opacity-90 disabled:opacity-50"
+                    >
+                      Assign
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
     </Layout>
   )

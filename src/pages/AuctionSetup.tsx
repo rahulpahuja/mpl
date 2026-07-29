@@ -1,9 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { useAuction } from '../hooks/useAuction'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
-import { addPlayers, addTeamToAuction, setBidIncrement, updateAuctionStatus } from '../lib/auctions'
+import {
+  addPlayers,
+  addTeamToAuction,
+  applyCommonPurseToAllTeams,
+  updateAuctionSettings,
+  updateAuctionStatus,
+} from '../lib/auctions'
 
 function parseCsv(text: string) {
   return text
@@ -32,7 +38,18 @@ export function AuctionSetup() {
   const [purse, setPurse] = useState('1000')
   const [maxPlayers, setMaxPlayers] = useState('15')
 
-  const [increment, setIncrement] = useState(auction?.bidIncrement?.toString() ?? '10')
+  const [increment, setIncrement] = useState('10')
+  const [timerSeconds, setTimerSeconds] = useState('30')
+  const [applyingPurse, setApplyingPurse] = useState(false)
+  const [purseError, setPurseError] = useState<string | null>(null)
+
+  // Re-sync only when landing on a (possibly different) auction, not on every live update.
+  useEffect(() => {
+    if (auction) {
+      setIncrement(String(auction.bidIncrement))
+      setTimerSeconds(String(auction.timerDurationSeconds))
+    }
+  }, [auction?.auctionId])
 
   if (loading) {
     return (
@@ -91,13 +108,29 @@ export function AuctionSetup() {
     await addTeamToAuction(auctionId, team, Number(purse) || 0, Number(maxPlayers) || 15)
     setSelectedTeamId('')
     setTeamSearch('')
-    setPurse('1000')
-    setMaxPlayers('15')
+    // Purse and max players deliberately keep their values — auctions almost always
+    // use the same numbers for every team, so re-typing them per team is pure toil.
   }
 
-  async function handleSaveIncrement() {
+  async function handleSaveSettings() {
     if (!auctionId) return
-    await setBidIncrement(auctionId, Number(increment) || 10)
+    await updateAuctionSettings(auctionId, {
+      bidIncrement: Number(increment) || 10,
+      timerDurationSeconds: Number(timerSeconds) || 30,
+    })
+  }
+
+  async function handleApplyCommonPurse() {
+    if (!auctionId) return
+    setPurseError(null)
+    setApplyingPurse(true)
+    try {
+      await applyCommonPurseToAllTeams(auctionId, Number(purse) || 0)
+    } catch (err) {
+      setPurseError(err instanceof Error ? err.message : 'Failed to update purse for all teams')
+    } finally {
+      setApplyingPurse(false)
+    }
   }
 
   async function handleGoLive() {
@@ -130,21 +163,39 @@ export function AuctionSetup() {
         </div>
 
         <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-5">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Bid increment</h2>
-          <div className="mt-3 flex items-center gap-2">
-            <input
-              type="number"
-              value={increment}
-              onChange={(e) => setIncrement(e.target.value)}
-              className="w-32 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-            />
-            <button
-              onClick={handleSaveIncrement}
-              className="rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              Save
-            </button>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Auction settings</h2>
+          <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="text-sm text-gray-500">Bid increment</label>
+              <input
+                type="number"
+                value={increment}
+                onChange={(e) => setIncrement(e.target.value)}
+                className="mt-1 w-32 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-gray-500">
+                Default player timer (seconds)
+              </label>
+              <input
+                type="number"
+                value={timerSeconds}
+                onChange={(e) => setTimerSeconds(e.target.value)}
+                className="mt-1 w-32 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Pre-fills the countdown when a player goes on the block — the Auction Manager
+                can still override it per player from the live panel.
+              </p>
+            </div>
           </div>
+          <button
+            onClick={handleSaveSettings}
+            className="mt-4 rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            Save
+          </button>
         </section>
 
         <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-5">
@@ -217,7 +268,8 @@ export function AuctionSetup() {
 
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Add an existing team to this auction. Teams are created once from the Admin Dashboard
-            and can be reused across multiple auctions.
+            and can be reused across multiple auctions. Purse and max players are a common default
+            for every team you add — set them once below.
           </p>
           <input
             value={teamSearch}
@@ -242,7 +294,7 @@ export function AuctionSetup() {
               type="number"
               value={purse}
               onChange={(e) => setPurse(e.target.value)}
-              placeholder="Purse"
+              placeholder="Common purse"
               className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             />
             <input
@@ -260,6 +312,18 @@ export function AuctionSetup() {
               Add to auction
             </button>
           </div>
+          {auction.teamManagers.length > 0 && (
+            <div className="mt-2">
+              <button
+                onClick={handleApplyCommonPurse}
+                disabled={applyingPurse}
+                className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+              >
+                {applyingPurse ? 'Applying...' : `Apply ${purse || 0} purse to all ${auction.teamManagers.length} teams already added`}
+              </button>
+              {purseError && <p className="mt-1 text-xs text-red-600">{purseError}</p>}
+            </div>
+          )}
           {availableTeams.length === 0 && (
             <p className="mt-2 text-xs text-gray-500">
               {teamSearch

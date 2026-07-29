@@ -7,6 +7,8 @@ import { useCountdown } from '../hooks/useCountdown'
 import { useAuthStore } from '../store/authStore'
 import { placeBid } from '../lib/auctions'
 
+const QUICK_BID_STEPS = [50, 100, 200, 500, 1000, 10000]
+
 export function TeamManagerBidding() {
   const { auctionId } = useParams<{ auctionId: string }>()
   const { auction, loading } = useAuction(auctionId)
@@ -133,6 +135,24 @@ export function TeamManagerBidding() {
                 >
                   Bid {minBid}
                 </button>
+
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                  {QUICK_BID_STEPS.map((step) => {
+                    const amount = minBid + step
+                    const disabled = !canBid || placing || amount > myTeam.remainingTokens
+                    return (
+                      <button
+                        key={step}
+                        onClick={() => handleBid(amount)}
+                        disabled={disabled}
+                        title={`Bid ${amount}`}
+                        className="rounded-lg border border-gray-300 dark:border-gray-700 px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                      >
+                        +{step}
+                      </button>
+                    )
+                  })}
+                </div>
                 {error && <p className="text-sm text-red-600">{error}</p>}
                 {!canBid && !isMyBid && squadFull && (
                   <p className="text-sm text-amber-600">

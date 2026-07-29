@@ -9,6 +9,7 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 import { db } from './firebase'
+import { assertUnsoldAssignment, assertValidBid, computeCommonPurseUpdate } from './auctionRules'
 import type { Auction, AuctionTeamStats, Player, PlayerBids, Team, TeamManagerEntry } from '../types'
 
 function auctionRef(auctionId: string) {
@@ -58,8 +59,31 @@ export async function updateAuctionStatus(auctionId: string, status: Auction['st
   })
 }
 
-export async function setBidIncrement(auctionId: string, bidIncrement: number) {
-  await updateDoc(auctionRef(auctionId), { bidIncrement })
+export async function updateAuctionSettings(
+  auctionId: string,
+  settings: Partial<Pick<Auction, 'bidIncrement' | 'timerDurationSeconds'>>,
+) {
+  await updateDoc(auctionRef(auctionId), settings)
+}
+
+export async function applyCommonPurseToAllTeams(auctionId: string, purse: number) {
+  const teamUpdates: { teamId: string; remainingTokens: number }[] = []
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) throw new Error('Auction not found')
+    const auction = snap.data() as Auction
+    const teamManagers = auction.teamManagers.map((tm) => {
+      const { remainingTokens } = computeCommonPurseUpdate(tm, purse)
+      teamUpdates.push({ teamId: tm.teamId, remainingTokens })
+      return { ...tm, purse, remainingTokens }
+    })
+    tx.update(auctionRef(auctionId), { teamManagers })
+  })
+  await Promise.all(
+    teamUpdates.map(({ teamId, remainingTokens }) =>
+      updateDoc(teamRef(auctionId, teamId), { initialPurse: purse, balance: remainingTokens }),
+    ),
+  )
 }
 
 export async function addPlayers(auctionId: string, players: Omit<Player, 'currentBid' | 'currentBidder' | 'currentBidderName' | 'status'>[]) {
@@ -155,26 +179,14 @@ export async function placeBid(
 
     const player = auction.players.find((p) => p.playerId === playerId)
     if (!player) throw new Error('Player not found')
-    if (player.status !== 'open' && player.status !== 'active') {
-      throw new Error('Player is not open for bidding')
-    }
 
     const manager = auction.teamManagers.find((tm) => tm.managerId === managerId)
     if (!manager) throw new Error('Manager is not registered for this auction')
 
-    const minAcceptable = player.currentBid > 0 ? player.currentBid + auction.bidIncrement : player.basePrice
-    if (amount < minAcceptable) {
-      throw new Error(`Bid must be at least ${minAcceptable}`)
-    }
-    if (amount > manager.remainingTokens) {
-      throw new Error('Insufficient tokens for this bid')
-    }
     const squadSize = auction.players.filter(
       (p) => p.currentBidder === managerId && p.status === 'sold',
     ).length
-    if (squadSize >= manager.maxPlayers) {
-      throw new Error(`${manager.name} has already reached its ${manager.maxPlayers}-player limit`)
-    }
+    assertValidBid(player, manager, amount, auction.bidIncrement, squadSize)
 
     const players = auction.players.map((p) =>
       p.playerId === playerId
@@ -195,6 +207,28 @@ export async function placeBid(
       { merge: true },
     )
   })
+}
+
+async function recordTeamPurchase(auctionId: string, playerId: string) {
+  const auctionSnap = await getDoc(auctionRef(auctionId))
+  if (!auctionSnap.exists()) return
+  const auction = auctionSnap.data() as Auction
+  const player = auction.players.find((p) => p.playerId === playerId)
+  if (!player || !player.currentBidder) return
+
+  const team = auction.teamManagers.find((tm) => tm.managerId === player.currentBidder)
+  if (!team) return
+
+  const teamsSnapRef = teamRef(auctionId, team.teamId)
+  const teamSnap = await getDoc(teamsSnapRef)
+  if (teamSnap.exists()) {
+    const teamData = teamSnap.data() as AuctionTeamStats
+    await updateDoc(teamsSnapRef, {
+      spent: teamData.spent + player.currentBid,
+      balance: teamData.balance - player.currentBid,
+      players: [...teamData.players, { playerId: player.playerId, playerName: player.name, soldAt: player.currentBid }],
+    })
+  }
 }
 
 export async function markSold(auctionId: string, playerId: string) {
@@ -231,25 +265,55 @@ export async function markSold(auctionId: string, playerId: string) {
     })
   })
 
-  const auctionSnap = await getDoc(auctionRef(auctionId))
-  if (!auctionSnap.exists()) return
-  const auction = auctionSnap.data() as Auction
-  const player = auction.players.find((p) => p.playerId === playerId)
-  if (!player || !player.currentBidder) return
+  await recordTeamPurchase(auctionId, playerId)
+}
 
-  const team = auction.teamManagers.find((tm) => tm.managerId === player.currentBidder)
-  if (!team) return
+export async function assignUnsoldPlayer(
+  auctionId: string,
+  playerId: string,
+  teamId: string,
+  amount?: number,
+) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) throw new Error('Auction not found')
+    const auction = snap.data() as Auction
+    const player = auction.players.find((p) => p.playerId === playerId)
+    if (!player) throw new Error('Player not found')
+    const team = auction.teamManagers.find((tm) => tm.teamId === teamId)
+    if (!team) throw new Error('Team not found in this auction')
 
-  const teamsSnapRef = teamRef(auctionId, team.teamId)
-  const teamSnap = await getDoc(teamsSnapRef)
-  if (teamSnap.exists()) {
-    const teamData = teamSnap.data() as AuctionTeamStats
-    await updateDoc(teamsSnapRef, {
-      spent: teamData.spent + player.currentBid,
-      balance: teamData.balance - player.currentBid,
-      players: [...teamData.players, { playerId: player.playerId, playerName: player.name, soldAt: player.currentBid }],
-    })
-  }
+    const price = amount ?? player.basePrice
+    const soldCount = auction.players.filter(
+      (p) => p.currentBidder === team.managerId && p.status === 'sold',
+    ).length
+    assertUnsoldAssignment(player, team, price, soldCount)
+
+    const players = auction.players.map((p) =>
+      p.playerId === playerId
+        ? {
+            ...p,
+            status: 'sold' as const,
+            currentBid: price,
+            currentBidder: team.managerId,
+            currentBidderName: team.name,
+          }
+        : p,
+    )
+    const teamManagers = auction.teamManagers.map((tm) =>
+      tm.teamId === teamId
+        ? { ...tm, tokensSpent: tm.tokensSpent + price, remainingTokens: tm.remainingTokens - price }
+        : tm,
+    )
+    tx.update(auctionRef(auctionId), { players, teamManagers })
+    tx.set(
+      bidsRef(auctionId, playerId),
+      { playerId, finalBidder: team.managerId, finalAmount: price, awardedAt: serverTimestamp() },
+      { merge: true },
+    )
+  })
+
+  await recordTeamPurchase(auctionId, playerId)
 }
 
 export async function markUnsold(auctionId: string, playerId: string) {
