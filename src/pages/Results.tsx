@@ -1,12 +1,33 @@
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { useAuction } from '../hooks/useAuction'
 import { useTeams } from '../hooks/useTeams'
+import { useAuthStore } from '../store/authStore'
+import { assignUnsoldPlayer } from '../lib/auctions'
 
 export function Results() {
   const { auctionId } = useParams<{ auctionId: string }>()
   const { auction, loading } = useAuction(auctionId)
   const teams = useTeams(auctionId)
+  const user = useAuthStore((s) => s.user)
+  const canAssign = user?.role === 'admin' || user?.role === 'auctionManager'
+  const [assignTeamByPlayer, setAssignTeamByPlayer] = useState<Record<string, string>>({})
+  const [assigning, setAssigning] = useState(false)
+
+  async function handleAssign(playerId: string) {
+    const teamId = assignTeamByPlayer[playerId]
+    if (!teamId || !auctionId) return
+    setAssigning(true)
+    try {
+      await assignUnsoldPlayer(auctionId, playerId, teamId)
+      setAssignTeamByPlayer((prev) => ({ ...prev, [playerId]: '' }))
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to assign player')
+    } finally {
+      setAssigning(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -115,16 +136,54 @@ export function Results() {
         {unsold.length > 0 && (
           <section>
             <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Unsold players</h2>
-            <ul className="mt-3 flex flex-wrap gap-2">
-              {unsold.map((p) => (
-                <li
-                  key={p.playerId}
-                  className="rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-sm text-gray-600 dark:text-gray-300"
-                >
-                  {p.name}
-                </li>
-              ))}
-            </ul>
+            {canAssign ? (
+              <ul className="mt-3 space-y-2">
+                {unsold.map((p) => (
+                  <li
+                    key={p.playerId}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm"
+                  >
+                    <span className="text-gray-900 dark:text-gray-100">
+                      {p.name} <span className="text-gray-500">({p.position}) · Base {p.basePrice}</span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={assignTeamByPlayer[p.playerId] ?? ''}
+                        onChange={(e) =>
+                          setAssignTeamByPlayer((prev) => ({ ...prev, [p.playerId]: e.target.value }))
+                        }
+                        className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Assign to team...</option>
+                        {auction.teamManagers.map((tm) => (
+                          <option key={tm.teamId} value={tm.teamId}>
+                            {tm.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => handleAssign(p.playerId)}
+                        disabled={assigning || !assignTeamByPlayer[p.playerId]}
+                        className="rounded-md bg-gray-800 dark:bg-gray-200 px-3 py-1 text-xs font-medium text-white dark:text-gray-900 hover:opacity-90 disabled:opacity-50"
+                      >
+                        Assign
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {unsold.map((p) => (
+                  <li
+                    key={p.playerId}
+                    className="rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-sm text-gray-600 dark:text-gray-300"
+                  >
+                    {p.name}
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
         )}
       </div>

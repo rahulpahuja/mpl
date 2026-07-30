@@ -1,12 +1,17 @@
 import {
+  arrayRemove,
   arrayUnion,
+  collection,
+  deleteDoc,
   doc,
   getDoc,
+  getDocs,
   runTransaction,
   serverTimestamp,
   setDoc,
   Timestamp,
   updateDoc,
+  writeBatch,
 } from 'firebase/firestore'
 import { db } from './firebase'
 import { assertUnsoldAssignment, assertValidBid, computeCommonPurseUpdate } from './auctionRules'
@@ -53,6 +58,24 @@ export async function createAuction(name: string, createdBy: string, bidIncremen
 }
 
 export async function updateAuctionStatus(auctionId: string, status: Auction['status']) {
+  if (status === 'completed') {
+    // Anyone still 'open' (never brought up) or 'active' (on the block when the
+    // auction was ended) is unsold in every practical sense — without this,
+    // they'd stay in limbo forever and the unsold count everywhere (Results,
+    // the manage panel) would silently undercount them.
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(auctionRef(auctionId))
+      if (!snap.exists()) throw new Error('Auction not found')
+      const auction = snap.data() as Auction
+      const players = auction.players.map((p) =>
+        p.status === 'open' || p.status === 'active'
+          ? { ...p, status: 'unsold' as const, currentBid: 0, currentBidder: null, currentBidderName: null }
+          : p,
+      )
+      tx.update(auctionRef(auctionId), { status, players, currentPlayerId: null, timerEndsAt: null })
+    })
+    return
+  }
   await updateDoc(auctionRef(auctionId), {
     status,
     ...(status === 'live' ? { startTime: serverTimestamp() } : {}),
@@ -352,6 +375,30 @@ export async function markUnsold(auctionId: string, playerId: string) {
     )
     tx.update(auctionRef(auctionId), { players, currentPlayerId: null, timerEndsAt: null })
   })
+}
+
+export async function deleteAuction(auctionId: string) {
+  const snap = await getDoc(auctionRef(auctionId))
+  if (!snap.exists()) return
+  const auction = snap.data() as Auction
+
+  const [teamsSnap, bidsSnap] = await Promise.all([
+    getDocs(collection(db, 'auctions', auctionId, 'teams')),
+    getDocs(collection(db, 'auctions', auctionId, 'bids')),
+  ])
+
+  const batch = writeBatch(db)
+  for (const d of teamsSnap.docs) batch.delete(d.ref)
+  for (const d of bidsSnap.docs) batch.delete(d.ref)
+  // Without this, a manager's assignedAuctions would keep pointing at a
+  // deleted auction — the exact "shows an ID, no title" symptom this app
+  // already has a bug for, just from a different cause.
+  const managerIds = new Set([...auction.auctionManagerIds, ...auction.teamManagerIds])
+  for (const uid of managerIds) {
+    batch.update(doc(db, 'users', uid), { assignedAuctions: arrayRemove(auctionId) })
+  }
+  batch.delete(auctionRef(auctionId))
+  await batch.commit()
 }
 
 export type { PlayerBids }

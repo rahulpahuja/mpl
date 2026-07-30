@@ -4,7 +4,7 @@ import { Layout } from '../components/Layout'
 import { AdminNav } from '../components/AdminNav'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { useAuthStore } from '../store/authStore'
-import { createAuction } from '../lib/auctions'
+import { createAuction, deleteAuction } from '../lib/auctions'
 
 const statusStyles: Record<string, string> = {
   draft: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
@@ -17,6 +17,7 @@ export function AdminAuctions() {
   const { auctions, loading } = useAuctionsList()
   const [newAuctionName, setNewAuctionName] = useState('')
   const [creating, setCreating] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   async function handleCreate() {
     if (!newAuctionName.trim() || !user) return
@@ -26,6 +27,18 @@ export function AdminAuctions() {
       setNewAuctionName('')
     } finally {
       setCreating(false)
+    }
+  }
+
+  async function handleDelete(auctionId: string, name: string) {
+    if (!confirm(`Delete "${name}" (${auctionId})? This permanently removes it and cannot be undone.`)) {
+      return
+    }
+    setDeletingId(auctionId)
+    try {
+      await deleteAuction(auctionId)
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -107,6 +120,19 @@ export function AdminAuctions() {
                         >
                           Results
                         </Link>
+                        <Link
+                          to={`/viewer/${a.auctionId}`}
+                          className="text-red-600 dark:text-red-400 hover:underline"
+                        >
+                          View
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(a.auctionId, a.name)}
+                          disabled={deletingId === a.auctionId}
+                          className="text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                        >
+                          {deletingId === a.auctionId ? 'Deleting...' : 'Delete'}
+                        </button>
                       </td>
                     </tr>
                   ))}

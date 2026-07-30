@@ -209,6 +209,12 @@ export function Home() {
                       >
                         Manage
                       </Link>
+                      <Link
+                        to={`/viewer/${auctionId}`}
+                        className="text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        View
+                      </Link>
                     </>
                   )}
                   {user.role === 'manager' && (
