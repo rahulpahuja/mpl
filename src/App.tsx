@@ -1,7 +1,7 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './components/AuthProvider'
 import { CricketMotifs } from './components/CricketMotifs'
-import { HelpButton } from './components/HelpButton'
 import { ProfileSetupModal } from './components/ProfileSetupModal'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { Home } from './pages/Home'
@@ -18,6 +18,10 @@ import { AuctionManagerPanel } from './pages/AuctionManagerPanel'
 import { TeamManagerBidding } from './pages/TeamManagerBidding'
 import { ViewerFeed } from './pages/ViewerFeed'
 import { Results } from './pages/Results'
+
+// Docs content isn't on the critical path for running an auction, so it's
+// code-split into its own chunk — visitors who never open it never pay for it.
+const Docs = lazy(() => import('./pages/Docs').then((m) => ({ default: m.Docs })))
 
 export default function App() {
   return (
