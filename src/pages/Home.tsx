@@ -24,6 +24,7 @@ export function Home() {
   const [newAuctionName, setNewAuctionName] = useState('')
   const [creating, setCreating] = useState(false)
   const [requestingPlayer, setRequestingPlayer] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   async function handleCreateAuction() {
     if (!newAuctionName.trim() || !user) return
@@ -34,6 +35,18 @@ export function Home() {
       setNewAuctionName('')
     } finally {
       setCreating(false)
+    }
+  }
+
+  async function handleDeleteAuction(auctionId: string, name: string) {
+    if (!confirm(`Delete "${name}" (${auctionId})? This permanently removes it and cannot be undone.`)) {
+      return
+    }
+    setDeletingId(auctionId)
+    try {
+      await deleteAuction(auctionId)
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -91,6 +104,12 @@ export function Home() {
             >
               Create auction
             </button>
+            <Link
+              to="/admin/teams"
+              className="rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              Manage teams
+            </Link>
           </div>
         )}
 
