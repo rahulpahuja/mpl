@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useAdminClaimed } from '../hooks/useAdminClaimed'
 import { useAuctionsByIds } from '../hooks/useAuctionsByIds'
 import { Layout } from '../components/Layout'
+import { createAuction } from '../lib/auctions'
+import { assignUserToAuction } from '../lib/users'
 
 const statusStyles: Record<string, string> = {
   draft: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
@@ -15,6 +18,20 @@ export function Home() {
   const initializing = useAuthStore((s) => s.initializing)
   const adminClaimed = useAdminClaimed()
   const auctions = useAuctionsByIds(user?.assignedAuctions ?? [])
+  const [newAuctionName, setNewAuctionName] = useState('')
+  const [creating, setCreating] = useState(false)
+
+  async function handleCreateAuction() {
+    if (!newAuctionName.trim() || !user) return
+    setCreating(true)
+    try {
+      const auctionId = await createAuction(newAuctionName.trim(), user.uid)
+      await assignUserToAuction(user.uid, auctionId, user.assignedAuctions, user.role)
+      setNewAuctionName('')
+    } finally {
+      setCreating(false)
+    }
+  }
 
   if (initializing) {
     return (
@@ -44,6 +61,25 @@ export function Home() {
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
           Welcome, {user.displayName}
         </h1>
+
+        {user.role === 'auctionManager' && (
+          <div className="flex gap-2">
+            <input
+              value={newAuctionName}
+              onChange={(e) => setNewAuctionName(e.target.value)}
+              placeholder="New auction name"
+              className="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+            <button
+              onClick={handleCreateAuction}
+              disabled={creating || !newAuctionName.trim()}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              Create auction
+            </button>
+          </div>
+        )}
+
         <p className="text-gray-500 dark:text-gray-400">
           {user.assignedAuctions.length === 0
             ? "You haven't been assigned to an auction yet."

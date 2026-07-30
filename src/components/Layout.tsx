@@ -7,6 +7,7 @@ const roleLabel: Record<string, string> = {
   admin: 'Admin',
   auctionManager: 'Auction Manager',
   manager: 'Team Manager',
+  player: 'Player',
   viewer: 'Viewer',
 }
 

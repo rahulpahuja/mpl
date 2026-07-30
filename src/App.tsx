@@ -7,7 +7,10 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
 import { JoinAuction } from './pages/JoinAuction'
-import { AdminDashboard } from './pages/AdminDashboard'
+import { AdminAuctions } from './pages/AdminAuctions'
+import { AdminTeams } from './pages/AdminTeams'
+import { AdminUsers } from './pages/AdminUsers'
+import { AdminPlayers } from './pages/AdminPlayers'
 import { BootstrapAdmin } from './pages/BootstrapAdmin'
 import { Profile } from './pages/Profile'
 import { AuctionSetup } from './pages/AuctionSetup'
@@ -34,7 +37,31 @@ export default function App() {
             path="/admin"
             element={
               <ProtectedRoute roles={['admin']}>
-                <AdminDashboard />
+                <AdminAuctions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/teams"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <AdminTeams />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <AdminUsers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/players"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <AdminPlayers />
               </ProtectedRoute>
             }
           />

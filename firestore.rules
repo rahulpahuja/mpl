@@ -41,6 +41,13 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role']);
     }
 
+    // Covers both: an Auction Manager self-assigning to an auction they just
+    // created, and any manager role registering someone else (e.g. a Player)
+    // to an auction — without granting broader access to the user doc.
+    function isUpdatingAssignedAuctions() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['assignedAuctions']);
+    }
+
     match /users/{userId} {
       allow get: if isSignedIn();
       allow list: if isAdmin() || (isSignedIn() && (role() == 'auctionManager' || role() == 'manager'));
@@ -52,6 +59,7 @@ service cloud.firestore {
               get(/databases/$(database)/documents/invites/$(request.auth.token.email)).data.role));
       allow update: if isAdmin() ||
         (canManageAuctions() && isPromotingViewerToPlayer()) ||
+        (canManageAuctions() && isUpdatingAssignedAuctions()) ||
         (isSignedIn() && request.auth.uid == userId &&
           request.resource.data.role == resource.data.role &&
           request.resource.data.assignedAuctions == resource.data.assignedAuctions) ||
