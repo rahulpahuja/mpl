@@ -105,7 +105,10 @@ service cloud.firestore {
 
     match /auctions/{auctionId} {
       allow get: if true;
-      allow list: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
+      // Public, matching `get` — lets a Viewer (who may not even have an
+      // account) browse ongoing auctions from the Join page without needing
+      // to already know an auction ID.
+      allow list: if true;
       allow create: if isSignedIn() && (role() == 'admin' || role() == 'auctionManager');
       allow update: if isAuctionManagerOf(resource.data) || isRegisteredManagerOf(resource.data);
       allow delete: if isAdmin();

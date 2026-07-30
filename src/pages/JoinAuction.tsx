@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuctionsList } from '../hooks/useAuctionsList'
 
 export function JoinAuction() {
   const navigate = useNavigate()
   const [auctionId, setAuctionId] = useState('')
+  const { auctions, loading } = useAuctionsList()
+  const liveAuctions = auctions.filter((a) => a.status === 'live')
 
   function handleJoin() {
     const id = auctionId.trim().toUpperCase()
@@ -11,26 +14,59 @@ export function JoinAuction() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="flex min-h-screen items-center justify-center px-4 py-8">
       <div className="w-full max-w-sm rounded-xl border border-gray-200/80 dark:border-gray-800/80 bg-white/80 dark:bg-gray-900/70 backdrop-blur-md p-8 shadow-xl shadow-red-950/5 dark:shadow-black/40 ring-1 ring-black/5">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Join an auction</h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Enter the auction ID shared with you to watch live bidding.
+          Pick an ongoing auction below, or enter an auction ID directly.
         </p>
-        <input
-          value={auctionId}
-          onChange={(e) => setAuctionId(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
-          placeholder="e.g. A1B2C3"
-          className="mt-6 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm uppercase tracking-widest text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
-        />
-        <button
-          onClick={handleJoin}
-          disabled={!auctionId.trim()}
-          className="mt-4 w-full rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-        >
-          Join
-        </button>
+
+        <div className="mt-6">
+          {loading ? (
+            <p className="text-sm text-gray-500">Loading ongoing auctions...</p>
+          ) : liveAuctions.length === 0 ? (
+            <p className="text-sm text-gray-500">No auctions are live right now.</p>
+          ) : (
+            <ul className="space-y-2">
+              {liveAuctions.map((a) => (
+                <li key={a.auctionId}>
+                  <button
+                    onClick={() => navigate(`/viewer/${a.auctionId}`)}
+                    className="flex w-full items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {a.name}
+                    </span>
+                    <span className="rounded-full bg-green-100 dark:bg-green-900/40 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                      live
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="mt-6 border-t border-gray-200 dark:border-gray-800 pt-4">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Or enter an auction ID directly:
+          </p>
+          <input
+            value={auctionId}
+            onChange={(e) => setAuctionId(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+            placeholder="e.g. A1B2C3"
+            className="mt-2 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm uppercase tracking-widest text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+          />
+          <button
+            onClick={handleJoin}
+            disabled={!auctionId.trim()}
+            className="mt-3 w-full rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+          >
+            Join
+          </button>
+        </div>
+
         <div className="mt-6 border-t border-gray-200 dark:border-gray-800 pt-4 text-center">
           <a href="/login" className="text-sm text-red-600 dark:text-red-400 hover:underline">
             Sign in as Admin / Manager instead

@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useAdminClaimed } from '../hooks/useAdminClaimed'
 import { useAuctionsByIds } from '../hooks/useAuctionsByIds'
+import { useAuctionsList } from '../hooks/useAuctionsList'
 import { Layout } from '../components/Layout'
 import { createAuction } from '../lib/auctions'
 import { assignUserToAuction, requestToBePlayer } from '../lib/users'
@@ -18,6 +19,8 @@ export function Home() {
   const initializing = useAuthStore((s) => s.initializing)
   const adminClaimed = useAdminClaimed()
   const auctions = useAuctionsByIds(user?.assignedAuctions ?? [])
+  const { auctions: allAuctions } = useAuctionsList()
+  const liveAuctions = allAuctions.filter((a) => a.status === 'live')
   const [newAuctionName, setNewAuctionName] = useState('')
   const [creating, setCreating] = useState(false)
   const [requestingPlayer, setRequestingPlayer] = useState(false)
@@ -113,12 +116,39 @@ export function Home() {
           </div>
         )}
 
-        <p className="text-gray-500 dark:text-gray-400">
-          {user.assignedAuctions.length === 0
-            ? "You haven't been assigned to an auction yet."
-            : 'Your assigned auctions:'}
-        </p>
-        <ul className="space-y-2">
+        {user.role === 'viewer' && (
+          <div>
+            <p className="text-gray-500 dark:text-gray-400">
+              {liveAuctions.length === 0
+                ? 'No auctions are live right now.'
+                : 'Ongoing auctions you can watch:'}
+            </p>
+            <ul className="mt-2 space-y-2">
+              {liveAuctions.map((a) => (
+                <li key={a.auctionId}>
+                  <Link
+                    to={`/viewer/${a.auctionId}`}
+                    className="flex items-center justify-between rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{a.name}</span>
+                    <span className="rounded-full bg-green-100 dark:bg-green-900/40 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                      live
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {user.role !== 'viewer' && (
+          <>
+            <p className="text-gray-500 dark:text-gray-400">
+              {user.assignedAuctions.length === 0
+                ? "You haven't been assigned to an auction yet."
+                : 'Your assigned auctions:'}
+            </p>
+            <ul className="space-y-2">
           {user.assignedAuctions.map((auctionId) => {
             const auction = auctions[auctionId]
             return (
@@ -174,7 +204,9 @@ export function Home() {
               </li>
             )
           })}
-        </ul>
+            </ul>
+          </>
+        )}
       </div>
     </Layout>
   )
