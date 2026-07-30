@@ -1,5 +1,7 @@
 import {
+  browserSessionPersistence,
   createUserWithEmailAndPassword,
+  setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
@@ -58,6 +60,20 @@ export async function signInWithGoogle(): Promise<AppUser> {
 
 const TEST_PASSWORD = 'test-password-123'
 
+let sessionPersistenceReady: Promise<void> | null = null
+
+// Default IndexedDB persistence is shared by every tab on this origin, so
+// signing in on one tab silently signs in all of them — session storage is
+// per-tab, letting each browser tab hold an independent test identity. Only
+// switched on demand (not at module load) so many tabs opening at once don't
+// race each other migrating the same shared IndexedDB store.
+function ensureSessionPersistence(): Promise<void> {
+  if (!sessionPersistenceReady) {
+    sessionPersistenceReady = setPersistence(auth, browserSessionPersistence)
+  }
+  return sessionPersistenceReady
+}
+
 /**
  * Email/password sign-in against the Firebase Auth emulator only — lets you
  * exercise the app as different roles without a real Google OAuth popup.
@@ -67,6 +83,7 @@ export async function signInTestUser(email: string, displayName: string): Promis
   if (!usingEmulators) {
     throw new Error('Test sign-in is only available when running against the Firebase emulator.')
   }
+  await ensureSessionPersistence()
   const normalized = normalizeEmail(email)
   try {
     const result = await createUserWithEmailAndPassword(auth, normalized, TEST_PASSWORD)
