@@ -9,6 +9,7 @@ import {
   addPlayers,
   addTeamToAuction,
   applyCommonPurseToAllTeams,
+  applyMaxPlayersToAllTeams,
   updateAuctionSettings,
   updateAuctionStatus,
 } from '../lib/auctions'
@@ -54,6 +55,8 @@ export function AuctionSetup() {
   const [timerSeconds, setTimerSeconds] = useState('30')
   const [applyingPurse, setApplyingPurse] = useState(false)
   const [purseError, setPurseError] = useState<string | null>(null)
+  const [applyingMaxPlayers, setApplyingMaxPlayers] = useState(false)
+  const [maxPlayersError, setMaxPlayersError] = useState<string | null>(null)
 
   // Re-sync only when landing on a (possibly different) auction, not on every live update.
   useEffect(() => {
@@ -210,6 +213,21 @@ export function AuctionSetup() {
       bidIncrement: Number(increment) || 10,
       timerDurationSeconds: Number(timerSeconds) || 30,
     })
+  }
+
+  async function handleApplyMaxPlayers() {
+    if (!auctionId) return
+    setMaxPlayersError(null)
+    setApplyingMaxPlayers(true)
+    try {
+      await applyMaxPlayersToAllTeams(auctionId, Number(maxPlayers) || 15)
+    } catch (err) {
+      setMaxPlayersError(
+        err instanceof Error ? err.message : 'Failed to update max players for all teams',
+      )
+    } finally {
+      setApplyingMaxPlayers(false)
+    }
   }
 
   async function handleApplyCommonPurse() {
@@ -517,15 +535,29 @@ export function AuctionSetup() {
             </button>
           </div>
           {auction.teamManagers.length > 0 && (
-            <div className="mt-2">
-              <button
-                onClick={handleApplyCommonPurse}
-                disabled={applyingPurse}
-                className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
-              >
-                {applyingPurse ? 'Applying...' : `Apply ${purse || 0} purse to all ${auction.teamManagers.length} teams already added`}
-              </button>
-              {purseError && <p className="mt-1 text-xs text-red-600">{purseError}</p>}
+            <div className="mt-2 space-y-2">
+              <div>
+                <button
+                  onClick={handleApplyCommonPurse}
+                  disabled={applyingPurse}
+                  className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                >
+                  {applyingPurse ? 'Applying...' : `Apply ${purse || 0} purse to all ${auction.teamManagers.length} teams already added`}
+                </button>
+                {purseError && <p className="mt-1 text-xs text-red-600">{purseError}</p>}
+              </div>
+              <div>
+                <button
+                  onClick={handleApplyMaxPlayers}
+                  disabled={applyingMaxPlayers}
+                  className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                >
+                  {applyingMaxPlayers
+                    ? 'Applying...'
+                    : `Apply ${maxPlayers || 15} max players to all ${auction.teamManagers.length} teams already added`}
+                </button>
+                {maxPlayersError && <p className="mt-1 text-xs text-red-600">{maxPlayersError}</p>}
+              </div>
             </div>
           )}
           {availableTeams.length === 0 && (

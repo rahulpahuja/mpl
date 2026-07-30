@@ -86,6 +86,24 @@ export async function applyCommonPurseToAllTeams(auctionId: string, purse: numbe
   )
 }
 
+export async function applyMaxPlayersToAllTeams(auctionId: string, maxPlayers: number) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) throw new Error('Auction not found')
+    const auction = snap.data() as Auction
+    const teamManagers = auction.teamManagers.map((tm) => {
+      const soldCount = auction.players.filter(
+        (p) => p.currentBidder === tm.managerId && p.status === 'sold',
+      ).length
+      if (maxPlayers < soldCount) {
+        throw new Error(`${tm.name} already has ${soldCount} players sold, above ${maxPlayers}`)
+      }
+      return { ...tm, maxPlayers }
+    })
+    tx.update(auctionRef(auctionId), { teamManagers })
+  })
+}
+
 export async function addPlayers(auctionId: string, players: Omit<Player, 'currentBid' | 'currentBidder' | 'currentBidderName' | 'status'>[]) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(auctionRef(auctionId))
@@ -138,6 +156,12 @@ export async function addTeamToAuction(
       spent: 0,
       balance: purse,
       players: [],
+    })
+    // Without this, the team's manager never gets this auction added to their
+    // own assignedAuctions — their Home page (and everything gated on it, like
+    // /bid/:auctionId) would show no sign of the auction even after a refresh.
+    tx.update(doc(db, 'users', team.managerId), {
+      assignedAuctions: arrayUnion(auctionId),
     })
   })
 }

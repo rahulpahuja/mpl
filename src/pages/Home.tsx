@@ -141,6 +141,33 @@ export function Home() {
           </div>
         )}
 
+        {user.role !== 'viewer' &&
+          user.assignedAuctions
+            .map((id) => auctions[id])
+            .filter((a) => a?.status === 'live')
+            .map((a) => (
+              <div
+                key={a!.auctionId}
+                className="flex flex-wrap items-center gap-3 rounded-lg border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/40 px-4 py-3 text-sm text-green-800 dark:text-green-300"
+              >
+                <span>
+                  <span className="font-medium">{a!.name}</span> is live now — time to take part.
+                </span>
+                <Link
+                  to={
+                    user.role === 'auctionManager'
+                      ? `/manage/${a!.auctionId}`
+                      : user.role === 'manager'
+                        ? `/bid/${a!.auctionId}`
+                        : `/viewer/${a!.auctionId}`
+                  }
+                  className="ml-auto font-medium underline"
+                >
+                  {user.role === 'auctionManager' ? 'Manage' : user.role === 'manager' ? 'Bid now' : 'Watch'}
+                </Link>
+              </div>
+            ))}
+
         {user.role !== 'viewer' && (
           <>
             <p className="text-gray-500 dark:text-gray-400">

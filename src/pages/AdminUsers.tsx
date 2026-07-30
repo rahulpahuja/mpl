@@ -10,6 +10,7 @@ import type { UserRole } from '../types'
 
 export function AdminUsers() {
   const { auctions } = useAuctionsList()
+  const auctionNameById = Object.fromEntries(auctions.map((a) => [a.auctionId, a.name]))
   const { users } = useUsers()
   const invites = useInvites()
   const [userSearch, setUserSearch] = useState('')
@@ -153,7 +154,7 @@ export function AdminUsers() {
                       </select>
                       {u.assignedAuctions.length > 0 && (
                         <span className="ml-2 text-xs text-gray-500">
-                          {u.assignedAuctions.join(', ')}
+                          {u.assignedAuctions.map((id) => auctionNameById[id] ?? id).join(', ')}
                         </span>
                       )}
                     </td>
