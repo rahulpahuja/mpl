@@ -1,12 +1,20 @@
 import { Link, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useAdminClaimed } from '../hooks/useAdminClaimed'
+import { useAuctionsByIds } from '../hooks/useAuctionsByIds'
 import { Layout } from '../components/Layout'
+
+const statusStyles: Record<string, string> = {
+  draft: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+  live: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+  completed: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
+}
 
 export function Home() {
   const user = useAuthStore((s) => s.user)
   const initializing = useAuthStore((s) => s.initializing)
   const adminClaimed = useAdminClaimed()
+  const auctions = useAuctionsByIds(user?.assignedAuctions ?? [])
 
   if (initializing) {
     return (
@@ -42,16 +50,61 @@ export function Home() {
             : 'Your assigned auctions:'}
         </p>
         <ul className="space-y-2">
-          {user.assignedAuctions.map((auctionId) => (
-            <li key={auctionId}>
-              <a
-                href={user.role === 'auctionManager' ? `/manage/${auctionId}` : `/bid/${auctionId}`}
-                className="text-red-600 dark:text-red-400 hover:underline"
+          {user.assignedAuctions.map((auctionId) => {
+            const auction = auctions[auctionId]
+            return (
+              <li
+                key={auctionId}
+                className="flex flex-wrap items-center gap-3 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm px-4 py-3"
               >
-                {auctionId}
-              </a>
-            </li>
-          ))}
+                <span className="font-medium text-gray-900 dark:text-gray-100">
+                  {auction?.name ?? auctionId}
+                </span>
+                {auction && (
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[auction.status]}`}
+                  >
+                    {auction.status}
+                  </span>
+                )}
+                <span className="font-mono text-xs text-gray-400">{auctionId}</span>
+                <span className="ml-auto flex gap-3">
+                  {user.role === 'auctionManager' && (
+                    <>
+                      <Link
+                        to={`/admin/auctions/${auctionId}/setup`}
+                        className="text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        Setup
+                      </Link>
+                      <Link
+                        to={`/manage/${auctionId}`}
+                        className="text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        Manage
+                      </Link>
+                    </>
+                  )}
+                  {user.role === 'manager' && (
+                    <Link
+                      to={`/bid/${auctionId}`}
+                      className="text-red-600 dark:text-red-400 hover:underline"
+                    >
+                      Bid
+                    </Link>
+                  )}
+                  {user.role === 'player' && (
+                    <Link
+                      to={`/viewer/${auctionId}`}
+                      className="text-red-600 dark:text-red-400 hover:underline"
+                    >
+                      Watch
+                    </Link>
+                  )}
+                </span>
+              </li>
+            )
+          })}
         </ul>
       </div>
     </Layout>

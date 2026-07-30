@@ -4,8 +4,10 @@ import { Layout } from '../components/Layout'
 import { useAuction } from '../hooks/useAuction'
 import { useBids } from '../hooks/useBids'
 import { useCountdown } from '../hooks/useCountdown'
+import { useUsers } from '../hooks/useUsers'
 import { useAuthStore } from '../store/authStore'
 import { placeBid } from '../lib/auctions'
+import { promoteViewerToPlayer } from '../lib/users'
 
 const QUICK_BID_STEPS = [50, 100, 200, 500, 1000, 10000]
 
@@ -15,6 +17,10 @@ export function TeamManagerBidding() {
   const user = useAuthStore((s) => s.user)
   const [error, setError] = useState<string | null>(null)
   const [placing, setPlacing] = useState(false)
+  const { users } = useUsers()
+  const [viewerSearch, setViewerSearch] = useState('')
+  const [selectedViewerId, setSelectedViewerId] = useState('')
+  const [promoting, setPromoting] = useState(false)
 
   const currentPlayer = auction?.players.find((p) => p.playerId === auction.currentPlayerId) ?? null
   const bids = useBids(auctionId, auction?.currentPlayerId)
@@ -37,6 +43,30 @@ export function TeamManagerBidding() {
   }
 
   const myTeam = auction.teamManagers.find((tm) => tm.managerId === user.uid)
+
+  const viewerCandidates = users
+    .filter((u) => u.role === 'viewer')
+    .filter((u) => {
+      const q = viewerSearch.trim().toLowerCase()
+      if (!q) return true
+      return (
+        u.displayName.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        u.phone?.includes(q)
+      )
+    })
+
+  async function handlePromoteViewer() {
+    if (!selectedViewerId) return
+    setPromoting(true)
+    try {
+      await promoteViewerToPlayer(selectedViewerId)
+      setSelectedViewerId('')
+      setViewerSearch('')
+    } finally {
+      setPromoting(false)
+    }
+  }
 
   if (!myTeam) {
     return (
@@ -177,6 +207,55 @@ export function TeamManagerBidding() {
               ))}
               {sortedBids.length === 0 && <li className="text-gray-500">No bids yet.</li>}
             </ul>
+          </section>
+
+          <section className="lg:col-span-3 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+              Promote a viewer to Player
+            </h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Spotted someone in the crowd who should be up for auction? Promote their account so
+              the Auction Manager can add them to a roster.
+            </p>
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <input
+                value={viewerSearch}
+                onChange={(e) => {
+                  setViewerSearch(e.target.value)
+                  setSelectedViewerId('')
+                }}
+                placeholder="Search viewers by name, email, phone..."
+                className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 sm:col-span-2"
+              />
+              <button
+                onClick={handlePromoteViewer}
+                disabled={promoting || !selectedViewerId}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Promote to Player
+              </button>
+            </div>
+            {viewerSearch && !selectedViewerId && (
+              <ul className="mt-2 max-h-40 divide-y divide-gray-200 dark:divide-gray-800 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 text-sm">
+                {viewerCandidates.map((v) => (
+                  <li key={v.uid}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedViewerId(v.uid)
+                        setViewerSearch(`${v.displayName} (${v.phone || v.email})`)
+                      }}
+                      className="block w-full px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    >
+                      {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
+                    </button>
+                  </li>
+                ))}
+                {viewerCandidates.length === 0 && (
+                  <li className="px-3 py-2 text-gray-500">No "Viewer" users match.</li>
+                )}
+              </ul>
+            )}
           </section>
         </div>
       </div>

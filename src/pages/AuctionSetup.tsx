@@ -1,8 +1,10 @@
+import { Timestamp } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { useAuction } from '../hooks/useAuction'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
+import { useUsers } from '../hooks/useUsers'
 import {
   addPlayers,
   addTeamToAuction,
@@ -10,6 +12,8 @@ import {
   updateAuctionSettings,
   updateAuctionStatus,
 } from '../lib/auctions'
+import { assignUserToAuction, promoteViewerToPlayer } from '../lib/users'
+import { createTeam } from '../lib/teams'
 
 function parseCsv(text: string) {
   return text
@@ -27,16 +31,24 @@ export function AuctionSetup() {
   const { auctionId } = useParams<{ auctionId: string }>()
   const { auction, loading } = useAuction(auctionId)
   const { teams } = useTeamsRegistry()
+  const { users } = useUsers()
 
   const [playerName, setPlayerName] = useState('')
   const [playerPosition, setPlayerPosition] = useState('')
   const [playerBasePrice, setPlayerBasePrice] = useState('')
   const [csvText, setCsvText] = useState('')
 
+  const [viewerSearch, setViewerSearch] = useState('')
+  const [selectedViewerId, setSelectedViewerId] = useState('')
+  const [promoting, setPromoting] = useState(false)
+  const [registeredBasePrices, setRegisteredBasePrices] = useState<Record<string, string>>({})
+
   const [teamSearch, setTeamSearch] = useState('')
   const [selectedTeamId, setSelectedTeamId] = useState('')
   const [purse, setPurse] = useState('1000')
   const [maxPlayers, setMaxPlayers] = useState('15')
+  const [newTeamNames, setNewTeamNames] = useState<Record<string, string>>({})
+  const [creatingTeamFor, setCreatingTeamFor] = useState<string | null>(null)
 
   const [increment, setIncrement] = useState('10')
   const [timerSeconds, setTimerSeconds] = useState('30')
@@ -67,6 +79,20 @@ export function AuctionSetup() {
     )
   }
 
+  const rosterUids = new Set(auction.players.map((p) => p.playerId))
+  const registeredPlayers = users.filter((u) => u.role === 'player' && !rosterUids.has(u.uid))
+  const viewerCandidates = users
+    .filter((u) => u.role === 'viewer')
+    .filter((u) => {
+      const q = viewerSearch.trim().toLowerCase()
+      if (!q) return true
+      return (
+        u.displayName.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        u.phone?.includes(q)
+      )
+    })
+
   const auctionTeamIds = new Set(auction.teamManagers.map((tm) => tm.teamId))
   const availableTeams = teams
     .filter((t) => !auctionTeamIds.has(t.teamId))
@@ -77,6 +103,11 @@ export function AuctionSetup() {
         t.teamName.toLowerCase().includes(q) || t.managerName.toLowerCase().includes(q)
       )
     })
+
+  const managerUidsWithTeam = new Set(teams.map((t) => t.managerId))
+  const managersWithoutTeam = users.filter(
+    (u) => u.role === 'manager' && !managerUidsWithTeam.has(u.uid),
+  )
 
   async function handleAddPlayer() {
     if (!playerName.trim() || !auctionId) return
@@ -91,6 +122,33 @@ export function AuctionSetup() {
     setPlayerName('')
     setPlayerPosition('')
     setPlayerBasePrice('')
+  }
+
+  async function handlePromoteViewer() {
+    if (!selectedViewerId) return
+    setPromoting(true)
+    try {
+      await promoteViewerToPlayer(selectedViewerId)
+      setSelectedViewerId('')
+      setViewerSearch('')
+    } finally {
+      setPromoting(false)
+    }
+  }
+
+  async function handleAddRegisteredPlayer(uid: string, name: string, assignedAuctions: string[]) {
+    if (!auctionId) return
+    const basePrice = Number(registeredBasePrices[uid]) || 0
+    await addPlayers(auctionId, [{ playerId: uid, name, position: '', basePrice }])
+    // So the player can see this auction (and what's happening in it) from
+    // their own Home page once they log in — mirrors how Team Managers and
+    // Auction Managers already see their assigned auctions.
+    await assignUserToAuction(uid, auctionId, assignedAuctions, 'player')
+    setRegisteredBasePrices((prev) => {
+      const next = { ...prev }
+      delete next[uid]
+      return next
+    })
   }
 
   async function handleImportCsv() {
@@ -110,6 +168,29 @@ export function AuctionSetup() {
     setTeamSearch('')
     // Purse and max players deliberately keep their values — auctions almost always
     // use the same numbers for every team, so re-typing them per team is pure toil.
+  }
+
+  async function handleCreateTeamFor(uid: string, displayName: string) {
+    if (!auctionId) return
+    const name = (newTeamNames[uid] || `${displayName}'s Team`).trim()
+    if (!name) return
+    setCreatingTeamFor(uid)
+    try {
+      const teamId = await createTeam(name, uid, displayName)
+      await addTeamToAuction(
+        auctionId,
+        { teamId, teamName: name, managerId: uid, managerName: displayName, createdAt: Timestamp.now() },
+        Number(purse) || 0,
+        Number(maxPlayers) || 15,
+      )
+      setNewTeamNames((prev) => {
+        const next = { ...prev }
+        delete next[uid]
+        return next
+      })
+    } finally {
+      setCreatingTeamFor(null)
+    }
   }
 
   async function handleSaveSettings() {
@@ -248,6 +329,89 @@ export function AuctionSetup() {
             </button>
           </div>
 
+          <div className="mt-6 border-t border-gray-200 dark:border-gray-800 pt-4">
+            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              Promote a viewer to Player
+            </h3>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Anyone signed in as a Viewer can be promoted to Player, then added to this (or any)
+              auction's roster below.
+            </p>
+            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <input
+                value={viewerSearch}
+                onChange={(e) => {
+                  setViewerSearch(e.target.value)
+                  setSelectedViewerId('')
+                }}
+                placeholder="Search viewers by name, email, phone..."
+                className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 sm:col-span-2"
+              />
+              <button
+                onClick={handlePromoteViewer}
+                disabled={promoting || !selectedViewerId}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Promote to Player
+              </button>
+            </div>
+            {viewerSearch && !selectedViewerId && (
+              <ul className="mt-2 max-h-40 divide-y divide-gray-200 dark:divide-gray-800 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 text-sm">
+                {viewerCandidates.map((v) => (
+                  <li key={v.uid}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedViewerId(v.uid)
+                        setViewerSearch(`${v.displayName} (${v.phone || v.email})`)
+                      }}
+                      className="block w-full px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    >
+                      {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
+                    </button>
+                  </li>
+                ))}
+                {viewerCandidates.length === 0 && (
+                  <li className="px-3 py-2 text-gray-500">No "Viewer" users match.</li>
+                )}
+              </ul>
+            )}
+          </div>
+
+          {registeredPlayers.length > 0 && (
+            <div className="mt-6 border-t border-gray-200 dark:border-gray-800 pt-4">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                Registered players not yet in this auction
+              </h3>
+              <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+                {registeredPlayers.map((p) => (
+                  <li key={p.uid} className="flex items-center justify-between gap-2 py-2">
+                    <span className="text-gray-900 dark:text-gray-100">{p.displayName}</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        value={registeredBasePrices[p.uid] ?? ''}
+                        onChange={(e) =>
+                          setRegisteredBasePrices((prev) => ({ ...prev, [p.uid]: e.target.value }))
+                        }
+                        placeholder="Base price"
+                        className="w-28 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                      />
+                      <button
+                        onClick={() =>
+                          handleAddRegisteredPlayer(p.uid, p.displayName, p.assignedAuctions)
+                        }
+                        className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        Add to auction
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <ul className="mt-4 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
             {auction.players.map((p) => (
               <li key={p.playerId} className="flex justify-between py-2">
@@ -328,8 +492,46 @@ export function AuctionSetup() {
             <p className="mt-2 text-xs text-gray-500">
               {teamSearch
                 ? `No teams match "${teamSearch}".`
-                : 'No teams available to add. Create one from the Admin Dashboard first.'}
+                : 'No existing teams available to add.'}
             </p>
+          )}
+
+          {managersWithoutTeam.length > 0 && (
+            <div className="mt-6 border-t border-gray-200 dark:border-gray-800 pt-4">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                Team Manager users without a team yet
+              </h3>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Give them a team name to create their team and add it straight to this auction
+                (using the purse and max players set above).
+              </p>
+              <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+                {managersWithoutTeam.map((m) => (
+                  <li key={m.uid} className="flex items-center justify-between gap-2 py-2">
+                    <span className="text-gray-900 dark:text-gray-100">
+                      {m.displayName} <span className="text-gray-500">({m.email})</span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        value={newTeamNames[m.uid] ?? ''}
+                        onChange={(e) =>
+                          setNewTeamNames((prev) => ({ ...prev, [m.uid]: e.target.value }))
+                        }
+                        placeholder={`${m.displayName}'s Team`}
+                        className="w-48 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                      />
+                      <button
+                        onClick={() => handleCreateTeamFor(m.uid, m.displayName)}
+                        disabled={creatingTeamFor === m.uid}
+                        className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                      >
+                        {creatingTeamFor === m.uid ? 'Creating...' : 'Create team & add'}
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
           <ul className="mt-4 divide-y divide-gray-200 dark:divide-gray-800 text-sm">

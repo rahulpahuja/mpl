@@ -272,6 +272,7 @@ export function AdminDashboard() {
               <option value="admin">Admin</option>
               <option value="auctionManager">Auction Manager</option>
               <option value="manager">Team Manager</option>
+              <option value="player">Player</option>
               <option value="viewer">Viewer</option>
             </select>
             <button
@@ -335,6 +336,7 @@ export function AdminDashboard() {
                         <option value="admin">Admin</option>
                         <option value="auctionManager">Auction Manager</option>
                         <option value="manager">Team Manager</option>
+                        <option value="player">Player</option>
                         <option value="viewer">Viewer</option>
                       </select>
                     </td>
@@ -342,7 +344,8 @@ export function AdminDashboard() {
                       <select
                         defaultValue=""
                         onChange={(e) => {
-                          if (e.target.value) assignUserToAuction(u.uid, e.target.value, u.assignedAuctions)
+                          if (e.target.value)
+                            assignUserToAuction(u.uid, e.target.value, u.assignedAuctions, u.role)
                           e.target.value = ''
                         }}
                         className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"

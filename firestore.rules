@@ -29,9 +29,21 @@ service cloud.firestore {
         get(/databases/$(database)/documents/meta/adminClaimed).data.claimed == false;
     }
 
+    function canManageAuctions() {
+      return isSignedIn() && (role() == 'admin' || role() == 'auctionManager' || role() == 'manager');
+    }
+
+    // Admins, Auction Managers, and Team Managers can all promote a viewer to
+    // Player (e.g. spotting them in the crowd) without a broader role change.
+    function isPromotingViewerToPlayer() {
+      return resource.data.role == 'viewer' &&
+        request.resource.data.role == 'player' &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role']);
+    }
+
     match /users/{userId} {
       allow get: if isSignedIn();
-      allow list: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
+      allow list: if isAdmin() || (isSignedIn() && (role() == 'auctionManager' || role() == 'manager'));
       allow create: if isSignedIn() && request.auth.uid == userId &&
         request.resource.data.assignedAuctions.size() == 0 &&
         (request.resource.data.role == 'viewer' ||
@@ -39,6 +51,7 @@ service cloud.firestore {
             request.resource.data.role ==
               get(/databases/$(database)/documents/invites/$(request.auth.token.email)).data.role));
       allow update: if isAdmin() ||
+        (canManageAuctions() && isPromotingViewerToPlayer()) ||
         (isSignedIn() && request.auth.uid == userId &&
           request.resource.data.role == resource.data.role &&
           request.resource.data.assignedAuctions == resource.data.assignedAuctions) ||
@@ -52,7 +65,7 @@ service cloud.firestore {
     match /teams/{teamId} {
       allow get: if isSignedIn();
       allow list: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
-      allow create: if isAdmin();
+      allow create: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
