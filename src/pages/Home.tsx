@@ -234,6 +234,13 @@ export function Home() {
                       >
                         View
                       </Link>
+                      <button
+                        onClick={() => handleDeleteAuction(auctionId, auction?.name ?? auctionId)}
+                        disabled={deletingId === auctionId}
+                        className="text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                      >
+                        {deletingId === auctionId ? 'Deleting...' : 'Delete'}
+                      </button>
                     </>
                   )}
                   {user.role === 'manager' && (
