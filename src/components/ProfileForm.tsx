@@ -32,8 +32,8 @@ export function ProfileForm({
   onSave: (fields: ProfileFields) => Promise<void>
   submitLabel?: string
 }) {
-  const [phone, setPhone] = useState(initial.phone)
-  const [whatsapp, setWhatsapp] = useState(initial.whatsapp)
+  const [phone, setPhone] = useState(localDigits(initial.phone))
+  const [whatsapp, setWhatsapp] = useState(localDigits(initial.whatsapp))
   const [sameAsPhone, setSameAsPhone] = useState(
     initial.whatsapp !== '' && initial.whatsapp === initial.phone,
   )
@@ -67,7 +67,11 @@ export function ProfileForm({
 
     setSaving(true)
     try {
-      await onSave({ phone, whatsapp, location: location.trim() })
+      await onSave({
+        phone: toStoredPhone(phone),
+        whatsapp: toStoredPhone(whatsapp),
+        location: location.trim(),
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save profile')
     } finally {
@@ -79,26 +83,36 @@ export function ProfileForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone number</label>
-        <input
-          value={phone}
-          onChange={(e) => handlePhoneChange(e.target.value)}
-          inputMode="numeric"
-          maxLength={10}
-          className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
-        />
+        <div className="mt-1 flex overflow-hidden rounded-lg border border-gray-300 dark:border-gray-700 focus-within:ring-2 focus-within:ring-red-500">
+          <span className="flex items-center bg-gray-100 dark:bg-gray-700 px-3 text-sm text-gray-500 dark:text-gray-400">
+            {COUNTRY_CODE}
+          </span>
+          <input
+            value={phone}
+            onChange={(e) => handlePhoneChange(e.target.value)}
+            inputMode="numeric"
+            maxLength={10}
+            className="w-full bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none"
+          />
+        </div>
       </div>
       <div>
         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
           WhatsApp number
         </label>
-        <input
-          value={whatsapp}
-          onChange={(e) => setWhatsapp(onlyDigits(e.target.value))}
-          disabled={sameAsPhone}
-          inputMode="numeric"
-          maxLength={10}
-          className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-60"
-        />
+        <div className="mt-1 flex overflow-hidden rounded-lg border border-gray-300 dark:border-gray-700 focus-within:ring-2 focus-within:ring-red-500">
+          <span className="flex items-center bg-gray-100 dark:bg-gray-700 px-3 text-sm text-gray-500 dark:text-gray-400">
+            {COUNTRY_CODE}
+          </span>
+          <input
+            value={whatsapp}
+            onChange={(e) => setWhatsapp(onlyDigits(e.target.value))}
+            disabled={sameAsPhone}
+            inputMode="numeric"
+            maxLength={10}
+            className="w-full bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none disabled:opacity-60"
+          />
+        </div>
         <label className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
           <input
             type="checkbox"
