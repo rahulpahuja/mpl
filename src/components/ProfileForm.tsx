@@ -2,8 +2,21 @@ import { useState } from 'react'
 import type { ProfileFields } from '../lib/users'
 import { LocationAutocomplete } from './LocationAutocomplete'
 
+const COUNTRY_CODE = '+91'
+
+// Numbers are stored with the +91 prefix (e.g. "+919876543210") so they're
+// unambiguous everywhere they're used — displayed, dialed, or turned into a
+// wa.me link, which requires the country code to resolve to the right contact.
+function localDigits(storedValue: string) {
+  return storedValue.startsWith(COUNTRY_CODE) ? storedValue.slice(COUNTRY_CODE.length) : storedValue
+}
+
 function onlyDigits(value: string) {
   return value.replace(/\D/g, '').slice(0, 10)
+}
+
+function toStoredPhone(localValue: string) {
+  return localValue === '' ? '' : `${COUNTRY_CODE}${localValue}`
 }
 
 function isValidPhone(value: string) {
