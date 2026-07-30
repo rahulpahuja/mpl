@@ -22,10 +22,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      unsubscribeUserDoc = onSnapshot(doc(db, 'users', firebaseUser.uid), (snap) => {
-        setUser(snap.exists() ? (snap.data() as AppUser) : null)
-        setInitializing(false)
-      })
+      unsubscribeUserDoc = onSnapshot(
+        doc(db, 'users', firebaseUser.uid),
+        (snap) => {
+          setUser(snap.exists() ? (snap.data() as AppUser) : null)
+          setInitializing(false)
+        },
+        (err) => {
+          console.error('AuthProvider user doc listener error', err)
+          setUser(null)
+          setInitializing(false)
+        }
+      )
     })
 
     return () => {

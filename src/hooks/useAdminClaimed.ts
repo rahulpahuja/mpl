@@ -6,9 +6,16 @@ export function useAdminClaimed() {
   const [claimed, setClaimed] = useState<boolean | null>(null)
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(doc(db, 'meta', 'adminClaimed'), (snap) => {
-      setClaimed(snap.exists() && snap.data().claimed === true)
-    })
+    const unsubscribe = onSnapshot(
+      doc(db, 'meta', 'adminClaimed'),
+      (snap) => {
+        setClaimed(snap.exists() && snap.data().claimed === true)
+      },
+      (err) => {
+        console.error('useAdminClaimed listener error', err)
+        setClaimed(false)
+      }
+    )
     return unsubscribe
   }, [])
 
