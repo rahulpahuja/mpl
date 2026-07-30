@@ -5,7 +5,7 @@ import { useAdminClaimed } from '../hooks/useAdminClaimed'
 import { useAuctionsByIds } from '../hooks/useAuctionsByIds'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { Layout } from '../components/Layout'
-import { createAuction } from '../lib/auctions'
+import { createAuction, deleteAuction } from '../lib/auctions'
 import { assignUserToAuction, requestToBePlayer } from '../lib/users'
 
 const statusStyles: Record<string, string> = {
