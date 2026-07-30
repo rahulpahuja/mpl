@@ -7,10 +7,18 @@ export async function updateUserRole(uid: string, role: UserRole) {
 }
 
 // Narrower than updateUserRole: Admins, Auction Managers, and Team Managers can
-// all promote a viewer to Player (e.g. spotting them in the crowd) without the
-// broader role-management access an Admin has.
+// all promote a viewer to Player (e.g. spotting them in the crowd, or approving
+// a self-service request) without the broader role-management access an Admin
+// has. Clears playerRequested so the request doesn't linger after approval.
 export async function promoteViewerToPlayer(uid: string) {
-  await updateDoc(doc(db, 'users', uid), { role: 'player' })
+  await updateDoc(doc(db, 'users', uid), { role: 'player', playerRequested: false })
+}
+
+// Self-service: a viewer flags that they'd like to be promoted to Player, so
+// admins/managers can spot and approve the request instead of having to
+// notice them in a crowd.
+export async function requestToBePlayer(uid: string) {
+  await updateDoc(doc(db, 'users', uid), { playerRequested: true })
 }
 
 export interface ProfileFields {

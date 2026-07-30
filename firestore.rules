@@ -34,11 +34,13 @@ service cloud.firestore {
     }
 
     // Admins, Auction Managers, and Team Managers can all promote a viewer to
-    // Player (e.g. spotting them in the crowd) without a broader role change.
+    // Player (e.g. spotting them in the crowd, or approving a self-service
+    // request) without a broader role change. playerRequested is cleared in
+    // the same write so an approved request doesn't linger.
     function isPromotingViewerToPlayer() {
       return resource.data.role == 'viewer' &&
         request.resource.data.role == 'player' &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role']);
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role', 'playerRequested']);
     }
 
     // Covers both: an Auction Manager self-assigning to an auction they just
@@ -46,6 +48,14 @@ service cloud.firestore {
     // to an auction — without granting broader access to the user doc.
     function isUpdatingAssignedAuctions() {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['assignedAuctions']);
+    }
+
+    // A viewer flagging their own request to become a Player.
+    function isRequestingToBePlayer() {
+      return resource.data.role == 'viewer' &&
+        request.resource.data.role == 'viewer' &&
+        request.resource.data.playerRequested == true &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['playerRequested']);
     }
 
     match /users/{userId} {
@@ -60,6 +70,7 @@ service cloud.firestore {
       allow update: if isAdmin() ||
         (canManageAuctions() && isPromotingViewerToPlayer()) ||
         (canManageAuctions() && isUpdatingAssignedAuctions()) ||
+        (isSignedIn() && request.auth.uid == userId && isRequestingToBePlayer()) ||
         (isSignedIn() && request.auth.uid == userId &&
           request.resource.data.role == resource.data.role &&
           request.resource.data.assignedAuctions == resource.data.assignedAuctions) ||

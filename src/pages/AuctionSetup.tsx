@@ -92,6 +92,8 @@ export function AuctionSetup() {
         u.phone?.includes(q)
       )
     })
+    .sort((a, b) => Number(b.playerRequested) - Number(a.playerRequested))
+  const playerRequestCount = users.filter((u) => u.role === 'viewer' && u.playerRequested).length
 
   const auctionTeamIds = new Set(auction.teamManagers.map((tm) => tm.teamId))
   const availableTeams = teams
@@ -131,6 +133,15 @@ export function AuctionSetup() {
       await promoteViewerToPlayer(selectedViewerId)
       setSelectedViewerId('')
       setViewerSearch('')
+    } finally {
+      setPromoting(false)
+    }
+  }
+
+  async function handleApproveRequest(uid: string) {
+    setPromoting(true)
+    try {
+      await promoteViewerToPlayer(uid)
     } finally {
       setPromoting(false)
     }
@@ -337,6 +348,30 @@ export function AuctionSetup() {
               Anyone signed in as a Viewer can be promoted to Player, then added to this (or any)
               auction's roster below.
             </p>
+            {playerRequestCount > 0 && (
+              <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-800 rounded-lg border border-amber-300 dark:border-amber-700 text-sm">
+                {viewerCandidates
+                  .filter((v) => v.playerRequested)
+                  .map((v) => (
+                    <li key={v.uid} className="flex items-center justify-between gap-2 px-3 py-2">
+                      <span className="text-gray-900 dark:text-gray-100">
+                        {v.displayName}{' '}
+                        <span className="text-gray-500">— {v.phone || v.email}</span>
+                        <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                          Requested
+                        </span>
+                      </span>
+                      <button
+                        onClick={() => handleApproveRequest(v.uid)}
+                        disabled={promoting}
+                        className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                      >
+                        Approve
+                      </button>
+                    </li>
+                  ))}
+              </ul>
+            )}
             <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
               <input
                 value={viewerSearch}
@@ -368,6 +403,11 @@ export function AuctionSetup() {
                       className="block w-full px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
                       {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
+                      {v.playerRequested && (
+                        <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                          Requested
+                        </span>
+                      )}
                     </button>
                   </li>
                 ))}

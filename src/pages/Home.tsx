@@ -5,7 +5,7 @@ import { useAdminClaimed } from '../hooks/useAdminClaimed'
 import { useAuctionsByIds } from '../hooks/useAuctionsByIds'
 import { Layout } from '../components/Layout'
 import { createAuction } from '../lib/auctions'
-import { assignUserToAuction } from '../lib/users'
+import { assignUserToAuction, requestToBePlayer } from '../lib/users'
 
 const statusStyles: Record<string, string> = {
   draft: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
@@ -20,6 +20,7 @@ export function Home() {
   const auctions = useAuctionsByIds(user?.assignedAuctions ?? [])
   const [newAuctionName, setNewAuctionName] = useState('')
   const [creating, setCreating] = useState(false)
+  const [requestingPlayer, setRequestingPlayer] = useState(false)
 
   async function handleCreateAuction() {
     if (!newAuctionName.trim() || !user) return
@@ -30,6 +31,16 @@ export function Home() {
       setNewAuctionName('')
     } finally {
       setCreating(false)
+    }
+  }
+
+  async function handleRequestPlayer() {
+    if (!user) return
+    setRequestingPlayer(true)
+    try {
+      await requestToBePlayer(user.uid)
+    } finally {
+      setRequestingPlayer(false)
     }
   }
 
@@ -77,6 +88,28 @@ export function Home() {
             >
               Create auction
             </button>
+          </div>
+        )}
+
+        {user.role === 'viewer' && (
+          <div className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm px-4 py-3">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Want to be up for auction? Request to become a Player and an Admin, Auction Manager,
+              or Team Manager can approve it.
+            </p>
+            {user.playerRequested ? (
+              <p className="mt-2 text-sm font-medium text-amber-600 dark:text-amber-400">
+                Request pending approval...
+              </p>
+            ) : (
+              <button
+                onClick={handleRequestPlayer}
+                disabled={requestingPlayer}
+                className="mt-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Request to become a Player
+              </button>
+            )}
           </div>
         )}
 

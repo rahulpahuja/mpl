@@ -12,6 +12,7 @@ export interface AppUser {
   phone: string
   whatsapp: string
   location: string
+  playerRequested?: boolean
 }
 
 export type PlayerStatus = 'open' | 'active' | 'sold' | 'unsold'
