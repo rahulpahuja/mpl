@@ -24,37 +24,47 @@ export function Layout({ children }: { children: ReactNode }) {
           >
             MPL Auction Manager
           </Link>
-          {user && (
-            <div className="flex items-center gap-3 text-sm">
-              {user.photoURL ? (
-                <img
-                  src={user.photoURL}
-                  alt=""
-                  referrerPolicy="no-referrer"
-                  className="h-7 w-7 rounded-full"
-                />
-              ) : (
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300">
-                  {user.displayName.charAt(0).toUpperCase()}
-                </div>
-              )}
-              <span className="text-gray-500 dark:text-gray-400" title={user.email}>
-                {user.displayName} <span className="text-gray-400">· {roleLabel[user.role]}</span>
-              </span>
-              <Link
-                to="/profile"
-                className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                Profile
-              </Link>
+          <div className="flex items-center gap-3 text-sm">
+            {user && (
+              <>
+                {user.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    className="h-7 w-7 rounded-full"
+                  />
+                ) : (
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300">
+                    {user.displayName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="text-gray-500 dark:text-gray-400" title={user.email}>
+                  {user.displayName} <span className="text-gray-400">· {roleLabel[user.role]}</span>
+                </span>
+                <Link
+                  to="/profile"
+                  className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  Profile
+                </Link>
+              </>
+            )}
+            <Link
+              to="/docs"
+              className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Help
+            </Link>
+            {user && (
               <button
                 onClick={() => signOut()}
                 className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 Sign out
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>

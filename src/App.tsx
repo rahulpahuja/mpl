@@ -36,6 +36,14 @@ export default function App() {
           <Route path="/results/:auctionId" element={<Results />} />
           <Route path="/bootstrap-admin" element={<BootstrapAdmin />} />
           <Route path="/profile" element={<Profile />} />
+          <Route
+            path="/docs/:sectionId?"
+            element={
+              <Suspense fallback={null}>
+                <Docs />
+              </Suspense>
+            }
+          />
 
           <Route
             path="/admin"
@@ -94,7 +102,6 @@ export default function App() {
             }
           />
         </Routes>
-        <HelpButton />
         <ProfileSetupModal />
       </BrowserRouter>
     </AuthProvider>
