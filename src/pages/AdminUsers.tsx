@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Layout } from '../components/Layout'
 import { AdminNav } from '../components/AdminNav'
+import { WhatsAppButton } from '../components/WhatsAppButton'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { useUsers } from '../hooks/useUsers'
 import { useInvites } from '../hooks/useInvites'
@@ -166,7 +167,7 @@ export function AdminUsers() {
                 ))}
                 {filteredUsers.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-3 text-gray-500">
+                    <td colSpan={6} className="px-4 py-3 text-gray-500">
                       No users match "{userSearch}".
                     </td>
                   </tr>
