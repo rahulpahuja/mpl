@@ -110,6 +110,7 @@ export function AdminUsers() {
                   <th className="px-4 py-2 font-medium">Name</th>
                   <th className="px-4 py-2 font-medium">Email</th>
                   <th className="px-4 py-2 font-medium">Phone</th>
+                  <th className="px-4 py-2 font-medium"></th>
                   <th className="px-4 py-2 font-medium">Role</th>
                   <th className="px-4 py-2 font-medium">Assign to auction</th>
                 </tr>
@@ -121,6 +122,9 @@ export function AdminUsers() {
                     <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{u.email}</td>
                     <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
                       {u.phone || <span className="text-gray-400">—</span>}
+                    </td>
+                    <td className="px-4 py-2">
+                      <WhatsAppButton phone={u.whatsapp || u.phone} />
                     </td>
                     <td className="px-4 py-2">
                       <select
