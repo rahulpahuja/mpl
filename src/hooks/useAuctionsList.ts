@@ -9,10 +9,17 @@ export function useAuctionsList() {
 
   useEffect(() => {
     const q = query(collection(db, 'auctions'), orderBy('createdAt', 'desc'))
-    const unsubscribe = onSnapshot(q, (snap) => {
-      setAuctions(snap.docs.map((d) => d.data() as Auction))
-      setLoading(false)
-    })
+    const unsubscribe = onSnapshot(
+      q,
+      (snap) => {
+        setAuctions(snap.docs.map((d) => d.data() as Auction))
+        setLoading(false)
+      },
+      (err) => {
+        console.error('useAuctionsList listener error', err)
+        setLoading(false)
+      },
+    )
     return unsubscribe
   }, [])
 

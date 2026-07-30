@@ -8,10 +8,17 @@ export function useUsers() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'users'), (snap) => {
-      setUsers(snap.docs.map((d) => d.data() as AppUser))
-      setLoading(false)
-    })
+    const unsubscribe = onSnapshot(
+      collection(db, 'users'),
+      (snap) => {
+        setUsers(snap.docs.map((d) => d.data() as AppUser))
+        setLoading(false)
+      },
+      (err) => {
+        console.error('useUsers listener error', err)
+        setLoading(false)
+      },
+    )
     return unsubscribe
   }, [])
 

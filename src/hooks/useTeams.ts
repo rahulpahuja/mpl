@@ -11,9 +11,15 @@ export function useTeams(auctionId: string | undefined) {
       setTeams([])
       return
     }
-    const unsubscribe = onSnapshot(collection(db, 'auctions', auctionId, 'teams'), (snap) => {
-      setTeams(snap.docs.map((d) => d.data() as AuctionTeamStats))
-    })
+    const unsubscribe = onSnapshot(
+      collection(db, 'auctions', auctionId, 'teams'),
+      (snap) => {
+        setTeams(snap.docs.map((d) => d.data() as AuctionTeamStats))
+      },
+      (err) => {
+        console.error('useTeams listener error', err)
+      },
+    )
     return unsubscribe
   }, [auctionId])
 

@@ -12,10 +12,16 @@ export function useAuctionsByIds(auctionIds: string[]) {
 
   useEffect(() => {
     const unsubscribes = auctionIds.map((auctionId) =>
-      onSnapshot(doc(db, 'auctions', auctionId), (snap) => {
-        if (!snap.exists()) return
-        setAuctions((prev) => ({ ...prev, [auctionId]: snap.data() as Auction }))
-      }),
+      onSnapshot(
+        doc(db, 'auctions', auctionId),
+        (snap) => {
+          if (!snap.exists()) return
+          setAuctions((prev) => ({ ...prev, [auctionId]: snap.data() as Auction }))
+        },
+        (err) => {
+          console.error('useAuctionsByIds listener error', err)
+        },
+      ),
     )
     return () => unsubscribes.forEach((unsub) => unsub())
   }, [auctionIds.join(',')])

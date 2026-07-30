@@ -8,9 +8,15 @@ export function useInvites() {
 
   useEffect(() => {
     const q = query(collection(db, 'invites'), orderBy('createdAt', 'desc'))
-    const unsubscribe = onSnapshot(q, (snap) => {
-      setInvites(snap.docs.map((d) => d.data() as Invite))
-    })
+    const unsubscribe = onSnapshot(
+      q,
+      (snap) => {
+        setInvites(snap.docs.map((d) => d.data() as Invite))
+      },
+      (err) => {
+        console.error('useInvites listener error', err)
+      },
+    )
     return unsubscribe
   }, [])
 

@@ -9,10 +9,17 @@ export function useTeamsRegistry() {
 
   useEffect(() => {
     const q = query(collection(db, 'teams'), orderBy('createdAt', 'desc'))
-    const unsubscribe = onSnapshot(q, (snap) => {
-      setTeams(snap.docs.map((d) => d.data() as Team))
-      setLoading(false)
-    })
+    const unsubscribe = onSnapshot(
+      q,
+      (snap) => {
+        setTeams(snap.docs.map((d) => d.data() as Team))
+        setLoading(false)
+      },
+      (err) => {
+        console.error('useTeamsRegistry listener error', err)
+        setLoading(false)
+      },
+    )
     return unsubscribe
   }, [])
 
