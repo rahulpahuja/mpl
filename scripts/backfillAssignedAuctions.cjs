@@ -14,9 +14,9 @@
 //        gcloud auth application-default login
 //      or set GOOGLE_APPLICATION_CREDENTIALS to a service account key path.
 //   2. Dry run first (default) to see what would change, no writes made:
-//        node scripts/backfillAssignedAuctions.cjs --project mplauction-87c8b
+//        node scripts/backfillAssignedAuctions.cjs --project <firebase-project-id>
 //   3. Once you've reviewed the output, apply it for real:
-//        node scripts/backfillAssignedAuctions.cjs --project mplauction-87c8b --apply
+//        node scripts/backfillAssignedAuctions.cjs --project <firebase-project-id> --apply
 
 const { initializeApp, applicationDefault } = require('firebase-admin/app')
 const { getFirestore, FieldValue } = require('firebase-admin/firestore')
