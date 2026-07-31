@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore'
 import { useAdminClaimed } from '../hooks/useAdminClaimed'
 import { useAuctionsByIds } from '../hooks/useAuctionsByIds'
 import { useAuctionsList } from '../hooks/useAuctionsList'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { Layout } from '../components/Layout'
 import { createAuction, deleteAuction } from '../lib/auctions'
 import { assignUserToAuction, requestToBePlayer } from '../lib/users'
@@ -15,6 +16,7 @@ const statusStyles: Record<string, string> = {
 }
 
 export function Home() {
+  usePageTitle('Home')
   const user = useAuthStore((s) => s.user)
   const initializing = useAuthStore((s) => s.initializing)
   const adminClaimed = useAdminClaimed()

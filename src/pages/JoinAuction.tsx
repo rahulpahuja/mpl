@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuctionsList } from '../hooks/useAuctionsList'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 export function JoinAuction() {
+  usePageTitle('Join an Auction')
   const navigate = useNavigate()
   const [auctionId, setAuctionId] = useState('')
   const { auctions, loading } = useAuctionsList()

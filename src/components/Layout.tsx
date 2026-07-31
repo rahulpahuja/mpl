@@ -17,14 +17,14 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-950/60 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-y-2 px-4 py-3">
           <Link
             to="/"
-            className="bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-lg font-semibold tracking-tight text-transparent"
+            className="bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-base sm:text-lg font-semibold tracking-tight text-transparent"
           >
             MPL Auction Manager
           </Link>
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm">
             {user && (
               <>
                 {user.photoURL ? (
@@ -39,7 +39,10 @@ export function Layout({ children }: { children: ReactNode }) {
                     {user.displayName.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <span className="text-gray-500 dark:text-gray-400" title={user.email}>
+                <span
+                  className="hidden text-gray-500 dark:text-gray-400 sm:inline"
+                  title={user.email}
+                >
                   {user.displayName} <span className="text-gray-400">· {roleLabel[user.role]}</span>
                 </span>
                 <Link

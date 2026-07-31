@@ -1,10 +1,12 @@
 import { Navigate } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { ProfileForm } from '../components/ProfileForm'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { updateOwnProfile } from '../lib/users'
 import { useAuthStore } from '../store/authStore'
 
 export function Profile() {
+  usePageTitle('Your Profile')
   const user = useAuthStore((s) => s.user)
   const initializing = useAuthStore((s) => s.initializing)
 

@@ -5,6 +5,7 @@ import { Layout } from '../components/Layout'
 import { useAuction } from '../hooks/useAuction'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
 import { useUsers } from '../hooks/useUsers'
+import { usePageTitle } from '../hooks/usePageTitle'
 import {
   addPlayers,
   addTeamToAuction,
@@ -31,6 +32,7 @@ function parseCsv(text: string) {
 export function AuctionSetup() {
   const { auctionId } = useParams<{ auctionId: string }>()
   const { auction, loading } = useAuction(auctionId)
+  usePageTitle(auction ? `${auction.name} · Setup` : 'Auction setup')
   const { teams } = useTeamsRegistry()
   const { users } = useUsers()
 
@@ -251,7 +253,7 @@ export function AuctionSetup() {
   return (
     <Layout>
       <div className="space-y-10">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
               {auction.name}

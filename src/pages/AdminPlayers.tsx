@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { Layout } from '../components/Layout'
 import { AdminNav } from '../components/AdminNav'
 import { useUsers } from '../hooks/useUsers'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { promoteViewerToPlayer } from '../lib/users'
 
 export function AdminPlayers() {
+  usePageTitle('Admin · Players')
   const { users } = useUsers()
   const [playerSearch, setPlayerSearch] = useState('')
   const [viewerSearch, setViewerSearch] = useState('')
@@ -142,8 +144,8 @@ export function AdminPlayers() {
             placeholder="Search players by name, email, or phone..."
             className="mt-6 w-full max-w-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
-          <div className="mt-4 overflow-hidden rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm">
-            <table className="w-full text-sm">
+          <div className="mt-4 overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm">
+            <table className="w-full min-w-[560px] text-sm">
               <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
                 <tr>
                   <th className="px-4 py-2 font-medium">Name</th>

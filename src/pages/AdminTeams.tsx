@@ -4,6 +4,7 @@ import { AdminNav } from '../components/AdminNav'
 import { WhatsAppButton } from '../components/WhatsAppButton'
 import { useUsers } from '../hooks/useUsers'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { createTeam, updateTeam } from '../lib/teams'
 import type { AppUser } from '../types'
 
@@ -63,6 +64,7 @@ function ManagerPicker({
 }
 
 export function AdminTeams() {
+  usePageTitle('Teams')
   const { users } = useUsers()
   const { teams } = useTeamsRegistry()
   const teamManagerUsers = users.filter((u) => u.role === 'manager')

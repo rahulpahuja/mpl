@@ -4,6 +4,7 @@ import { Layout } from '../components/Layout'
 import { useAuction } from '../hooks/useAuction'
 import { useBids } from '../hooks/useBids'
 import { useCountdown } from '../hooks/useCountdown'
+import { usePageTitle } from '../hooks/usePageTitle'
 import {
   assignUnsoldPlayer,
   markSold,
@@ -17,6 +18,7 @@ import {
 export function AuctionManagerPanel() {
   const { auctionId } = useParams<{ auctionId: string }>()
   const { auction, loading } = useAuction(auctionId)
+  usePageTitle(auction ? `${auction.name} · Manage` : 'Manage auction')
   const [timerDuration, setTimerDuration] = useState('30')
   const [busy, setBusy] = useState(false)
   const [assignTeamByPlayer, setAssignTeamByPlayer] = useState<Record<string, string>>({})
@@ -72,14 +74,14 @@ export function AuctionManagerPanel() {
   return (
     <Layout>
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
               {auction.name} <span className="text-gray-400 font-mono text-lg">#{auction.auctionId}</span>
             </h1>
             <p className="text-sm text-gray-500">Status: {auction.status}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link
               to={`/results/${auction.auctionId}`}
               className="rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"

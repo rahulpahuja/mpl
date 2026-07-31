@@ -3,12 +3,14 @@ import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { useAuction } from '../hooks/useAuction'
 import { useTeams } from '../hooks/useTeams'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
 import { assignUnsoldPlayer } from '../lib/auctions'
 
 export function Results() {
   const { auctionId } = useParams<{ auctionId: string }>()
   const { auction, loading } = useAuction(auctionId)
+  usePageTitle(auction ? `${auction.name} · Results` : 'Auction results')
   const teams = useTeams(auctionId)
   const user = useAuthStore((s) => s.user)
   const canAssign = user?.role === 'admin' || user?.role === 'auctionManager'
@@ -70,7 +72,7 @@ export function Results() {
                 key={team.teamId}
                 className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-4"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100">{team.teamName}</h3>
                   <span className="text-sm text-gray-500">Balance {team.balance}</span>
                 </div>
@@ -98,8 +100,8 @@ export function Results() {
 
         <section>
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Sold players</h2>
-          <div className="mt-4 overflow-hidden rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm">
-            <table className="w-full text-sm">
+          <div className="mt-4 overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm">
+            <table className="w-full min-w-[480px] text-sm">
               <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
                 <tr>
                   <th className="px-4 py-2 font-medium">Player</th>

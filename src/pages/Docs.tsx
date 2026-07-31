@@ -3,6 +3,7 @@ import { Layout } from '../components/Layout'
 import { DocsSidebar } from '../components/DocsSidebar'
 import { DocsSectionView } from '../components/DocsSectionView'
 import { helpSections, getHelpSection } from '../content/helpContent'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
 
 // Real, bookmarkable/shareable pages for "how to use this app" — one URL per
@@ -11,12 +12,12 @@ import { useAuthStore } from '../store/authStore'
 export function Docs() {
   const { sectionId } = useParams<{ sectionId?: string }>()
   const user = useAuthStore((s) => s.user)
+  const section = getHelpSection(sectionId)
+  usePageTitle(section ? `Help · ${section.label}` : 'Help')
 
   if (!sectionId) {
     return <Navigate to={`/docs/${user?.role ?? 'overview'}`} replace />
   }
-
-  const section = getHelpSection(sectionId)
 
   return (
     <Layout>

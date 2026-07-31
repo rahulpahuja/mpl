@@ -5,11 +5,13 @@ import { WhatsAppButton } from '../components/WhatsAppButton'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { useUsers } from '../hooks/useUsers'
 import { useInvites } from '../hooks/useInvites'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { createInvite, deleteInvite } from '../lib/invites'
 import { assignUserToAuction, updateUserRole } from '../lib/users'
 import type { UserRole } from '../types'
 
 export function AdminUsers() {
+  usePageTitle('Admin · Users')
   const { auctions } = useAuctionsList()
   const auctionNameById = Object.fromEntries(auctions.map((a) => [a.auctionId, a.name]))
   const { users } = useUsers()
@@ -104,8 +106,8 @@ export function AdminUsers() {
             placeholder="Search by name, email, or phone..."
             className="mt-4 w-full max-w-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
-          <div className="mt-4 overflow-hidden rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm">
-            <table className="w-full text-sm">
+          <div className="mt-4 overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm">
+            <table className="w-full min-w-[720px] text-sm">
               <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
                 <tr>
                   <th className="px-4 py-2 font-medium">Name</th>

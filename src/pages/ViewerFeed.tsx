@@ -3,10 +3,12 @@ import { Layout } from '../components/Layout'
 import { useAuction } from '../hooks/useAuction'
 import { useBids } from '../hooks/useBids'
 import { useCountdown } from '../hooks/useCountdown'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 export function ViewerFeed() {
   const { auctionId } = useParams<{ auctionId: string }>()
   const { auction, loading } = useAuction(auctionId)
+  usePageTitle(auction ? `${auction.name} · Live` : 'Live auction')
   const currentPlayer = auction?.players.find((p) => p.playerId === auction.currentPlayerId) ?? null
   const bids = useBids(auctionId, auction?.currentPlayerId)
   const remaining = useCountdown(auction?.timerEndsAt ?? null)
@@ -33,7 +35,7 @@ export function ViewerFeed() {
   return (
     <Layout>
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
               {auction.name} <span className="text-gray-400 font-mono text-lg">#{auction.auctionId}</span>

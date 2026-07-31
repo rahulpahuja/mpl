@@ -5,6 +5,7 @@ import { useAuction } from '../hooks/useAuction'
 import { useBids } from '../hooks/useBids'
 import { useCountdown } from '../hooks/useCountdown'
 import { useUsers } from '../hooks/useUsers'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
 import { placeBid } from '../lib/auctions'
 import { promoteViewerToPlayer } from '../lib/users'
@@ -14,6 +15,7 @@ const QUICK_BID_STEPS = [50, 100, 200, 500, 1000, 10000]
 export function TeamManagerBidding() {
   const { auctionId } = useParams<{ auctionId: string }>()
   const { auction, loading } = useAuction(auctionId)
+  usePageTitle(auction ? `${auction.name} · Bid` : 'Bid')
   const user = useAuthStore((s) => s.user)
   const [error, setError] = useState<string | null>(null)
   const [placing, setPlacing] = useState(false)
@@ -124,7 +126,7 @@ export function TeamManagerBidding() {
   return (
     <Layout>
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
             {auction.name} <span className="text-gray-400 font-mono text-lg">#{auction.auctionId}</span>
           </h1>

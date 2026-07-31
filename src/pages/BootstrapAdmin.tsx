@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { useAdminClaimed } from '../hooks/useAdminClaimed'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { claimFirstAdmin } from '../lib/bootstrap'
 import { useAuthStore } from '../store/authStore'
 
 export function BootstrapAdmin() {
+  usePageTitle('Claim Admin Access')
   const user = useAuthStore((s) => s.user)
   const initializing = useAuthStore((s) => s.initializing)
   const claimed = useAdminClaimed()

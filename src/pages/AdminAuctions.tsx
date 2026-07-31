@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { AdminNav } from '../components/AdminNav'
 import { useAuctionsList } from '../hooks/useAuctionsList'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
 import { createAuction, deleteAuction } from '../lib/auctions'
 
@@ -13,6 +14,7 @@ const statusStyles: Record<string, string> = {
 }
 
 export function AdminAuctions() {
+  usePageTitle('Admin · Auctions')
   const user = useAuthStore((s) => s.user)
   const { auctions, loading } = useAuctionsList()
   const [newAuctionName, setNewAuctionName] = useState('')
@@ -69,8 +71,8 @@ export function AdminAuctions() {
           ) : auctions.length === 0 ? (
             <p className="mt-6 text-sm text-gray-500">No auctions yet.</p>
           ) : (
-            <div className="mt-6 overflow-hidden rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm">
-              <table className="w-full text-sm">
+            <div className="mt-6 overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm">
+              <table className="w-full min-w-[640px] text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
                   <tr>
                     <th className="px-4 py-2 font-medium">ID</th>

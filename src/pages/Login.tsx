@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { signInTestUser, signInWithGoogle } from '../lib/auth'
 import { usingEmulators } from '../lib/firebase'
 
@@ -20,6 +21,7 @@ const QUICK_LOGINS = [
 ]
 
 export function Login() {
+  usePageTitle('Sign in')
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
