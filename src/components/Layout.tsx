@@ -1,7 +1,10 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { signOut } from '../lib/auth'
+import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp'
+import { useGlobalKeyboardShortcuts } from '../hooks/useGlobalKeyboardShortcuts'
+import { useKeyboardShortcutsEnabled } from '../hooks/useKeyboardShortcutsEnabled'
 
 const roleLabel: Record<string, string> = {
   admin: 'Admin',
@@ -13,6 +16,9 @@ const roleLabel: Record<string, string> = {
 
 export function Layout({ children }: { children: ReactNode }) {
   const user = useAuthStore((s) => s.user)
+  const [shortcutsEnabled] = useKeyboardShortcutsEnabled()
+  const [helpOpen, setHelpOpen] = useState(false)
+  useGlobalKeyboardShortcuts(shortcutsEnabled, () => setHelpOpen((v) => !v))
 
   return (
     <div className="min-h-screen">
@@ -71,6 +77,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      <KeyboardShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
     </div>
   )
 }

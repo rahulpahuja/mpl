@@ -15,6 +15,7 @@ import { Login } from './pages/Login'
 const JoinAuction = lazy(() => import('./pages/JoinAuction').then((m) => ({ default: m.JoinAuction })))
 const AdminAuctions = lazy(() => import('./pages/AdminAuctions').then((m) => ({ default: m.AdminAuctions })))
 const AdminTeams = lazy(() => import('./pages/AdminTeams').then((m) => ({ default: m.AdminTeams })))
+const AdminVenues = lazy(() => import('./pages/AdminVenues').then((m) => ({ default: m.AdminVenues })))
 const AdminUsers = lazy(() => import('./pages/AdminUsers').then((m) => ({ default: m.AdminUsers })))
 const AdminPlayers = lazy(() => import('./pages/AdminPlayers').then((m) => ({ default: m.AdminPlayers })))
 const BootstrapAdmin = lazy(() => import('./pages/BootstrapAdmin').then((m) => ({ default: m.BootstrapAdmin })))
@@ -59,6 +60,14 @@ export default function App() {
               element={
                 <ProtectedRoute roles={['admin', 'auctionManager']}>
                   <AdminTeams />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/venues"
+              element={
+                <ProtectedRoute roles={['admin', 'auctionManager']}>
+                  <AdminVenues />
                 </ProtectedRoute>
               }
             />

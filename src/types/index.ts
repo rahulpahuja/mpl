@@ -110,3 +110,15 @@ export interface Invite {
   role: UserRole
   createdAt: Timestamp
 }
+
+export interface Venue {
+  venueId: string
+  name: string
+  location: string
+  // Compressed JPEG data URLs (see lib/imageProcessing.ts), capped at
+  // MAX_VENUE_IMAGES in lib/venues.ts to stay well under Firestore's 1MB
+  // document limit. Unlike profile photos these aren't encrypted — venue
+  // photos aren't personal data.
+  images: string[]
+  createdAt: Timestamp
+}

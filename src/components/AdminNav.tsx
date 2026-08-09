@@ -1,20 +1,15 @@
 import { NavLink } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import type { UserRole } from '../types'
-
-const tabs: { to: string; label: string; end?: boolean; roles: UserRole[] }[] = [
-  { to: '/admin', label: 'Auctions', end: true, roles: ['admin'] },
-  { to: '/admin/teams', label: 'Teams', roles: ['admin', 'auctionManager'] },
-  { to: '/admin/users', label: 'Users', roles: ['admin'] },
-  { to: '/admin/players', label: 'Players', roles: ['admin'] },
-]
+import { NAV_DESTINATIONS } from '../lib/navShortcuts'
 
 // Only shows tabs the signed-in role can actually reach — an Auction Manager
 // landing on a shared page like Teams shouldn't see nav links to pages
 // they'll immediately get redirected away from.
 export function AdminNav() {
   const user = useAuthStore((s) => s.user)
-  const visibleTabs = tabs.filter((tab) => user && tab.roles.includes(user.role))
+  const visibleTabs = NAV_DESTINATIONS.filter(
+    (tab) => tab.section === 'admin' && user && (!tab.roles || tab.roles.includes(user.role)),
+  )
 
   return (
     <nav className="flex gap-1 overflow-x-auto border-b border-gray-200 dark:border-gray-800">

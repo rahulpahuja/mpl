@@ -3,6 +3,7 @@ import { Layout } from '../components/Layout'
 import { PlayerAuctionHistory } from '../components/PlayerAuctionHistory'
 import { ProfileForm } from '../components/ProfileForm'
 import { ProfilePhotoUpload } from '../components/ProfilePhotoUpload'
+import { useKeyboardShortcutsEnabled } from '../hooks/useKeyboardShortcutsEnabled'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { updateOwnProfile } from '../lib/users'
 import { useAuthStore } from '../store/authStore'
@@ -11,6 +12,7 @@ export function Profile() {
   usePageTitle('Your Profile')
   const user = useAuthStore((s) => s.user)
   const initializing = useAuthStore((s) => s.initializing)
+  const [shortcutsEnabled, setShortcutsEnabled] = useKeyboardShortcutsEnabled()
 
   if (initializing) {
     return (
@@ -49,6 +51,23 @@ export function Profile() {
           onSave={(fields) => updateOwnProfile(user.uid, fields)}
         />
         {user.role === 'player' && <PlayerAuctionHistory assignedAuctions={user.assignedAuctions} />}
+
+        <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <input
+              type="checkbox"
+              checked={shortcutsEnabled}
+              onChange={(e) => setShortcutsEnabled(e.target.checked)}
+              className="rounded border-gray-300 dark:border-gray-700 text-red-600 focus:ring-red-500"
+            />
+            Enable keyboard shortcuts
+          </label>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Press{' '}
+            <kbd className="rounded border border-gray-300 dark:border-gray-700 px-1 font-mono">?</kbd>{' '}
+            anywhere to see the full list.
+          </p>
+        </div>
       </div>
     </Layout>
   )
