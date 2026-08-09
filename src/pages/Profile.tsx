@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Layout } from '../components/Layout'
-import { PlayerAuctionHistory } from '../components/PlayerAuctionHistory'
+import { AuctionHistory } from '../components/AuctionHistory'
 import { ProfileForm } from '../components/ProfileForm'
 import { ProfilePhotoUpload } from '../components/ProfilePhotoUpload'
 import { useKeyboardShortcutsEnabled } from '../hooks/useKeyboardShortcutsEnabled'
@@ -62,7 +62,7 @@ export function Profile() {
           }}
           onSave={(fields) => updateOwnProfile(user.uid, fields)}
         />
-        {user.role === 'player' && <PlayerAuctionHistory assignedAuctions={user.assignedAuctions} />}
+        <AuctionHistory role={user.role} assignedAuctions={user.assignedAuctions} />
 
         <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
           <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
