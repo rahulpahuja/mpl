@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { PlayerAuctionHistory } from '../components/PlayerAuctionHistory'
@@ -5,6 +6,7 @@ import { ProfileForm } from '../components/ProfileForm'
 import { ProfilePhotoUpload } from '../components/ProfilePhotoUpload'
 import { useKeyboardShortcutsEnabled } from '../hooks/useKeyboardShortcutsEnabled'
 import { usePageTitle } from '../hooks/usePageTitle'
+import { ensureUserCode } from '../lib/auth'
 import { updateOwnProfile } from '../lib/users'
 import { useAuthStore } from '../store/authStore'
 
@@ -13,6 +15,16 @@ export function Profile() {
   const user = useAuthStore((s) => s.user)
   const initializing = useAuthStore((s) => s.initializing)
   const [shortcutsEnabled, setShortcutsEnabled] = useKeyboardShortcutsEnabled()
+
+  // Accounts created before the userCode feature shipped won't have one —
+  // assign it lazily here instead of requiring the admin backfill script.
+  // The Firestore doc update flows back through AuthProvider's onSnapshot
+  // listener, so `user.userCode` updates on its own once this resolves.
+  useEffect(() => {
+    if (user && !user.userCode) {
+      ensureUserCode(user.uid).catch((err) => console.error('Failed to assign user code', err))
+    }
+  }, [user])
 
   if (initializing) {
     return (
