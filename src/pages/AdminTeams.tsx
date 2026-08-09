@@ -15,7 +15,8 @@ function managerMatches(candidates: AppUser[], search: string) {
       !q ||
       u.displayName.toLowerCase().includes(q) ||
       u.email.toLowerCase().includes(q) ||
-      u.phone?.includes(q),
+      u.phone?.includes(q) ||
+      u.userCode?.toLowerCase().includes(q),
   )
 }
 
@@ -35,7 +36,7 @@ function ManagerPicker({
       <input
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
-        placeholder="Search manager by name, email, phone..."
+        placeholder="Search manager by name, email, phone, or ID..."
         className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
       />
       {search && (
@@ -47,7 +48,11 @@ function ManagerPicker({
                 onClick={() => onSelect(m)}
                 className="block w-full px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                {m.displayName} <span className="text-gray-500">— {m.phone || m.email}</span>
+                {m.displayName}{' '}
+                <span className="text-gray-500">
+                  — {m.userCode ? `ID ${m.userCode} · ` : ''}
+                  {m.phone || m.email}
+                </span>
               </button>
             </li>
           ))}

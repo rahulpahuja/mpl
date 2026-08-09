@@ -4,10 +4,39 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
 } from 'firebase/auth'
-import { deleteDoc, doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore'
+import { deleteDoc, doc, getDoc, runTransaction, serverTimestamp } from 'firebase/firestore'
 import { auth, db, googleProvider, usingEmulators } from './firebase'
 import { normalizeEmail } from './invites'
+import { generateUserCode } from './userCode'
 import type { AppUser, UserRole } from '../types'
+
+const MAX_USER_CODE_ATTEMPTS = 5
+
+// Reserves a userCodes/{code} doc and writes the new user doc in the same
+// transaction, so two codes can never collide even under concurrent sign-ins.
+// All reads must happen before any write in a Firestore transaction, so the
+// collision-check loop only ever does tx.get() — the winning tx.set() calls
+// happen once, after the loop finds a free code.
+async function createUserDocWithCode(userRef: ReturnType<typeof doc>, newUser: AppUser): Promise<string> {
+  return runTransaction(db, async (tx) => {
+    const existing = await tx.get(userRef)
+    if (existing.exists()) {
+      return (existing.data() as AppUser).userCode ?? ''
+    }
+
+    for (let attempt = 0; attempt < MAX_USER_CODE_ATTEMPTS; attempt++) {
+      const code = generateUserCode()
+      const codeRef = doc(db, 'userCodes', code)
+      const codeSnap = await tx.get(codeRef)
+      if (!codeSnap.exists()) {
+        tx.set(codeRef, { uid: newUser.uid })
+        tx.set(userRef, { ...newUser, userCode: code, createdAt: serverTimestamp() })
+        return code
+      }
+    }
+    throw new Error('Could not generate a unique user ID. Please try again.')
+  })
+}
 
 async function ensureUserDoc(
   uid: string,
@@ -41,13 +70,13 @@ async function ensureUserDoc(
     whatsapp: '',
     location: '',
   }
-  await setDoc(userRef, { ...newUser, createdAt: serverTimestamp() })
+  const userCode = await createUserDocWithCode(userRef, newUser)
 
   if (inviteSnap.exists()) {
     await deleteDoc(inviteRef)
   }
 
-  return newUser
+  return { ...newUser, userCode }
 }
 
 export async function signInWithGoogle(): Promise<AppUser> {

@@ -1,6 +1,8 @@
 import { Navigate } from 'react-router-dom'
 import { Layout } from '../components/Layout'
+import { PlayerAuctionHistory } from '../components/PlayerAuctionHistory'
 import { ProfileForm } from '../components/ProfileForm'
+import { ProfilePhotoUpload } from '../components/ProfilePhotoUpload'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { updateOwnProfile } from '../lib/users'
 import { useAuthStore } from '../store/authStore'
@@ -30,7 +32,14 @@ export function Profile() {
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {user.displayName} · {user.email}
           </p>
+          {user.userCode && (
+            <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+              Your ID: <span className="font-mono font-medium text-gray-700 dark:text-gray-300">{user.userCode}</span>{' '}
+              — share this with whoever's setting up a team so they can add you as its manager.
+            </p>
+          )}
         </div>
+        <ProfilePhotoUpload uid={user.uid} encryptedPhoto={user.encryptedPhoto} />
         <ProfileForm
           initial={{
             phone: user.phone ?? '',
@@ -39,6 +48,7 @@ export function Profile() {
           }}
           onSave={(fields) => updateOwnProfile(user.uid, fields)}
         />
+        {user.role === 'player' && <PlayerAuctionHistory assignedAuctions={user.assignedAuctions} />}
       </div>
     </Layout>
   )

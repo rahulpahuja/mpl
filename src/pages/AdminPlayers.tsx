@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Layout } from '../components/Layout'
 import { AdminNav } from '../components/AdminNav'
+import { useAuctionsList } from '../hooks/useAuctionsList'
 import { useUsers } from '../hooks/useUsers'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { promoteViewerToPlayer } from '../lib/users'
@@ -8,6 +9,8 @@ import { promoteViewerToPlayer } from '../lib/users'
 export function AdminPlayers() {
   usePageTitle('Admin · Players')
   const { users } = useUsers()
+  const { auctions } = useAuctionsList()
+  const auctionNameById = Object.fromEntries(auctions.map((a) => [a.auctionId, a.name]))
   const [playerSearch, setPlayerSearch] = useState('')
   const [viewerSearch, setViewerSearch] = useState('')
   const [selectedViewerId, setSelectedViewerId] = useState('')
@@ -152,6 +155,8 @@ export function AdminPlayers() {
                   <th className="px-4 py-2 font-medium">Email</th>
                   <th className="px-4 py-2 font-medium">Phone</th>
                   <th className="px-4 py-2 font-medium">Assigned auctions</th>
+                  <th className="px-4 py-2 font-medium">Auctions played</th>
+                  <th className="px-4 py-2 font-medium">Matches played</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
@@ -164,16 +169,21 @@ export function AdminPlayers() {
                     </td>
                     <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
                       {p.assignedAuctions.length > 0 ? (
-                        p.assignedAuctions.join(', ')
+                        p.assignedAuctions.map((id) => auctionNameById[id] ?? id).join(', ')
                       ) : (
                         <span className="text-gray-400">Not added to any auction yet</span>
                       )}
                     </td>
+                    <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
+                      {p.assignedAuctions.length}
+                    </td>
+                    {/* Match-level stats aren't tracked yet — shown as NA until that data exists. */}
+                    <td className="px-4 py-2 text-gray-400">NA</td>
                   </tr>
                 ))}
                 {players.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-3 text-gray-500">
+                    <td colSpan={6} className="px-4 py-3 text-gray-500">
                       {playerSearch ? `No players match "${playerSearch}".` : 'No players yet.'}
                     </td>
                   </tr>

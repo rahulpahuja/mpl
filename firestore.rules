@@ -96,6 +96,17 @@ service cloud.firestore {
       allow delete: if isAdmin() || (isSignedIn() && request.auth.token.email == inviteId);
     }
 
+    // One doc per issued short user ID (see ensureUserDoc in lib/auth.ts),
+    // used only to guarantee codes are unique at creation time — never
+    // queried by the app directly (the search-by-ID feature reads userCode
+    // off the users collection, which is already listable).
+    match /userCodes/{code} {
+      allow get: if isSignedIn();
+      allow list: if false;
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
+      allow update, delete: if false;
+    }
+
     match /meta/adminClaimed {
       allow get: if isSignedIn();
       allow write: if isSignedIn() &&

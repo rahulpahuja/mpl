@@ -13,6 +13,15 @@ export interface AppUser {
   whatsapp: string
   location: string
   playerRequested?: boolean
+  // Short code assigned once at onboarding (see ensureUserDoc in lib/auth.ts).
+  // Lets an Admin add someone as a team manager by ID instead of searching by
+  // name/email/phone. Optional because users created before this field existed
+  // won't have one until the backfill script runs.
+  userCode?: string
+  // AES-GCM ciphertext (IV + payload, base64-encoded) of a compressed photo
+  // data URL — see lib/crypto.ts and lib/imageProcessing.ts. Never store the
+  // plaintext data URL directly on the user doc.
+  encryptedPhoto?: string | null
 }
 
 export type PlayerStatus = 'open' | 'active' | 'sold' | 'unsold'

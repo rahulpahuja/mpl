@@ -31,6 +31,12 @@ export async function updateOwnProfile(uid: string, profile: ProfileFields) {
   await updateDoc(doc(db, 'users', uid), { ...profile })
 }
 
+// `encryptedPhoto` is the AES-GCM ciphertext produced by lib/crypto.ts —
+// callers must encrypt before calling this, never pass a raw data URL.
+export async function updateOwnProfilePhoto(uid: string, encryptedPhoto: string | null) {
+  await updateDoc(doc(db, 'users', uid), { encryptedPhoto })
+}
+
 // Assigning an Auction Manager must also grant them real write access to the
 // auction (Firestore rules check auctionManagerIds, not assignedAuctions) —
 // otherwise they show up as "assigned" but can't actually set anything up.
