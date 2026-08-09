@@ -19,6 +19,14 @@ import { assignUserToAuction, promoteViewerToPlayer } from '../lib/users'
 import { createTeam } from '../lib/teams'
 import type { UserRole } from '../types'
 
+const roleLabel: Record<UserRole, string> = {
+  admin: 'Admin',
+  auctionManager: 'Auction Manager',
+  manager: 'Team Manager',
+  player: 'Player',
+  viewer: 'Viewer',
+}
+
 function parseCsv(text: string) {
   return text
     .split('\n')
@@ -98,12 +106,12 @@ export function AuctionSetup() {
   }
 
   const rosterUids = new Set(auction.players.map((p) => p.playerId))
-  // Viewers are included here too — adding one to an auction's roster auto-promotes
-  // them to Player (see handleAddRegisteredPlayer), so there's no need to promote
-  // first via the separate "Promote a viewer to Player" flow below.
-  const allRegisteredPlayers = users.filter(
-    (u) => (u.role === 'player' || u.role === 'viewer') && !rosterUids.has(u.uid),
-  )
+  // Every signed-in user is a candidate, not just role=player/viewer — plenty of
+  // real users only ever hold a Team Manager/Auction Manager/Admin role (that's
+  // in fact the common case) and still need to be addable as a player without
+  // that changing their existing role. Only a Viewer gets auto-promoted to
+  // Player on add (see handleAddRegisteredPlayer); everyone else keeps their role.
+  const allRegisteredPlayers = users.filter((u) => !rosterUids.has(u.uid))
   const registeredPlayers = allRegisteredPlayers.filter((u) => {
     const q = registeredPlayerSearch.trim().toLowerCase()
     if (!q) return true
@@ -611,8 +619,9 @@ export function AuctionSetup() {
                 </button>
               </div>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Search anyone who has signed in (Viewer or Player) and isn't on this roster yet, by
-                name, email, phone, or ID. Adding a Viewer auto-promotes them to Player.
+                Search anyone who has signed in and isn't on this roster yet, by name, email,
+                phone, or ID. Adding a Viewer auto-promotes them to Player; everyone else keeps
+                their existing role.
               </p>
               <input
                 autoFocus
@@ -633,9 +642,9 @@ export function AuctionSetup() {
                   <li key={p.uid} className="flex items-center justify-between gap-2 py-2">
                     <span className="text-gray-900 dark:text-gray-100">
                       {p.displayName}
-                      {p.role === 'viewer' && (
+                      {p.role !== 'player' && (
                         <span className="ml-2 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
-                          Viewer
+                          {roleLabel[p.role]}
                         </span>
                       )}
                       <br />
