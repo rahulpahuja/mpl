@@ -33,18 +33,20 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm">
             {user && (
               <>
-                {user.photoURL ? (
-                  <img
-                    src={user.photoURL}
-                    alt=""
-                    referrerPolicy="no-referrer"
-                    className="h-7 w-7 rounded-full"
-                  />
-                ) : (
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300">
-                    {user.displayName.charAt(0).toUpperCase()}
-                  </div>
-                )}
+                <Link to="/profile" title="View your profile" aria-label="View your profile">
+                  {user.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt=""
+                      referrerPolicy="no-referrer"
+                      className="h-7 w-7 rounded-full"
+                    />
+                  ) : (
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300">
+                      {user.displayName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </Link>
                 <span
                   className="hidden text-gray-500 dark:text-gray-400 sm:inline"
                   title={user.email}
