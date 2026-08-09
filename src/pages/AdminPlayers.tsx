@@ -5,6 +5,14 @@ import { useAuctionsList } from '../hooks/useAuctionsList'
 import { useUsers } from '../hooks/useUsers'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { promoteViewerToPlayer } from '../lib/users'
+import type { PlayingRole } from '../types'
+
+const PLAYING_ROLE_LABELS: Record<PlayingRole, string> = {
+  batsman: 'Batsman',
+  bowler: 'Bowler',
+  allRounder: 'All-rounder',
+  wicketKeeper: 'Wicket-keeper',
+}
 
 export function AdminPlayers() {
   usePageTitle('Admin · Players')
@@ -152,6 +160,7 @@ export function AdminPlayers() {
               <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
                 <tr>
                   <th className="px-4 py-2 font-medium">Name</th>
+                  <th className="px-4 py-2 font-medium">Role</th>
                   <th className="px-4 py-2 font-medium">Email</th>
                   <th className="px-4 py-2 font-medium">Phone</th>
                   <th className="px-4 py-2 font-medium">Assigned auctions</th>
@@ -163,6 +172,13 @@ export function AdminPlayers() {
                 {players.map((p) => (
                   <tr key={p.uid}>
                     <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{p.displayName}</td>
+                    <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
+                      {p.playingRole ? (
+                        PLAYING_ROLE_LABELS[p.playingRole]
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{p.email}</td>
                     <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
                       {p.phone || <span className="text-gray-400">—</span>}
@@ -183,7 +199,7 @@ export function AdminPlayers() {
                 ))}
                 {players.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-3 text-gray-500">
+                    <td colSpan={7} className="px-4 py-3 text-gray-500">
                       {playerSearch ? `No players match "${playerSearch}".` : 'No players yet.'}
                     </td>
                   </tr>

@@ -1,6 +1,6 @@
 import { arrayUnion, doc, updateDoc, writeBatch } from 'firebase/firestore'
 import { db } from './firebase'
-import type { UserRole } from '../types'
+import type { Handedness, PlayingRole, UserRole } from '../types'
 
 export async function updateUserRole(uid: string, role: UserRole) {
   await updateDoc(doc(db, 'users', uid), { role })
@@ -25,10 +25,16 @@ export interface ProfileFields {
   phone: string
   whatsapp: string
   location: string
+  battingHandedness?: Handedness
+  bowlingHandedness?: Handedness
+  playingRole?: PlayingRole
 }
 
 export async function updateOwnProfile(uid: string, profile: ProfileFields) {
-  await updateDoc(doc(db, 'users', uid), { ...profile })
+  // Firestore's updateDoc rejects `undefined` field values, so drop unset
+  // optional fields (e.g. handedness left unselected) instead of sending them.
+  const fields = Object.fromEntries(Object.entries(profile).filter(([, v]) => v !== undefined))
+  await updateDoc(doc(db, 'users', uid), fields)
 }
 
 // `encryptedPhoto` is the AES-GCM ciphertext produced by lib/crypto.ts —

@@ -1,5 +1,13 @@
 import { useState } from 'react'
 import type { ProfileFields } from '../lib/users'
+import type { Handedness, PlayingRole } from '../types'
+
+const PLAYING_ROLES: { value: PlayingRole; label: string }[] = [
+  { value: 'batsman', label: 'Batsman' },
+  { value: 'bowler', label: 'Bowler' },
+  { value: 'allRounder', label: 'All-rounder' },
+  { value: 'wicketKeeper', label: 'Wicket-keeper' },
+]
 import { LocationAutocomplete } from './LocationAutocomplete'
 
 const COUNTRY_CODE = '+91'
@@ -38,6 +46,13 @@ export function ProfileForm({
     initial.whatsapp !== '' && initial.whatsapp === initial.phone,
   )
   const [location, setLocation] = useState(initial.location)
+  const [battingHandedness, setBattingHandedness] = useState<Handedness | ''>(
+    initial.battingHandedness ?? '',
+  )
+  const [bowlingHandedness, setBowlingHandedness] = useState<Handedness | ''>(
+    initial.bowlingHandedness ?? '',
+  )
+  const [playingRole, setPlayingRole] = useState<PlayingRole | ''>(initial.playingRole ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -71,6 +86,9 @@ export function ProfileForm({
         phone: toStoredPhone(phone),
         whatsapp: toStoredPhone(whatsapp),
         location: location.trim(),
+        battingHandedness: battingHandedness || undefined,
+        bowlingHandedness: bowlingHandedness || undefined,
+        playingRole: playingRole || undefined,
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save profile')
@@ -127,6 +145,53 @@ export function ProfileForm({
         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
         <div className="mt-1">
           <LocationAutocomplete value={location} onChange={setLocation} />
+        </div>
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Playing role
+        </label>
+        <select
+          value={playingRole}
+          onChange={(e) => setPlayingRole(e.target.value as PlayingRole | '')}
+          className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+        >
+          <option value="">Not set</option>
+          {PLAYING_ROLES.map((r) => (
+            <option key={r.value} value={r.value}>
+              {r.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Batting handedness
+          </label>
+          <select
+            value={battingHandedness}
+            onChange={(e) => setBattingHandedness(e.target.value as Handedness | '')}
+            className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            <option value="">Not set</option>
+            <option value="right">Right-handed</option>
+            <option value="left">Left-handed</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Bowling handedness
+          </label>
+          <select
+            value={bowlingHandedness}
+            onChange={(e) => setBowlingHandedness(e.target.value as Handedness | '')}
+            className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            <option value="">Not set</option>
+            <option value="right">Right-arm</option>
+            <option value="left">Left-arm</option>
+          </select>
         </div>
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}

@@ -2,6 +2,10 @@ import type { Timestamp } from 'firebase/firestore'
 
 export type UserRole = 'admin' | 'auctionManager' | 'manager' | 'player' | 'viewer'
 
+export type Handedness = 'left' | 'right'
+
+export type PlayingRole = 'batsman' | 'bowler' | 'allRounder' | 'wicketKeeper'
+
 export interface AppUser {
   uid: string
   email: string
@@ -12,6 +16,9 @@ export interface AppUser {
   phone: string
   whatsapp: string
   location: string
+  battingHandedness?: Handedness
+  bowlingHandedness?: Handedness
+  playingRole?: PlayingRole
   playerRequested?: boolean
   // Short code assigned once at onboarding (see ensureUserDoc in lib/auth.ts).
   // Lets an Admin add someone as a team manager by ID instead of searching by

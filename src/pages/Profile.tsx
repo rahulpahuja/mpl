@@ -59,6 +59,9 @@ export function Profile() {
             phone: user.phone ?? '',
             whatsapp: user.whatsapp ?? '',
             location: user.location ?? '',
+            battingHandedness: user.battingHandedness,
+            bowlingHandedness: user.bowlingHandedness,
+            playingRole: user.playingRole,
           }}
           onSave={(fields) => updateOwnProfile(user.uid, fields)}
         />
