@@ -16,6 +16,7 @@ import {
 } from '../lib/auctions'
 import { assignUserToAuction, promoteViewerToPlayer } from '../lib/users'
 import { createTeam } from '../lib/teams'
+import type { UserRole } from '../types'
 
 function parseCsv(text: string) {
   return text
@@ -45,6 +46,7 @@ export function AuctionSetup() {
   const [selectedViewerId, setSelectedViewerId] = useState('')
   const [promoting, setPromoting] = useState(false)
   const [registeredBasePrices, setRegisteredBasePrices] = useState<Record<string, string>>({})
+  const [registeredPlayerSearch, setRegisteredPlayerSearch] = useState('')
 
   const [teamSearch, setTeamSearch] = useState('')
   const [selectedTeamId, setSelectedTeamId] = useState('')
@@ -85,7 +87,21 @@ export function AuctionSetup() {
   }
 
   const rosterUids = new Set(auction.players.map((p) => p.playerId))
-  const registeredPlayers = users.filter((u) => u.role === 'player' && !rosterUids.has(u.uid))
+  // Viewers are included here too — adding one to an auction's roster auto-promotes
+  // them to Player (see handleAddRegisteredPlayer), so there's no need to promote
+  // first via the separate "Promote a viewer to Player" flow below.
+  const allRegisteredPlayers = users.filter(
+    (u) => (u.role === 'player' || u.role === 'viewer') && !rosterUids.has(u.uid),
+  )
+  const registeredPlayers = allRegisteredPlayers.filter((u) => {
+    const q = registeredPlayerSearch.trim().toLowerCase()
+    if (!q) return true
+    return (
+      u.displayName.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q) ||
+      u.phone?.includes(q)
+    )
+  })
   const viewerCandidates = users
     .filter((u) => u.role === 'viewer')
     .filter((u) => {
@@ -152,9 +168,19 @@ export function AuctionSetup() {
     }
   }
 
-  async function handleAddRegisteredPlayer(uid: string, name: string, assignedAuctions: string[]) {
+  async function handleAddRegisteredPlayer(
+    uid: string,
+    name: string,
+    assignedAuctions: string[],
+    role: UserRole,
+  ) {
     if (!auctionId) return
     const basePrice = Number(registeredBasePrices[uid]) || 0
+    // Adding a Viewer to a roster means they're playing — auto-promote them to
+    // Player instead of making the admin do that as a separate manual step first.
+    if (role === 'viewer') {
+      await promoteViewerToPlayer(uid)
+    }
     await addPlayers(auctionId, [{ playerId: uid, name, position: '', basePrice }])
     // So the player can see this auction (and what's happening in it) from
     // their own Home page once they log in — mirrors how Team Managers and
@@ -438,15 +464,35 @@ export function AuctionSetup() {
             )}
           </div>
 
-          {registeredPlayers.length > 0 && (
+          {allRegisteredPlayers.length > 0 && (
             <div className="mt-6 border-t border-gray-200 dark:border-gray-800 pt-4">
               <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                Registered players not yet in this auction
+                Add a signed-up user to this auction
               </h3>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Anyone who has signed in (Viewer or Player) and isn't on this roster yet. Adding a
+                Viewer auto-promotes them to Player.
+              </p>
+              <input
+                value={registeredPlayerSearch}
+                onChange={(e) => setRegisteredPlayerSearch(e.target.value)}
+                placeholder="Search by name, email, phone..."
+                className="mt-2 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+              />
               <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+                {registeredPlayers.length === 0 && (
+                  <li className="py-2 text-gray-500">No users match.</li>
+                )}
                 {registeredPlayers.map((p) => (
                   <li key={p.uid} className="flex items-center justify-between gap-2 py-2">
-                    <span className="text-gray-900 dark:text-gray-100">{p.displayName}</span>
+                    <span className="text-gray-900 dark:text-gray-100">
+                      {p.displayName}
+                      {p.role === 'viewer' && (
+                        <span className="ml-2 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
+                          Viewer
+                        </span>
+                      )}
+                    </span>
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
@@ -459,7 +505,7 @@ export function AuctionSetup() {
                       />
                       <button
                         onClick={() =>
-                          handleAddRegisteredPlayer(p.uid, p.displayName, p.assignedAuctions)
+                          handleAddRegisteredPlayer(p.uid, p.displayName, p.assignedAuctions, p.role)
                         }
                         className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                       >
