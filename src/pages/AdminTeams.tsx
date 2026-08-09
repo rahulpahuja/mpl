@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Layout } from '../components/Layout'
 import { AdminNav } from '../components/AdminNav'
+import { Avatar } from '../components/Avatar'
+import { AvatarPicker } from '../components/AvatarPicker'
+import { TeamAvatar } from '../components/TeamAvatar'
 import { WhatsAppButton } from '../components/WhatsAppButton'
 import { useUsers } from '../hooks/useUsers'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
@@ -46,12 +49,20 @@ function ManagerPicker({
               <button
                 type="button"
                 onClick={() => onSelect(m)}
-                className="block w-full px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                {m.displayName}{' '}
-                <span className="text-gray-500">
-                  — {m.userCode ? `ID ${m.userCode} · ` : ''}
-                  {m.phone || m.email}
+                <Avatar
+                  name={m.displayName}
+                  encryptedPhoto={m.encryptedPhoto}
+                  photoURL={m.photoURL}
+                  avatarId={m.avatarId}
+                />
+                <span>
+                  {m.displayName}{' '}
+                  <span className="text-gray-500">
+                    — {m.userCode ? `ID ${m.userCode} · ` : ''}
+                    {m.phone || m.email}
+                  </span>
                 </span>
               </button>
             </li>
@@ -75,12 +86,14 @@ export function AdminTeams() {
   const teamManagerUsers = users.filter((u) => u.role === 'manager')
 
   const [teamName, setTeamName] = useState('')
+  const [teamLogoId, setTeamLogoId] = useState<string | null>(null)
   const [managerSearch, setManagerSearch] = useState('')
   const [selectedManagerId, setSelectedManagerId] = useState('')
   const [creatingTeam, setCreatingTeam] = useState(false)
 
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
+  const [editLogoId, setEditLogoId] = useState<string | null>(null)
   const [editManagerSearch, setEditManagerSearch] = useState('')
   const [editManagerId, setEditManagerId] = useState('')
   const [savingEdit, setSavingEdit] = useState(false)
@@ -91,8 +104,9 @@ export function AdminTeams() {
     if (!manager) return
     setCreatingTeam(true)
     try {
-      await createTeam(teamName.trim(), manager.uid, manager.displayName)
+      await createTeam(teamName.trim(), manager.uid, manager.displayName, teamLogoId)
       setTeamName('')
+      setTeamLogoId(null)
       setSelectedManagerId('')
       setManagerSearch('')
     } finally {
@@ -100,7 +114,13 @@ export function AdminTeams() {
     }
   }
 
-  function startEdit(teamId: string, currentName: string, currentManagerId: string) {
+  function startEdit(
+    teamId: string,
+    currentName: string,
+    currentManagerId: string,
+    currentLogoId: string | null | undefined,
+  ) {
+    setEditLogoId(currentLogoId ?? null)
     setEditingTeamId(teamId)
     setEditName(currentName)
     setEditManagerId(currentManagerId)
@@ -114,6 +134,7 @@ export function AdminTeams() {
     try {
       await updateTeam(teamId, {
         teamName: editName.trim(),
+        logoId: editLogoId,
         ...(manager ? { managerId: manager.uid, managerName: manager.displayName } : {}),
       })
       setEditingTeamId(null)
@@ -163,6 +184,16 @@ export function AdminTeams() {
               Create team
             </button>
           </div>
+          <div className="mt-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Team logo (optional):</p>
+            <div className="mt-1.5">
+              <AvatarPicker
+                selectedId={teamLogoId}
+                onSelect={(id) => setTeamLogoId((current) => (current === id ? null : id))}
+                disabled={creatingTeam}
+              />
+            </div>
+          </div>
 
           <ul className="mt-4 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
             {teams.map((t) => {
@@ -190,6 +221,16 @@ export function AdminTeams() {
                         />
                       </div>
                     </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Team logo:</p>
+                      <div className="mt-1.5">
+                        <AvatarPicker
+                          selectedId={editLogoId}
+                          onSelect={(id) => setEditLogoId((current) => (current === id ? null : id))}
+                          disabled={savingEdit}
+                        />
+                      </div>
+                    </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleSaveEdit(t.teamId)}
@@ -212,12 +253,15 @@ export function AdminTeams() {
 
               return (
                 <li key={t.teamId} className="flex items-center justify-between gap-2 py-2">
-                  <span className="text-gray-900 dark:text-gray-100">{t.teamName}</span>
+                  <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                    <TeamAvatar teamName={t.teamName} logoId={t.logoId} />
+                    {t.teamName}
+                  </span>
                   <span className="flex items-center gap-3 text-gray-500">
                     Manager: {t.managerName}
                     <WhatsAppButton phone={manager?.whatsapp || manager?.phone} />
                     <button
-                      onClick={() => startEdit(t.teamId, t.teamName, t.managerId)}
+                      onClick={() => startEdit(t.teamId, t.teamName, t.managerId, t.logoId)}
                       className="text-red-600 dark:text-red-400 hover:underline"
                     >
                       Edit

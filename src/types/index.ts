@@ -29,6 +29,10 @@ export interface AppUser {
   // data URL — see lib/crypto.ts and lib/imageProcessing.ts. Never store the
   // plaintext data URL directly on the user doc.
   encryptedPhoto?: string | null
+  // Preset avatar id (see lib/avatars.ts), for users who'd rather pick one of
+  // these than upload their own photo. Mutually exclusive with encryptedPhoto
+  // — setting one clears the other, see lib/users.ts.
+  avatarId?: string | null
 }
 
 export type PlayerStatus = 'open' | 'active' | 'sold' | 'unsold'
@@ -52,6 +56,9 @@ export interface TeamManagerEntry {
   purse: number
   tokensSpent: number
   remainingTokens: number
+  // Snapshotted from Team.logoId at addTeamToAuction time — same
+  // never-re-synced-after-add caveat as `name`, see lib/auctions.ts.
+  logoId?: string | null
 }
 
 export type AuctionStatus = 'draft' | 'live' | 'completed'
@@ -98,6 +105,7 @@ export interface AuctionTeamStats {
   teamId: string
   teamName: string
   managerId: string
+  logoId?: string | null
   initialPurse: number
   spent: number
   balance: number
@@ -109,6 +117,9 @@ export interface Team {
   teamName: string
   managerId: string
   managerName: string
+  // Preset logo id (see lib/avatars.ts DEFAULT_AVATARS) — teams reuse the
+  // same preset set as user avatars rather than a separate icon library.
+  logoId?: string | null
   createdAt: Timestamp
 }
 

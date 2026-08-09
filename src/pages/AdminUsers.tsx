@@ -128,6 +128,7 @@ export function AdminUsers() {
                           name={u.displayName}
                           encryptedPhoto={u.encryptedPhoto}
                           photoURL={u.photoURL}
+                          avatarId={u.avatarId}
                         />
                         {u.displayName}
                       </div>

@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
+import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useBids } from '../hooks/useBids'
 import { useCountdown } from '../hooks/useCountdown'
@@ -105,7 +106,10 @@ export function ViewerFeed() {
                   key={tm.managerId}
                   className="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2"
                 >
-                  <span className="text-gray-900 dark:text-gray-100">{tm.name}</span>
+                  <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                    <TeamAvatar teamName={tm.name} logoId={tm.logoId} />
+                    {tm.name}
+                  </span>
                   <span className="text-gray-500">
                     Spent {tm.tokensSpent} · Left {tm.remainingTokens}
                   </span>

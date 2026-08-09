@@ -171,6 +171,7 @@ export function AdminPlayers() {
                           name={p.displayName}
                           encryptedPhoto={p.encryptedPhoto}
                           photoURL={p.photoURL}
+                          avatarId={p.avatarId}
                         />
                         {p.displayName}
                       </div>

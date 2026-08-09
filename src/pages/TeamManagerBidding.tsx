@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
+import { Avatar } from '../components/Avatar'
+import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useBids } from '../hooks/useBids'
 import { useCountdown } from '../hooks/useCountdown'
@@ -131,7 +133,10 @@ export function TeamManagerBidding() {
             {auction.name} <span className="text-gray-400 font-mono text-lg">#{auction.auctionId}</span>
           </h1>
           <div className="text-right">
-            <p className="text-sm text-gray-500">{myTeam.name} balance</p>
+            <div className="flex items-center justify-end gap-2 text-sm text-gray-500">
+              <TeamAvatar teamName={myTeam.name} logoId={myTeam.logoId} size={5} />
+              {myTeam.name} balance
+            </div>
             <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               {myTeam.remainingTokens}
             </p>
@@ -234,10 +239,18 @@ export function TeamManagerBidding() {
               <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-800 rounded-lg border border-amber-300 dark:border-amber-700 text-sm">
                 {pendingPlayerRequests.map((v) => (
                   <li key={v.uid} className="flex items-center justify-between gap-2 px-3 py-2">
-                    <span className="text-gray-900 dark:text-gray-100">
-                      {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
-                      <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
-                        Requested
+                    <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                      <Avatar
+                        name={v.displayName}
+                        encryptedPhoto={v.encryptedPhoto}
+                        photoURL={v.photoURL}
+                        avatarId={v.avatarId}
+                      />
+                      <span>
+                        {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
+                        <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                          Requested
+                        </span>
                       </span>
                     </span>
                     <button
@@ -279,14 +292,22 @@ export function TeamManagerBidding() {
                         setSelectedViewerId(v.uid)
                         setViewerSearch(`${v.displayName} (${v.phone || v.email})`)
                       }}
-                      className="block w-full px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
-                      {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
-                      {v.playerRequested && (
-                        <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
-                          Requested
-                        </span>
-                      )}
+                      <Avatar
+                        name={v.displayName}
+                        encryptedPhoto={v.encryptedPhoto}
+                        photoURL={v.photoURL}
+                        avatarId={v.avatarId}
+                      />
+                      <span>
+                        {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
+                        {v.playerRequested && (
+                          <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                            Requested
+                          </span>
+                        )}
+                      </span>
                     </button>
                   </li>
                 ))}

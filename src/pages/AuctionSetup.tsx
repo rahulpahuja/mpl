@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { Avatar } from '../components/Avatar'
+import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
 import { useUsers } from '../hooks/useUsers'
@@ -478,11 +479,19 @@ export function AuctionSetup() {
                   .filter((v) => v.playerRequested)
                   .map((v) => (
                     <li key={v.uid} className="flex items-center justify-between gap-2 px-3 py-2">
-                      <span className="text-gray-900 dark:text-gray-100">
-                        {v.displayName}{' '}
-                        <span className="text-gray-500">— {v.phone || v.email}</span>
-                        <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
-                          Requested
+                      <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                        <Avatar
+                          name={v.displayName}
+                          encryptedPhoto={v.encryptedPhoto}
+                          photoURL={v.photoURL}
+                          avatarId={v.avatarId}
+                        />
+                        <span>
+                          {v.displayName}{' '}
+                          <span className="text-gray-500">— {v.phone || v.email}</span>
+                          <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                            Requested
+                          </span>
                         </span>
                       </span>
                       <button
@@ -524,14 +533,22 @@ export function AuctionSetup() {
                         setSelectedViewerId(v.uid)
                         setViewerSearch(`${v.displayName} (${v.phone || v.email})`)
                       }}
-                      className="block w-full px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
-                      {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
-                      {v.playerRequested && (
-                        <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
-                          Requested
-                        </span>
-                      )}
+                      <Avatar
+                        name={v.displayName}
+                        encryptedPhoto={v.encryptedPhoto}
+                        photoURL={v.photoURL}
+                        avatarId={v.avatarId}
+                      />
+                      <span>
+                        {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
+                        {v.playerRequested && (
+                          <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                            Requested
+                          </span>
+                        )}
+                      </span>
                     </button>
                   </li>
                 ))}
@@ -651,6 +668,7 @@ export function AuctionSetup() {
                         name={p.displayName}
                         encryptedPhoto={p.encryptedPhoto}
                         photoURL={p.photoURL}
+                        avatarId={p.avatarId}
                       />
                       <span>
                         {p.displayName}
@@ -799,7 +817,13 @@ export function AuctionSetup() {
               <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
                 {managersWithoutTeam.map((m) => (
                   <li key={m.uid} className="flex items-center justify-between gap-2 py-2">
-                    <span className="text-gray-900 dark:text-gray-100">
+                    <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                      <Avatar
+                        name={m.displayName}
+                        encryptedPhoto={m.encryptedPhoto}
+                        photoURL={m.photoURL}
+                        avatarId={m.avatarId}
+                      />
                       {m.displayName} <span className="text-gray-500">({m.email})</span>
                     </span>
                     <div className="flex items-center gap-2">
@@ -828,7 +852,10 @@ export function AuctionSetup() {
           <ul className="mt-4 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
             {auction.teamManagers.map((tm) => (
               <li key={tm.teamId} className="flex justify-between py-2">
-                <span className="text-gray-900 dark:text-gray-100">{tm.name}</span>
+                <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                  <TeamAvatar teamName={tm.name} logoId={tm.logoId} />
+                  {tm.name}
+                </span>
                 <span className="text-gray-500">
                   Purse: {tm.purse} · Max players: {tm.maxPlayers}
                 </span>

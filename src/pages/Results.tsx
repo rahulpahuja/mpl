@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
+import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useTeams } from '../hooks/useTeams'
 import { usePageTitle } from '../hooks/usePageTitle'
@@ -73,7 +74,10 @@ export function Results() {
                 className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-4"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">{team.teamName}</h3>
+                  <h3 className="flex items-center gap-2 font-semibold text-gray-900 dark:text-gray-100">
+                    <TeamAvatar teamName={team.teamName} logoId={team.logoId} />
+                    {team.teamName}
+                  </h3>
                   <span className="text-sm text-gray-500">Balance {team.balance}</span>
                 </div>
                 <p className="mt-1 text-xs text-gray-500">

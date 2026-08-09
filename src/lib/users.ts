@@ -39,8 +39,17 @@ export async function updateOwnProfile(uid: string, profile: ProfileFields) {
 
 // `encryptedPhoto` is the AES-GCM ciphertext produced by lib/crypto.ts —
 // callers must encrypt before calling this, never pass a raw data URL.
+// Clears avatarId since a real photo and a preset avatar are mutually
+// exclusive (Avatar.tsx would otherwise have to pick a display priority).
 export async function updateOwnProfilePhoto(uid: string, encryptedPhoto: string | null) {
-  await updateDoc(doc(db, 'users', uid), { encryptedPhoto })
+  await updateDoc(doc(db, 'users', uid), { encryptedPhoto, avatarId: null })
+}
+
+// Sets a preset avatar (see lib/avatars.ts) and clears any uploaded photo —
+// the inverse of updateOwnProfilePhoto, for users who'd rather pick one of
+// these than upload their own image.
+export async function updateOwnAvatar(uid: string, avatarId: string) {
+  await updateDoc(doc(db, 'users', uid), { avatarId, encryptedPhoto: null })
 }
 
 // Assigning an Auction Manager must also grant them real write access to the
