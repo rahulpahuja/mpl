@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Layout } from '../components/Layout'
 import { AdminNav } from '../components/AdminNav'
+import { Avatar } from '../components/Avatar'
 import { WhatsAppButton } from '../components/WhatsAppButton'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { useUsers } from '../hooks/useUsers'
@@ -121,7 +122,16 @@ export function AdminUsers() {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {filteredUsers.map((u) => (
                   <tr key={u.uid}>
-                    <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{u.displayName}</td>
+                    <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
+                      <div className="flex items-center gap-2">
+                        <Avatar
+                          name={u.displayName}
+                          encryptedPhoto={u.encryptedPhoto}
+                          photoURL={u.photoURL}
+                        />
+                        {u.displayName}
+                      </div>
+                    </td>
                     <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{u.email}</td>
                     <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
                       {u.phone || <span className="text-gray-400">—</span>}

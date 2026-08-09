@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Layout } from '../components/Layout'
 import { AdminNav } from '../components/AdminNav'
+import { Avatar } from '../components/Avatar'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { useUsers } from '../hooks/useUsers'
 import { usePageTitle } from '../hooks/usePageTitle'
@@ -164,7 +165,16 @@ export function AdminPlayers() {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {players.map((p) => (
                   <tr key={p.uid}>
-                    <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{p.displayName}</td>
+                    <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
+                      <div className="flex items-center gap-2">
+                        <Avatar
+                          name={p.displayName}
+                          encryptedPhoto={p.encryptedPhoto}
+                          photoURL={p.photoURL}
+                        />
+                        {p.displayName}
+                      </div>
+                    </td>
                     <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
                       {p.playingRole ? (
                         PLAYING_ROLE_LABELS[p.playingRole]

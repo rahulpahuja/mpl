@@ -2,6 +2,7 @@ import { Timestamp } from 'firebase/firestore'
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
+import { Avatar } from '../components/Avatar'
 import { useAuction } from '../hooks/useAuction'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
 import { useUsers } from '../hooks/useUsers'
@@ -645,22 +646,29 @@ export function AuctionSetup() {
                 )}
                 {registeredPlayers.map((p) => (
                   <li key={p.uid} className="flex items-center justify-between gap-2 py-2">
-                    <span className="text-gray-900 dark:text-gray-100">
-                      {p.displayName}
-                      {p.role !== 'player' && (
-                        <span className="ml-2 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
-                          {roleLabel[p.role]}
+                    <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                      <Avatar
+                        name={p.displayName}
+                        encryptedPhoto={p.encryptedPhoto}
+                        photoURL={p.photoURL}
+                      />
+                      <span>
+                        {p.displayName}
+                        {p.role !== 'player' && (
+                          <span className="ml-2 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
+                            {roleLabel[p.role]}
+                          </span>
+                        )}
+                        {p.playingRole && (
+                          <span className="ml-2 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
+                            {PLAYING_ROLE_LABELS[p.playingRole]}
+                          </span>
+                        )}
+                        <br />
+                        <span className="text-xs text-gray-500">
+                          {p.userCode ? `ID ${p.userCode} · ` : ''}
+                          {p.phone || p.email}
                         </span>
-                      )}
-                      {p.playingRole && (
-                        <span className="ml-2 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
-                          {PLAYING_ROLE_LABELS[p.playingRole]}
-                        </span>
-                      )}
-                      <br />
-                      <span className="text-xs text-gray-500">
-                        {p.userCode ? `ID ${p.userCode} · ` : ''}
-                        {p.phone || p.email}
                       </span>
                     </span>
                     <div className="flex items-center gap-2">
