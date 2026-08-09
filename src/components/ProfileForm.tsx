@@ -1,13 +1,7 @@
 import { useState } from 'react'
 import type { ProfileFields } from '../lib/users'
+import { PLAYING_ROLE_OPTIONS } from '../lib/playingRoles'
 import type { Handedness, PlayingRole } from '../types'
-
-const PLAYING_ROLES: { value: PlayingRole; label: string }[] = [
-  { value: 'batsman', label: 'Batsman' },
-  { value: 'bowler', label: 'Bowler' },
-  { value: 'allRounder', label: 'All-rounder' },
-  { value: 'wicketKeeper', label: 'Wicket-keeper' },
-]
 import { LocationAutocomplete } from './LocationAutocomplete'
 
 const COUNTRY_CODE = '+91'
@@ -157,7 +151,7 @@ export function ProfileForm({
           className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
         >
           <option value="">Not set</option>
-          {PLAYING_ROLES.map((r) => (
+          {PLAYING_ROLE_OPTIONS.map((r) => (
             <option key={r.value} value={r.value}>
               {r.label}
             </option>

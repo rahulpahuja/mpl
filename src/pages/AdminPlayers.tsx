@@ -5,14 +5,7 @@ import { useAuctionsList } from '../hooks/useAuctionsList'
 import { useUsers } from '../hooks/useUsers'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { promoteViewerToPlayer } from '../lib/users'
-import type { PlayingRole } from '../types'
-
-const PLAYING_ROLE_LABELS: Record<PlayingRole, string> = {
-  batsman: 'Batsman',
-  bowler: 'Bowler',
-  allRounder: 'All-rounder',
-  wicketKeeper: 'Wicket-keeper',
-}
+import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
 
 export function AdminPlayers() {
   usePageTitle('Admin · Players')

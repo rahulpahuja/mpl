@@ -17,7 +17,8 @@ import {
 } from '../lib/auctions'
 import { assignUserToAuction, promoteViewerToPlayer } from '../lib/users'
 import { createTeam } from '../lib/teams'
-import type { UserRole } from '../types'
+import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
+import type { PlayingRole, UserRole } from '../types'
 
 const roleLabel: Record<UserRole, string> = {
   admin: 'Admin',
@@ -204,6 +205,7 @@ export function AuctionSetup() {
     name: string,
     assignedAuctions: string[],
     role: UserRole,
+    playingRole: PlayingRole | undefined,
   ) {
     if (!auctionId || addingRegisteredPlayerRef.current) return
     addingRegisteredPlayerRef.current = uid
@@ -215,7 +217,10 @@ export function AuctionSetup() {
       if (role === 'viewer') {
         await promoteViewerToPlayer(uid)
       }
-      await addPlayers(auctionId, [{ playerId: uid, name, position: '', basePrice }])
+      // Default to the role set on their profile; falls back to '' ("Not set")
+      // if they haven't picked one, same as the manual-add and CSV flows.
+      const position = playingRole ? PLAYING_ROLE_LABELS[playingRole] : ''
+      await addPlayers(auctionId, [{ playerId: uid, name, position, basePrice }])
       // So the player can see this auction (and what's happening in it) from
       // their own Home page once they log in — mirrors how Team Managers and
       // Auction Managers already see their assigned auctions.
@@ -647,6 +652,11 @@ export function AuctionSetup() {
                           {roleLabel[p.role]}
                         </span>
                       )}
+                      {p.playingRole && (
+                        <span className="ml-2 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
+                          {PLAYING_ROLE_LABELS[p.playingRole]}
+                        </span>
+                      )}
                       <br />
                       <span className="text-xs text-gray-500">
                         {p.userCode ? `ID ${p.userCode} · ` : ''}
@@ -665,7 +675,13 @@ export function AuctionSetup() {
                       />
                       <button
                         onClick={() =>
-                          handleAddRegisteredPlayer(p.uid, p.displayName, p.assignedAuctions, p.role)
+                          handleAddRegisteredPlayer(
+                            p.uid,
+                            p.displayName,
+                            p.assignedAuctions,
+                            p.role,
+                            p.playingRole,
+                          )
                         }
                         disabled={addingRegisteredPlayerId !== null}
                         className="whitespace-nowrap rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
