@@ -1,5 +1,5 @@
 import { Timestamp } from 'firebase/firestore'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { useAuction } from '../hooks/useAuction'
@@ -11,6 +11,7 @@ import {
   addTeamToAuction,
   applyCommonPurseToAllTeams,
   applyMaxPlayersToAllTeams,
+  removePlayer,
   updateAuctionSettings,
   updateAuctionStatus,
 } from '../lib/auctions'
@@ -40,13 +41,23 @@ export function AuctionSetup() {
   const [playerName, setPlayerName] = useState('')
   const [playerPosition, setPlayerPosition] = useState('')
   const [playerBasePrice, setPlayerBasePrice] = useState('')
+  const [addingPlayer, setAddingPlayer] = useState(false)
+  const addingPlayerRef = useRef(false)
   const [csvText, setCsvText] = useState('')
+  const [importingCsv, setImportingCsv] = useState(false)
+  const importingCsvRef = useRef(false)
 
   const [viewerSearch, setViewerSearch] = useState('')
   const [selectedViewerId, setSelectedViewerId] = useState('')
   const [promoting, setPromoting] = useState(false)
   const [registeredBasePrices, setRegisteredBasePrices] = useState<Record<string, string>>({})
   const [registeredPlayerSearch, setRegisteredPlayerSearch] = useState('')
+  const [addingRegisteredPlayerId, setAddingRegisteredPlayerId] = useState<string | null>(null)
+  const addingRegisteredPlayerRef = useRef<string | null>(null)
+  const [showImportDialog, setShowImportDialog] = useState(false)
+  const [removingPlayerId, setRemovingPlayerId] = useState<string | null>(null)
+  const removingPlayerRef = useRef<string | null>(null)
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null)
 
   const [teamSearch, setTeamSearch] = useState('')
   const [selectedTeamId, setSelectedTeamId] = useState('')
@@ -99,7 +110,8 @@ export function AuctionSetup() {
     return (
       u.displayName.toLowerCase().includes(q) ||
       u.email.toLowerCase().includes(q) ||
-      u.phone?.includes(q)
+      u.phone?.includes(q) ||
+      u.userCode?.toLowerCase().includes(q)
     )
   })
   const viewerCandidates = users
@@ -133,18 +145,29 @@ export function AuctionSetup() {
   )
 
   async function handleAddPlayer() {
-    if (!playerName.trim() || !auctionId) return
-    await addPlayers(auctionId, [
-      {
-        playerId: crypto.randomUUID(),
-        name: playerName.trim(),
-        position: playerPosition.trim(),
-        basePrice: Number(playerBasePrice) || 0,
-      },
-    ])
-    setPlayerName('')
-    setPlayerPosition('')
-    setPlayerBasePrice('')
+    // A double-click fires both event handlers before React re-renders the
+    // `disabled` button, so `addingPlayer` state alone can't stop the second
+    // call — it's still reading the stale (false) value from its own render's
+    // closure. A ref is mutated synchronously, so the second call sees it.
+    if (!playerName.trim() || !auctionId || addingPlayerRef.current) return
+    addingPlayerRef.current = true
+    setAddingPlayer(true)
+    try {
+      await addPlayers(auctionId, [
+        {
+          playerId: crypto.randomUUID(),
+          name: playerName.trim(),
+          position: playerPosition.trim(),
+          basePrice: Number(playerBasePrice) || 0,
+        },
+      ])
+      setPlayerName('')
+      setPlayerPosition('')
+      setPlayerBasePrice('')
+    } finally {
+      addingPlayerRef.current = false
+      setAddingPlayer(false)
+    }
   }
 
   async function handlePromoteViewer() {
@@ -174,31 +197,62 @@ export function AuctionSetup() {
     assignedAuctions: string[],
     role: UserRole,
   ) {
-    if (!auctionId) return
-    const basePrice = Number(registeredBasePrices[uid]) || 0
-    // Adding a Viewer to a roster means they're playing — auto-promote them to
-    // Player instead of making the admin do that as a separate manual step first.
-    if (role === 'viewer') {
-      await promoteViewerToPlayer(uid)
+    if (!auctionId || addingRegisteredPlayerRef.current) return
+    addingRegisteredPlayerRef.current = uid
+    setAddingRegisteredPlayerId(uid)
+    try {
+      const basePrice = Number(registeredBasePrices[uid]) || 0
+      // Adding a Viewer to a roster means they're playing — auto-promote them to
+      // Player instead of making the admin do that as a separate manual step first.
+      if (role === 'viewer') {
+        await promoteViewerToPlayer(uid)
+      }
+      await addPlayers(auctionId, [{ playerId: uid, name, position: '', basePrice }])
+      // So the player can see this auction (and what's happening in it) from
+      // their own Home page once they log in — mirrors how Team Managers and
+      // Auction Managers already see their assigned auctions.
+      await assignUserToAuction(uid, auctionId, assignedAuctions, 'player')
+      setRegisteredBasePrices((prev) => {
+        const next = { ...prev }
+        delete next[uid]
+        return next
+      })
+    } finally {
+      addingRegisteredPlayerRef.current = null
+      setAddingRegisteredPlayerId(null)
     }
-    await addPlayers(auctionId, [{ playerId: uid, name, position: '', basePrice }])
-    // So the player can see this auction (and what's happening in it) from
-    // their own Home page once they log in — mirrors how Team Managers and
-    // Auction Managers already see their assigned auctions.
-    await assignUserToAuction(uid, auctionId, assignedAuctions, 'player')
-    setRegisteredBasePrices((prev) => {
-      const next = { ...prev }
-      delete next[uid]
-      return next
-    })
+  }
+
+  async function handleRemovePlayer(playerId: string) {
+    if (!auctionId || removingPlayerRef.current) return
+    if (confirmRemoveId !== playerId) {
+      setConfirmRemoveId(playerId)
+      return
+    }
+    setConfirmRemoveId(null)
+    removingPlayerRef.current = playerId
+    setRemovingPlayerId(playerId)
+    try {
+      await removePlayer(auctionId, playerId)
+    } finally {
+      removingPlayerRef.current = null
+      setRemovingPlayerId(null)
+    }
   }
 
   async function handleImportCsv() {
-    if (!csvText.trim() || !auctionId) return
+    if (!csvText.trim() || !auctionId || importingCsvRef.current) return
     const players = parseCsv(csvText)
     if (players.length === 0) return
-    await addPlayers(auctionId, players)
-    setCsvText('')
+    importingCsvRef.current = true
+    setImportingCsv(true)
+    try {
+      await addPlayers(auctionId, players)
+      setCsvText('')
+    } finally {
+      importingCsvRef.current = false
+      setImportingCsv(false)
+    }
   }
 
   async function handleAddTeam() {
@@ -337,7 +391,15 @@ export function AuctionSetup() {
         </section>
 
         <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-5">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Player roster</h2>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Player roster</h2>
+            <button
+              onClick={() => setShowImportDialog(true)}
+              className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              Import players
+            </button>
+          </div>
 
           <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
             <input
@@ -361,9 +423,10 @@ export function AuctionSetup() {
             />
             <button
               onClick={handleAddPlayer}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              disabled={addingPlayer || !playerName.trim()}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
             >
-              Add player
+              {addingPlayer ? 'Adding...' : 'Add player'}
             </button>
           </div>
 
@@ -380,9 +443,10 @@ export function AuctionSetup() {
             />
             <button
               onClick={handleImportCsv}
-              className="mt-2 rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+              disabled={importingCsv || !csvText.trim()}
+              className="mt-2 rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
             >
-              Import
+              {importingCsv ? 'Importing...' : 'Import'}
             </button>
           </div>
 
@@ -464,24 +528,106 @@ export function AuctionSetup() {
             )}
           </div>
 
-          {allRegisteredPlayers.length > 0 && (
-            <div className="mt-6 border-t border-gray-200 dark:border-gray-800 pt-4">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                Add a signed-up user to this auction
-              </h3>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Anyone who has signed in (Viewer or Player) and isn't on this roster yet. Adding a
-                Viewer auto-promotes them to Player.
+          <div className="mt-6 overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80">
+            <table className="w-full min-w-[480px] text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
+                <tr>
+                  <th className="px-3 py-2 font-medium">Name</th>
+                  <th className="px-3 py-2 font-medium">Position</th>
+                  <th className="px-3 py-2 font-medium">Base price</th>
+                  <th className="px-3 py-2 font-medium">Status</th>
+                  <th className="px-3 py-2 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                {auction.players.map((p) => (
+                  <tr key={p.playerId}>
+                    <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{p.name}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
+                      {p.position || <span className="text-gray-400">—</span>}
+                    </td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{p.basePrice}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-400 capitalize">
+                      {p.status}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      {p.status === 'open' && (
+                        <span className="inline-flex items-center gap-2">
+                          {confirmRemoveId === p.playerId && (
+                            <button
+                              onClick={() => setConfirmRemoveId(null)}
+                              className="text-xs font-medium text-gray-500 hover:underline"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleRemovePlayer(p.playerId)}
+                            disabled={removingPlayerId !== null}
+                            className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                          >
+                            {removingPlayerId === p.playerId
+                              ? 'Removing...'
+                              : confirmRemoveId === p.playerId
+                                ? 'Confirm remove?'
+                                : 'Remove'}
+                          </button>
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {auction.players.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-3 py-3 text-gray-500">
+                      No players added yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {showImportDialog && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+            onClick={() => setShowImportDialog(false)}
+          >
+            <div
+              className="w-full max-w-lg max-h-[80vh] flex flex-col rounded-xl bg-white dark:bg-gray-900 p-6 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Import players
+                </h2>
+                <button
+                  onClick={() => setShowImportDialog(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Search anyone who has signed in (Viewer or Player) and isn't on this roster yet, by
+                name, email, phone, or ID. Adding a Viewer auto-promotes them to Player.
               </p>
               <input
+                autoFocus
                 value={registeredPlayerSearch}
                 onChange={(e) => setRegisteredPlayerSearch(e.target.value)}
-                placeholder="Search by name, email, phone..."
-                className="mt-2 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                placeholder="Search by name, email, phone, or ID..."
+                className="mt-3 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
               />
-              <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+              <ul className="mt-3 flex-1 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-800 text-sm">
                 {registeredPlayers.length === 0 && (
-                  <li className="py-2 text-gray-500">No users match.</li>
+                  <li className="py-2 text-gray-500">
+                    {allRegisteredPlayers.length === 0
+                      ? 'No one has signed in yet.'
+                      : 'No users match.'}
+                  </li>
                 )}
                 {registeredPlayers.map((p) => (
                   <li key={p.uid} className="flex items-center justify-between gap-2 py-2">
@@ -492,6 +638,11 @@ export function AuctionSetup() {
                           Viewer
                         </span>
                       )}
+                      <br />
+                      <span className="text-xs text-gray-500">
+                        {p.userCode ? `ID ${p.userCode} · ` : ''}
+                        {p.phone || p.email}
+                      </span>
                     </span>
                     <div className="flex items-center gap-2">
                       <input
@@ -501,37 +652,24 @@ export function AuctionSetup() {
                           setRegisteredBasePrices((prev) => ({ ...prev, [p.uid]: e.target.value }))
                         }
                         placeholder="Base price"
-                        className="w-28 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                        className="w-24 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
                       />
                       <button
                         onClick={() =>
                           handleAddRegisteredPlayer(p.uid, p.displayName, p.assignedAuctions, p.role)
                         }
-                        className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                        disabled={addingRegisteredPlayerId !== null}
+                        className="whitespace-nowrap rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
                       >
-                        Add to auction
+                        {addingRegisteredPlayerId === p.uid ? 'Adding...' : 'Add'}
                       </button>
                     </div>
                   </li>
                 ))}
               </ul>
             </div>
-          )}
-
-          <ul className="mt-4 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
-            {auction.players.map((p) => (
-              <li key={p.playerId} className="flex justify-between py-2">
-                <span className="text-gray-900 dark:text-gray-100">
-                  {p.name} <span className="text-gray-500">({p.position})</span>
-                </span>
-                <span className="text-gray-500">Base: {p.basePrice}</span>
-              </li>
-            ))}
-            {auction.players.length === 0 && (
-              <li className="py-2 text-gray-500">No players added yet.</li>
-            )}
-          </ul>
-        </section>
+          </div>
+        )}
 
         <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-5">
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Team managers</h2>

@@ -144,6 +144,25 @@ export async function addPlayers(auctionId: string, players: Omit<Player, 'curre
   })
 }
 
+// Only lets a still-open player (never went under the hammer) be removed —
+// a sold/unsold player has already affected a team's purse/roster or auction
+// history, and unwinding that safely is out of scope for a roster-cleanup action.
+export async function removePlayer(auctionId: string, playerId: string) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) throw new Error('Auction not found')
+    const auction = snap.data() as Auction
+    const player = auction.players.find((p) => p.playerId === playerId)
+    if (!player) return
+    if (player.status !== 'open') {
+      throw new Error('Only players that are still open can be removed.')
+    }
+    tx.update(auctionRef(auctionId), {
+      players: auction.players.filter((p) => p.playerId !== playerId),
+    })
+  })
+}
+
 export async function addTeamToAuction(
   auctionId: string,
   team: Team,
