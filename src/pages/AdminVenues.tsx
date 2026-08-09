@@ -5,10 +5,25 @@ import { LocationAutocomplete } from '../components/LocationAutocomplete'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useVenuesRegistry } from '../hooks/useVenuesRegistry'
 import { compressImageToDataUrl } from '../lib/imageProcessing'
-import { MAX_VENUE_IMAGES, addVenueImage, createVenue, deleteVenue, removeVenueImage, updateVenue } from '../lib/venues'
+import {
+  MAX_VENUE_IMAGES,
+  addVenueImage,
+  createVenue,
+  deleteVenue,
+  removeVenueImage,
+  retireVenue,
+  unretireVenue,
+  updateVenue,
+} from '../lib/venues'
 import type { Venue } from '../types'
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024
+
+function formatAddedDate(venue: Venue): string {
+  const date = venue.createdAt?.toDate?.()
+  if (!date) return 'Unknown'
+  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
 
 function VenueGallery({ venue }: { venue: Venue }) {
   const [uploading, setUploading] = useState(false)
@@ -130,6 +145,99 @@ export function AdminVenues() {
     await deleteVenue(venueId)
   }
 
+  async function handleRetire(venueId: string, venueName: string) {
+    if (!confirm(`Retire "${venueName}"? It'll be hidden from new auctions but its history is kept.`)) return
+    await retireVenue(venueId)
+  }
+
+  const activeVenues = venues.filter((v) => !v.retired)
+  const retiredVenues = venues.filter((v) => v.retired)
+
+  function renderVenue(v: Venue) {
+    const isEditing = editingVenueId === v.venueId
+    return (
+      <li key={v.venueId} className="space-y-2 py-3">
+        {isEditing ? (
+          <>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+              />
+              <div className="sm:col-span-2">
+                <LocationAutocomplete value={editLocation} onChange={setEditLocation} />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleSaveEdit(v.venueId)}
+                disabled={savingEdit || !editName.trim() || !editLocation.trim()}
+                className="rounded-md bg-gray-800 dark:bg-gray-200 px-3 py-1 text-xs font-medium text-white dark:text-gray-900 hover:opacity-90 disabled:opacity-50"
+              >
+                {savingEdit ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                onClick={() => setEditingVenueId(null)}
+                disabled={savingEdit}
+                className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                Cancel
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <span className={`font-medium ${v.retired ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'}`}>
+                {v.name}
+              </span>
+              <span className="ml-2 text-gray-500">{v.location}</span>
+              {v.retired && (
+                <span className="ml-2 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-300">
+                  Retired
+                </span>
+              )}
+              <div className="text-xs text-gray-400 dark:text-gray-500">Added {formatAddedDate(v)}</div>
+            </div>
+            <span className="flex shrink-0 gap-3">
+              {v.retired ? (
+                <button
+                  onClick={() => unretireVenue(v.venueId)}
+                  className="text-red-600 dark:text-red-400 hover:underline"
+                >
+                  Unretire
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => startEdit(v)}
+                    className="text-red-600 dark:text-red-400 hover:underline"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleRetire(v.venueId, v.name)}
+                    className="text-red-600 dark:text-red-400 hover:underline"
+                  >
+                    Retire
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => handleDelete(v.venueId, v.name)}
+                className="text-red-600 dark:text-red-400 hover:underline"
+              >
+                Delete
+              </button>
+            </span>
+          </div>
+        )}
+        <VenueGallery venue={v} />
+      </li>
+    )
+  }
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -160,67 +268,20 @@ export function AdminVenues() {
           </div>
 
           <ul className="mt-4 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
-            {venues.map((v) => {
-              const isEditing = editingVenueId === v.venueId
-              return (
-                <li key={v.venueId} className="space-y-2 py-3">
-                  {isEditing ? (
-                    <>
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                        <input
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-                        />
-                        <div className="sm:col-span-2">
-                          <LocationAutocomplete value={editLocation} onChange={setEditLocation} />
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleSaveEdit(v.venueId)}
-                          disabled={savingEdit || !editName.trim() || !editLocation.trim()}
-                          className="rounded-md bg-gray-800 dark:bg-gray-200 px-3 py-1 text-xs font-medium text-white dark:text-gray-900 hover:opacity-90 disabled:opacity-50"
-                        >
-                          {savingEdit ? 'Saving...' : 'Save'}
-                        </button>
-                        <button
-                          onClick={() => setEditingVenueId(null)}
-                          disabled={savingEdit}
-                          className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <span className="font-medium text-gray-900 dark:text-gray-100">{v.name}</span>
-                        <span className="ml-2 text-gray-500">{v.location}</span>
-                      </div>
-                      <span className="flex gap-3">
-                        <button
-                          onClick={() => startEdit(v)}
-                          className="text-red-600 dark:text-red-400 hover:underline"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(v.venueId, v.name)}
-                          className="text-red-600 dark:text-red-400 hover:underline"
-                        >
-                          Delete
-                        </button>
-                      </span>
-                    </div>
-                  )}
-                  <VenueGallery venue={v} />
-                </li>
-              )
-            })}
-            {venues.length === 0 && <li className="py-2 text-gray-500">No venues added yet.</li>}
+            {activeVenues.map(renderVenue)}
+            {activeVenues.length === 0 && <li className="py-2 text-gray-500">No venues added yet.</li>}
           </ul>
+
+          {retiredVenues.length > 0 && (
+            <div className="mt-6">
+              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                Retired venues ({retiredVenues.length})
+              </h2>
+              <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+                {retiredVenues.map(renderVenue)}
+              </ul>
+            </div>
+          )}
         </section>
       </div>
     </Layout>

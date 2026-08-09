@@ -121,4 +121,8 @@ export interface Venue {
   // photos aren't personal data.
   images: string[]
   createdAt: Timestamp
+  // Retired venues are kept (not deleted) so past auctions that referenced
+  // them still resolve, but they're hidden from pickers going forward.
+  retired?: boolean
+  retiredAt?: Timestamp | null
 }

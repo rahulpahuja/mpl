@@ -1,9 +1,10 @@
-import { lazy, Suspense } from 'react'
+import { Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './components/AuthProvider'
 import { CricketMotifs } from './components/CricketMotifs'
 import { ProfileSetupModal } from './components/ProfileSetupModal'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { lazyWithRetry } from './lib/lazyWithRetry'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
 
@@ -12,24 +13,32 @@ import { Login } from './pages/Login'
 // splitting them means a visit only downloads the JS its role actually uses,
 // instead of every page in the app bundled into one chunk on every load. Only
 // Home and Login stay eager since virtually every visit hits one of them first.
-const JoinAuction = lazy(() => import('./pages/JoinAuction').then((m) => ({ default: m.JoinAuction })))
-const AdminAuctions = lazy(() => import('./pages/AdminAuctions').then((m) => ({ default: m.AdminAuctions })))
-const AdminTeams = lazy(() => import('./pages/AdminTeams').then((m) => ({ default: m.AdminTeams })))
-const AdminVenues = lazy(() => import('./pages/AdminVenues').then((m) => ({ default: m.AdminVenues })))
-const AdminUsers = lazy(() => import('./pages/AdminUsers').then((m) => ({ default: m.AdminUsers })))
-const AdminPlayers = lazy(() => import('./pages/AdminPlayers').then((m) => ({ default: m.AdminPlayers })))
-const BootstrapAdmin = lazy(() => import('./pages/BootstrapAdmin').then((m) => ({ default: m.BootstrapAdmin })))
-const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })))
-const AuctionSetup = lazy(() => import('./pages/AuctionSetup').then((m) => ({ default: m.AuctionSetup })))
-const AuctionManagerPanel = lazy(() =>
+const JoinAuction = lazyWithRetry(() => import('./pages/JoinAuction').then((m) => ({ default: m.JoinAuction })))
+const AdminAuctions = lazyWithRetry(() =>
+  import('./pages/AdminAuctions').then((m) => ({ default: m.AdminAuctions })),
+)
+const AdminTeams = lazyWithRetry(() => import('./pages/AdminTeams').then((m) => ({ default: m.AdminTeams })))
+const AdminVenues = lazyWithRetry(() => import('./pages/AdminVenues').then((m) => ({ default: m.AdminVenues })))
+const AdminUsers = lazyWithRetry(() => import('./pages/AdminUsers').then((m) => ({ default: m.AdminUsers })))
+const AdminPlayers = lazyWithRetry(() =>
+  import('./pages/AdminPlayers').then((m) => ({ default: m.AdminPlayers })),
+)
+const BootstrapAdmin = lazyWithRetry(() =>
+  import('./pages/BootstrapAdmin').then((m) => ({ default: m.BootstrapAdmin })),
+)
+const Profile = lazyWithRetry(() => import('./pages/Profile').then((m) => ({ default: m.Profile })))
+const AuctionSetup = lazyWithRetry(() =>
+  import('./pages/AuctionSetup').then((m) => ({ default: m.AuctionSetup })),
+)
+const AuctionManagerPanel = lazyWithRetry(() =>
   import('./pages/AuctionManagerPanel').then((m) => ({ default: m.AuctionManagerPanel })),
 )
-const TeamManagerBidding = lazy(() =>
+const TeamManagerBidding = lazyWithRetry(() =>
   import('./pages/TeamManagerBidding').then((m) => ({ default: m.TeamManagerBidding })),
 )
-const ViewerFeed = lazy(() => import('./pages/ViewerFeed').then((m) => ({ default: m.ViewerFeed })))
-const Results = lazy(() => import('./pages/Results').then((m) => ({ default: m.Results })))
-const Docs = lazy(() => import('./pages/Docs').then((m) => ({ default: m.Docs })))
+const ViewerFeed = lazyWithRetry(() => import('./pages/ViewerFeed').then((m) => ({ default: m.ViewerFeed })))
+const Results = lazyWithRetry(() => import('./pages/Results').then((m) => ({ default: m.Results })))
+const Docs = lazyWithRetry(() => import('./pages/Docs').then((m) => ({ default: m.Docs })))
 
 export default function App() {
   return (

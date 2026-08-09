@@ -31,3 +31,14 @@ export async function removeVenueImage(venueId: string, imageDataUrl: string) {
 export async function deleteVenue(venueId: string) {
   await deleteDoc(doc(db, 'venues', venueId))
 }
+
+// Retiring (rather than deleting) keeps the venue doc around — anything that
+// referenced it by ID in the past keeps resolving — while hiding it from
+// future venue pickers.
+export async function retireVenue(venueId: string) {
+  await updateDoc(doc(db, 'venues', venueId), { retired: true, retiredAt: serverTimestamp() })
+}
+
+export async function unretireVenue(venueId: string) {
+  await updateDoc(doc(db, 'venues', venueId), { retired: false, retiredAt: null })
+}
