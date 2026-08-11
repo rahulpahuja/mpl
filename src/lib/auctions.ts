@@ -109,6 +109,7 @@ export async function applyCommonPurseToAllTeams(auctionId: string, purse: numbe
 }
 
 export async function applyMaxPlayersToAllTeams(auctionId: string, maxPlayers: number) {
+  if (maxPlayers < 0) throw new Error('Max players must be 0 or more')
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(auctionRef(auctionId))
     if (!snap.exists()) throw new Error('Auction not found')
@@ -163,12 +164,44 @@ export async function removePlayer(auctionId: string, playerId: string) {
   })
 }
 
+// Same "still open" restriction as removePlayer — once a player has gone
+// under the hammer, their base price is part of the historical record.
+export async function updatePlayerBasePrice(auctionId: string, playerId: string, basePrice: number) {
+  if (basePrice < 0) throw new Error('Base price must be 0 or more')
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) throw new Error('Auction not found')
+    const auction = snap.data() as Auction
+    const player = auction.players.find((p) => p.playerId === playerId)
+    if (!player) return
+    if (player.status !== 'open') {
+      throw new Error('Only players that are still open can have their base price changed.')
+    }
+    tx.update(auctionRef(auctionId), {
+      players: auction.players.map((p) => (p.playerId === playerId ? { ...p, basePrice } : p)),
+    })
+  })
+}
+
+export async function applyBasePriceToAllPlayers(auctionId: string, basePrice: number) {
+  if (basePrice < 0) throw new Error('Base price must be 0 or more')
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) throw new Error('Auction not found')
+    const auction = snap.data() as Auction
+    tx.update(auctionRef(auctionId), {
+      players: auction.players.map((p) => (p.status === 'open' ? { ...p, basePrice } : p)),
+    })
+  })
+}
+
 export async function addTeamToAuction(
   auctionId: string,
   team: Team,
   purse: number,
   maxPlayers: number,
 ) {
+  if (maxPlayers < 0) throw new Error('Max players must be 0 or more')
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(auctionRef(auctionId))
     if (!snap.exists()) throw new Error('Auction not found')

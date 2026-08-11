@@ -11,11 +11,13 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import {
   addPlayers,
   addTeamToAuction,
+  applyBasePriceToAllPlayers,
   applyCommonPurseToAllTeams,
   applyMaxPlayersToAllTeams,
   removePlayer,
   updateAuctionSettings,
   updateAuctionStatus,
+  updatePlayerBasePrice,
 } from '../lib/auctions'
 import { assignUserToAuction, promoteViewerToPlayer } from '../lib/users'
 import { createTeam } from '../lib/teams'
@@ -28,6 +30,12 @@ const roleLabel: Record<UserRole, string> = {
   manager: 'Team Manager',
   player: 'Player',
   viewer: 'Viewer',
+}
+
+function parseMaxPlayers(value: string): number {
+  const n = Number(value)
+  if (value.trim() === '' || Number.isNaN(n)) return 15
+  return Math.max(0, Math.trunc(n))
 }
 
 function parseCsv(text: string) {
@@ -69,6 +77,12 @@ export function AuctionSetup() {
   const [removingPlayerId, setRemovingPlayerId] = useState<string | null>(null)
   const removingPlayerRef = useRef<string | null>(null)
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null)
+  const [editingBasePriceId, setEditingBasePriceId] = useState<string | null>(null)
+  const [editBasePrice, setEditBasePrice] = useState('')
+  const [savingBasePriceId, setSavingBasePriceId] = useState<string | null>(null)
+  const [bulkBasePrice, setBulkBasePrice] = useState('')
+  const [applyingBulkBasePrice, setApplyingBulkBasePrice] = useState(false)
+  const [bulkBasePriceError, setBulkBasePriceError] = useState<string | null>(null)
 
   const [teamSearch, setTeamSearch] = useState('')
   const [selectedTeamId, setSelectedTeamId] = useState('')
@@ -108,6 +122,7 @@ export function AuctionSetup() {
     )
   }
 
+  const openPlayerCount = auction.players.filter((p) => p.status === 'open').length
   const rosterUids = new Set(auction.players.map((p) => p.playerId))
   // Every signed-in user is a candidate, not just role=player/viewer — plenty of
   // real users only ever hold a Team Manager/Auction Manager/Admin role (that's
@@ -255,6 +270,37 @@ export function AuctionSetup() {
     }
   }
 
+  function startEditBasePrice(playerId: string, currentBasePrice: number) {
+    setEditingBasePriceId(playerId)
+    setEditBasePrice(String(currentBasePrice))
+  }
+
+  async function handleSaveBasePrice(playerId: string) {
+    if (!auctionId) return
+    setSavingBasePriceId(playerId)
+    try {
+      await updatePlayerBasePrice(auctionId, playerId, Number(editBasePrice) || 0)
+      setEditingBasePriceId(null)
+    } finally {
+      setSavingBasePriceId(null)
+    }
+  }
+
+  async function handleApplyBasePriceToAll() {
+    if (!auctionId) return
+    setBulkBasePriceError(null)
+    setApplyingBulkBasePrice(true)
+    try {
+      await applyBasePriceToAllPlayers(auctionId, Number(bulkBasePrice) || 0)
+    } catch (err) {
+      setBulkBasePriceError(
+        err instanceof Error ? err.message : 'Failed to update base price for all players',
+      )
+    } finally {
+      setApplyingBulkBasePrice(false)
+    }
+  }
+
   async function handleImportCsv() {
     if (!csvText.trim() || !auctionId || importingCsvRef.current) return
     const players = parseCsv(csvText)
@@ -274,7 +320,7 @@ export function AuctionSetup() {
     if (!selectedTeamId || !auctionId) return
     const team = teams.find((t) => t.teamId === selectedTeamId)
     if (!team) return
-    await addTeamToAuction(auctionId, team, Number(purse) || 0, Number(maxPlayers) || 15)
+    await addTeamToAuction(auctionId, team, Number(purse) || 0, parseMaxPlayers(maxPlayers))
     setSelectedTeamId('')
     setTeamSearch('')
     // Purse and max players deliberately keep their values — auctions almost always
@@ -292,7 +338,7 @@ export function AuctionSetup() {
         auctionId,
         { teamId, teamName: name, managerId: uid, managerName: displayName, createdAt: Timestamp.now() },
         Number(purse) || 0,
-        Number(maxPlayers) || 15,
+        parseMaxPlayers(maxPlayers),
       )
       setNewTeamNames((prev) => {
         const next = { ...prev }
@@ -317,7 +363,7 @@ export function AuctionSetup() {
     setMaxPlayersError(null)
     setApplyingMaxPlayers(true)
     try {
-      await applyMaxPlayersToAllTeams(auctionId, Number(maxPlayers) || 15)
+      await applyMaxPlayersToAllTeams(auctionId, parseMaxPlayers(maxPlayers))
     } catch (err) {
       setMaxPlayersError(
         err instanceof Error ? err.message : 'Failed to update max players for all teams',
@@ -562,7 +608,30 @@ export function AuctionSetup() {
             )}
           </div>
 
-          <div className="mt-6 overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80">
+          {auction.players.length > 0 && (
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                value={bulkBasePrice}
+                onChange={(e) => setBulkBasePrice(e.target.value)}
+                placeholder="Base price"
+                className="w-32 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+              />
+              <button
+                onClick={handleApplyBasePriceToAll}
+                disabled={applyingBulkBasePrice || openPlayerCount === 0}
+                className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+              >
+                {applyingBulkBasePrice
+                  ? 'Applying...'
+                  : `Apply to all ${openPlayerCount} open player${openPlayerCount === 1 ? '' : 's'}`}
+              </button>
+              {bulkBasePriceError && <p className="text-xs text-red-600">{bulkBasePriceError}</p>}
+            </div>
+          )}
+
+          <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80">
             <table className="w-full min-w-[480px] text-sm">
               <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
                 <tr>
@@ -580,13 +649,51 @@ export function AuctionSetup() {
                     <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
                       {p.position || <span className="text-gray-400">—</span>}
                     </td>
-                    <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{p.basePrice}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
+                      {editingBasePriceId === p.playerId ? (
+                        <input
+                          type="number"
+                          min={0}
+                          autoFocus
+                          value={editBasePrice}
+                          onChange={(e) => setEditBasePrice(e.target.value)}
+                          className="w-24 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                        />
+                      ) : (
+                        p.basePrice
+                      )}
+                    </td>
                     <td className="px-3 py-2 text-gray-600 dark:text-gray-400 capitalize">
                       {p.status}
                     </td>
                     <td className="px-3 py-2 text-right">
                       {p.status === 'open' && (
                         <span className="inline-flex items-center gap-2">
+                          {editingBasePriceId === p.playerId ? (
+                            <>
+                              <button
+                                onClick={() => setEditingBasePriceId(null)}
+                                disabled={savingBasePriceId === p.playerId}
+                                className="text-xs font-medium text-gray-500 hover:underline disabled:opacity-50"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => handleSaveBasePrice(p.playerId)}
+                                disabled={savingBasePriceId === p.playerId}
+                                className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                              >
+                                {savingBasePriceId === p.playerId ? 'Saving...' : 'Save'}
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => startEditBasePrice(p.playerId, p.basePrice)}
+                              className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                            >
+                              Edit
+                            </button>
+                          )}
                           {confirmRemoveId === p.playerId && (
                             <button
                               onClick={() => setConfirmRemoveId(null)}
@@ -764,6 +871,7 @@ export function AuctionSetup() {
             />
             <input
               type="number"
+              min={0}
               value={maxPlayers}
               onChange={(e) => setMaxPlayers(e.target.value)}
               placeholder="Max players"
@@ -797,7 +905,7 @@ export function AuctionSetup() {
                 >
                   {applyingMaxPlayers
                     ? 'Applying...'
-                    : `Apply ${maxPlayers || 15} max players to all ${auction.teamManagers.length} teams already added`}
+                    : `Apply ${parseMaxPlayers(maxPlayers)} max players to all ${auction.teamManagers.length} teams already added`}
                 </button>
                 {maxPlayersError && <p className="mt-1 text-xs text-red-600">{maxPlayersError}</p>}
               </div>
