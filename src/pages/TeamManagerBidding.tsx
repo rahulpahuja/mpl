@@ -12,7 +12,9 @@ import { useAuthStore } from '../store/authStore'
 import { placeBid } from '../lib/auctions'
 import { promoteViewerToPlayer } from '../lib/users'
 
-const QUICK_BID_STEPS = [50, 100, 200, 500, 1000, 10000]
+// Quick-bid shortcuts scale with the auction's own bid increment instead of
+// fixed amounts — a 50/100 jump is meaningless once the increment is 1000.
+const QUICK_BID_MULTIPLIERS = [1, 2, 5, 10, 20, 50]
 
 export function TeamManagerBidding() {
   const { auctionId } = useParams<{ auctionId: string }>()
@@ -98,6 +100,7 @@ export function TeamManagerBidding() {
       ? currentPlayer.currentBid + auction.bidIncrement
       : currentPlayer.basePrice
     : 0
+  const quickBidSteps = QUICK_BID_MULTIPLIERS.map((m) => m * auction.bidIncrement)
   const isMyBid = currentPlayer?.currentBidder === user.uid
   const mySquad = auction.players
     .filter((p) => p.currentBidder === user.uid && p.status === 'sold')
@@ -186,12 +189,12 @@ export function TeamManagerBidding() {
                 </button>
 
                 <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-                  {QUICK_BID_STEPS.map((step) => {
+                  {quickBidSteps.map((step, i) => {
                     const amount = minBid + step
                     const disabled = !canBid || placing || amount > myTeam.remainingTokens
                     return (
                       <button
-                        key={step}
+                        key={i}
                         onClick={() => handleBid(amount)}
                         disabled={disabled}
                         title={`Bid ${amount}`}
