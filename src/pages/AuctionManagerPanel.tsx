@@ -217,24 +217,50 @@ export function AuctionManagerPanel() {
         </div>
 
         <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Team wallets</h2>
-          <ul className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
-            {wallets.map((tm) => (
-              <li
-                key={tm.managerId}
-                className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2"
-              >
-                <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
-                  <TeamAvatar teamName={tm.name} logoId={tm.logoId} />
-                  <span className="truncate">{tm.name}</span>
-                </span>
-                <span className="shrink-0 text-gray-500">
-                  Balance <span className="font-mono text-gray-900 dark:text-gray-100">{tm.remainingTokens}</span>
-                </span>
-              </li>
-            ))}
-            {wallets.length === 0 && <li className="text-sm text-gray-500">No teams added yet.</li>}
-          </ul>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Team squads</h2>
+          <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {wallets.map((tm) => {
+              const squad = auction.players
+                .filter((p) => p.currentBidder === tm.managerId && p.status === 'sold')
+                .sort((a, b) => b.currentBid - a.currentBid)
+              return (
+                <div
+                  key={tm.managerId}
+                  className="rounded-lg bg-gray-50 dark:bg-gray-900 p-4 text-sm"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                    <span className="flex min-w-0 items-center gap-2 font-medium text-gray-900 dark:text-gray-100">
+                      <TeamAvatar teamName={tm.name} logoId={tm.logoId} />
+                      <span className="truncate">{tm.name}</span>
+                    </span>
+                    <span className="shrink-0 text-gray-500">
+                      Balance <span className="font-mono text-gray-900 dark:text-gray-100">{tm.remainingTokens}</span>
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {squad.length} / {tm.maxPlayers} players
+                  </p>
+                  <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto">
+                    {squad.map((p) => (
+                      <li
+                        key={p.playerId}
+                        className="flex justify-between gap-2 text-gray-600 dark:text-gray-400"
+                      >
+                        <span className="truncate">{p.name}</span>
+                        <span className="shrink-0 font-mono">{p.currentBid}</span>
+                      </li>
+                    ))}
+                    {squad.length === 0 && (
+                      <li className="text-gray-500">No players won yet.</li>
+                    )}
+                  </ul>
+                </div>
+              )
+            })}
+            {wallets.length === 0 && (
+              <p className="text-sm text-gray-500">No teams added yet.</p>
+            )}
+          </div>
         </section>
 
         {unsold.length > 0 && (
