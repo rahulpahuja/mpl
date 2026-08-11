@@ -99,9 +99,10 @@ export function TeamManagerBidding() {
       : currentPlayer.basePrice
     : 0
   const isMyBid = currentPlayer?.currentBidder === user.uid
-  const squadSize = auction.players.filter(
-    (p) => p.currentBidder === user.uid && p.status === 'sold',
-  ).length
+  const mySquad = auction.players
+    .filter((p) => p.currentBidder === user.uid && p.status === 'sold')
+    .sort((a, b) => b.currentBid - a.currentBid)
+  const squadSize = mySquad.length
   const squadFull = squadSize >= myTeam.maxPlayers
   const canBid =
     !!currentPlayer &&
@@ -224,6 +225,29 @@ export function TeamManagerBidding() {
                 </li>
               ))}
               {sortedBids.length === 0 && <li className="text-gray-500">No bids yet.</li>}
+            </ul>
+          </section>
+
+          <section className="lg:col-span-3 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+              My squad <span className="text-sm font-normal text-gray-500">({squadSize} / {myTeam.maxPlayers})</span>
+            </h2>
+            <ul className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+              {mySquad.map((p) => (
+                <li
+                  key={p.playerId}
+                  className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2"
+                >
+                  <span className="min-w-0 truncate text-gray-900 dark:text-gray-100">
+                    {p.name}
+                    {p.position && <span className="text-gray-500"> · {p.position}</span>}
+                  </span>
+                  <span className="shrink-0 font-mono text-gray-600 dark:text-gray-400">{p.currentBid}</span>
+                </li>
+              ))}
+              {mySquad.length === 0 && (
+                <li className="text-gray-500">No players won yet.</li>
+              )}
             </ul>
           </section>
 
