@@ -187,8 +187,8 @@ export function AdminVenues() {
             </div>
           </>
         ) : (
-          <div className="flex items-center justify-between gap-2">
-            <div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0 break-words">
               <span className={`font-medium ${v.retired ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'}`}>
                 {v.name}
               </span>
@@ -200,7 +200,7 @@ export function AdminVenues() {
               )}
               <div className="text-xs text-gray-400 dark:text-gray-500">Added {formatAddedDate(v)}</div>
             </div>
-            <span className="flex shrink-0 gap-3">
+            <span className="flex shrink-0 flex-wrap gap-3">
               {v.retired ? (
                 <button
                   onClick={() => unretireVenue(v.venueId)}

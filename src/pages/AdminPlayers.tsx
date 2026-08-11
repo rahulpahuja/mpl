@@ -79,8 +79,11 @@ export function AdminPlayers() {
           {pendingPlayerRequests.length > 0 && (
             <ul className="mt-3 divide-y divide-gray-200 dark:divide-gray-800 rounded-lg border border-amber-300 dark:border-amber-700 text-sm">
               {pendingPlayerRequests.map((v) => (
-                <li key={v.uid} className="flex items-center justify-between gap-2 px-3 py-2">
-                  <span className="text-gray-900 dark:text-gray-100">
+                <li
+                  key={v.uid}
+                  className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <span className="min-w-0 break-words text-gray-900 dark:text-gray-100">
                     {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
                     <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
                       Requested
@@ -89,7 +92,7 @@ export function AdminPlayers() {
                   <button
                     onClick={() => handleApproveRequest(v.uid)}
                     disabled={promoting}
-                    className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                    className="self-start rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 sm:self-auto"
                   >
                     Approve
                   </button>
@@ -126,7 +129,7 @@ export function AdminPlayers() {
                       setSelectedViewerId(v.uid)
                       setViewerSearch(`${v.displayName} (${v.phone || v.email})`)
                     }}
-                    className="block w-full px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    className="block w-full px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 break-words"
                   >
                     {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
                     {v.playerRequested && (

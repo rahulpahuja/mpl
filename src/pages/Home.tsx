@@ -149,10 +149,10 @@ export function Home() {
                 <li key={a.auctionId}>
                   <Link
                     to={`/viewer/${a.auctionId}`}
-                    className="flex items-center justify-between rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    className="flex items-center justify-between gap-3 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{a.name}</span>
-                    <span className="rounded-full bg-green-100 dark:bg-green-900/40 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                    <span className="truncate font-medium text-gray-900 dark:text-gray-100">{a.name}</span>
+                    <span className="shrink-0 rounded-full bg-green-100 dark:bg-green-900/40 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
                       live
                     </span>
                   </Link>
@@ -171,7 +171,7 @@ export function Home() {
                 key={a!.auctionId}
                 className="flex flex-wrap items-center gap-3 rounded-lg border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/40 px-4 py-3 text-sm text-green-800 dark:text-green-300"
               >
-                <span>
+                <span className="min-w-0 flex-1 break-words">
                   <span className="font-medium">{a!.name}</span> is live now — time to take part.
                 </span>
                 <Link
@@ -182,7 +182,7 @@ export function Home() {
                         ? `/bid/${a!.auctionId}`
                         : `/viewer/${a!.auctionId}`
                   }
-                  className="ml-auto font-medium underline"
+                  className="ml-auto shrink-0 font-medium underline"
                 >
                   {user.role === 'auctionManager' ? 'Manage' : user.role === 'manager' ? 'Bid now' : 'Watch'}
                 </Link>
@@ -202,20 +202,22 @@ export function Home() {
             return (
               <li
                 key={auctionId}
-                className="flex flex-wrap items-center gap-3 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm px-4 py-3"
+                className="flex flex-col gap-2 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm px-4 py-3 sm:flex-row sm:items-center sm:gap-3"
               >
-                <span className="font-medium text-gray-900 dark:text-gray-100">
-                  {auction?.name ?? auctionId}
-                </span>
-                {auction && (
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[auction.status]}`}
-                  >
-                    {auction.status}
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <span className="truncate font-medium text-gray-900 dark:text-gray-100">
+                    {auction?.name ?? auctionId}
                   </span>
-                )}
-                <span className="font-mono text-xs text-gray-400">{auctionId}</span>
-                <span className="ml-auto flex gap-3">
+                  {auction && (
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[auction.status]}`}
+                    >
+                      {auction.status}
+                    </span>
+                  )}
+                  <span className="shrink-0 font-mono text-xs text-gray-400">{auctionId}</span>
+                </div>
+                <span className="flex flex-wrap gap-x-4 gap-y-1 sm:ml-auto">
                   {user.role === 'auctionManager' && (
                     <>
                       <Link

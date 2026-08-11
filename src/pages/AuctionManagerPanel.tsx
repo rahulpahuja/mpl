@@ -181,9 +181,9 @@ export function AuctionManagerPanel() {
                   <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Bid history</h3>
                   <ul className="mt-2 space-y-1 text-sm max-h-48 overflow-y-auto">
                     {sortedBids.map((b, i) => (
-                      <li key={i} className="flex justify-between text-gray-600 dark:text-gray-400">
-                        <span>{b.managerName}</span>
-                        <span className="font-mono">{b.amount}</span>
+                      <li key={i} className="flex justify-between gap-2 text-gray-600 dark:text-gray-400">
+                        <span className="truncate">{b.managerName}</span>
+                        <span className="shrink-0 font-mono">{b.amount}</span>
                       </li>
                     ))}
                     {sortedBids.length === 0 && <li className="text-gray-500">No bids yet.</li>}
@@ -199,13 +199,13 @@ export function AuctionManagerPanel() {
               {queue.map((p) => (
                 <li
                   key={p.playerId}
-                  className="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm"
+                  className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm"
                 >
-                  <span className="text-gray-900 dark:text-gray-100">{p.name}</span>
+                  <span className="truncate text-gray-900 dark:text-gray-100">{p.name}</span>
                   <button
                     onClick={() => run(() => setCurrentPlayer(auctionId, p.playerId))}
                     disabled={busy || !!currentPlayer}
-                    className="text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                    className="shrink-0 text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
                   >
                     Start
                   </button>
@@ -222,13 +222,13 @@ export function AuctionManagerPanel() {
             {wallets.map((tm) => (
               <li
                 key={tm.managerId}
-                className="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2"
+                className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2"
               >
-                <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                   <TeamAvatar teamName={tm.name} logoId={tm.logoId} />
-                  {tm.name}
+                  <span className="truncate">{tm.name}</span>
                 </span>
-                <span className="text-gray-500">
+                <span className="shrink-0 text-gray-500">
                   Balance <span className="font-mono text-gray-900 dark:text-gray-100">{tm.remainingTokens}</span>
                 </span>
               </li>
@@ -250,7 +250,7 @@ export function AuctionManagerPanel() {
                   key={p.playerId}
                   className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm"
                 >
-                  <span className="text-gray-900 dark:text-gray-100">
+                  <span className="min-w-0 break-words text-gray-900 dark:text-gray-100">
                     {p.name} <span className="text-gray-500">({p.position}) · Base {p.basePrice}</span>
                   </span>
                   <div className="flex items-center gap-2">

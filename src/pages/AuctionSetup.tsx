@@ -478,15 +478,18 @@ export function AuctionSetup() {
                 {viewerCandidates
                   .filter((v) => v.playerRequested)
                   .map((v) => (
-                    <li key={v.uid} className="flex items-center justify-between gap-2 px-3 py-2">
-                      <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                    <li
+                      key={v.uid}
+                      className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                         <Avatar
                           name={v.displayName}
                           encryptedPhoto={v.encryptedPhoto}
                           photoURL={v.photoURL}
                           avatarId={v.avatarId}
                         />
-                        <span>
+                        <span className="min-w-0 break-words">
                           {v.displayName}{' '}
                           <span className="text-gray-500">— {v.phone || v.email}</span>
                           <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
@@ -497,7 +500,7 @@ export function AuctionSetup() {
                       <button
                         onClick={() => handleApproveRequest(v.uid)}
                         disabled={promoting}
-                        className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                        className="self-start rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 sm:self-auto"
                       >
                         Approve
                       </button>
@@ -541,7 +544,7 @@ export function AuctionSetup() {
                         photoURL={v.photoURL}
                         avatarId={v.avatarId}
                       />
-                      <span>
+                      <span className="min-w-0 break-words">
                         {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
                         {v.playerRequested && (
                           <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
@@ -662,15 +665,18 @@ export function AuctionSetup() {
                   </li>
                 )}
                 {registeredPlayers.map((p) => (
-                  <li key={p.uid} className="flex items-center justify-between gap-2 py-2">
-                    <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                  <li
+                    key={p.uid}
+                    className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                       <Avatar
                         name={p.displayName}
                         encryptedPhoto={p.encryptedPhoto}
                         photoURL={p.photoURL}
                         avatarId={p.avatarId}
                       />
-                      <span>
+                      <span className="min-w-0 break-words">
                         {p.displayName}
                         {p.role !== 'player' && (
                           <span className="ml-2 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
@@ -689,7 +695,7 @@ export function AuctionSetup() {
                         </span>
                       </span>
                     </span>
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
                       <input
                         type="number"
                         value={registeredBasePrices[p.uid] ?? ''}
@@ -816,17 +822,22 @@ export function AuctionSetup() {
               </p>
               <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
                 {managersWithoutTeam.map((m) => (
-                  <li key={m.uid} className="flex items-center justify-between gap-2 py-2">
-                    <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                  <li
+                    key={m.uid}
+                    className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                       <Avatar
                         name={m.displayName}
                         encryptedPhoto={m.encryptedPhoto}
                         photoURL={m.photoURL}
                         avatarId={m.avatarId}
                       />
-                      {m.displayName} <span className="text-gray-500">({m.email})</span>
+                      <span className="min-w-0 truncate">
+                        {m.displayName} <span className="text-gray-500">({m.email})</span>
+                      </span>
                     </span>
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
                       <input
                         value={newTeamNames[m.uid] ?? ''}
                         onChange={(e) =>
@@ -851,12 +862,12 @@ export function AuctionSetup() {
 
           <ul className="mt-4 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
             {auction.teamManagers.map((tm) => (
-              <li key={tm.teamId} className="flex justify-between py-2">
-                <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+              <li key={tm.teamId} className="flex flex-wrap justify-between gap-x-3 gap-y-1 py-2">
+                <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                   <TeamAvatar teamName={tm.name} logoId={tm.logoId} />
-                  {tm.name}
+                  <span className="truncate">{tm.name}</span>
                 </span>
-                <span className="text-gray-500">
+                <span className="shrink-0 text-gray-500">
                   Purse: {tm.purse} · Max players: {tm.maxPlayers}
                 </span>
               </li>

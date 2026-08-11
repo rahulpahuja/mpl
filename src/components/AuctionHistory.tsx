@@ -55,10 +55,10 @@ export function AuctionHistory({
                 key={auctionId}
                 className="flex items-center justify-between gap-2 rounded-lg border border-gray-200/80 dark:border-gray-800/80 px-3 py-2"
               >
-                <span className="text-gray-900 dark:text-gray-100">{auction?.name ?? auctionId}</span>
+                <span className="truncate text-gray-900 dark:text-gray-100">{auction?.name ?? auctionId}</span>
                 {auction && (
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[auction.status]}`}
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[auction.status]}`}
                   >
                     {auction.status}
                   </span>

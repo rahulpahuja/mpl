@@ -86,13 +86,13 @@ export function AdminUsers() {
           {invites.length > 0 && (
             <ul className="mt-3 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
               {invites.map((inv) => (
-                <li key={inv.email} className="flex items-center justify-between py-1.5">
-                  <span className="text-gray-600 dark:text-gray-400">
+                <li key={inv.email} className="flex items-center justify-between gap-2 py-1.5">
+                  <span className="min-w-0 break-words text-gray-600 dark:text-gray-400">
                     {inv.email} <span className="text-gray-400">— pending as {inv.role}</span>
                   </span>
                   <button
                     onClick={() => deleteInvite(inv.email)}
-                    className="text-xs text-red-600 dark:text-red-400 hover:underline"
+                    className="shrink-0 text-xs text-red-600 dark:text-red-400 hover:underline"
                   >
                     Cancel
                   </button>

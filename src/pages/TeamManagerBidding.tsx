@@ -132,10 +132,10 @@ export function TeamManagerBidding() {
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
             {auction.name} <span className="text-gray-400 font-mono text-lg">#{auction.auctionId}</span>
           </h1>
-          <div className="text-right">
+          <div className="max-w-[70vw] text-right">
             <div className="flex items-center justify-end gap-2 text-sm text-gray-500">
               <TeamAvatar teamName={myTeam.name} logoId={myTeam.logoId} size={5} />
-              {myTeam.name} balance
+              <span className="truncate">{myTeam.name} balance</span>
             </div>
             <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               {myTeam.remainingTokens}
@@ -218,9 +218,9 @@ export function TeamManagerBidding() {
             <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Bid history</h2>
             <ul className="mt-3 space-y-1 text-sm max-h-64 overflow-y-auto">
               {sortedBids.map((b, i) => (
-                <li key={i} className="flex justify-between text-gray-600 dark:text-gray-400">
-                  <span>{b.managerName}</span>
-                  <span className="font-mono">{b.amount}</span>
+                <li key={i} className="flex justify-between gap-2 text-gray-600 dark:text-gray-400">
+                  <span className="truncate">{b.managerName}</span>
+                  <span className="shrink-0 font-mono">{b.amount}</span>
                 </li>
               ))}
               {sortedBids.length === 0 && <li className="text-gray-500">No bids yet.</li>}
@@ -238,15 +238,18 @@ export function TeamManagerBidding() {
             {pendingPlayerRequests.length > 0 && (
               <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-800 rounded-lg border border-amber-300 dark:border-amber-700 text-sm">
                 {pendingPlayerRequests.map((v) => (
-                  <li key={v.uid} className="flex items-center justify-between gap-2 px-3 py-2">
-                    <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                  <li
+                    key={v.uid}
+                    className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                       <Avatar
                         name={v.displayName}
                         encryptedPhoto={v.encryptedPhoto}
                         photoURL={v.photoURL}
                         avatarId={v.avatarId}
                       />
-                      <span>
+                      <span className="min-w-0 break-words">
                         {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
                         <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
                           Requested
@@ -256,7 +259,7 @@ export function TeamManagerBidding() {
                     <button
                       onClick={() => handleApproveRequest(v.uid)}
                       disabled={promoting}
-                      className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                      className="self-start rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 sm:self-auto"
                     >
                       Approve
                     </button>
@@ -300,7 +303,7 @@ export function TeamManagerBidding() {
                         photoURL={v.photoURL}
                         avatarId={v.avatarId}
                       />
-                      <span>
+                      <span className="min-w-0 break-words">
                         {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
                         {v.playerRequested && (
                           <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">

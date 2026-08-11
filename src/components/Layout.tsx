@@ -24,10 +24,10 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-950/60 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-y-2 px-4 py-3">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3">
           <Link
             to="/"
-            className="bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-base sm:text-lg font-semibold tracking-tight text-transparent"
+            className="shrink-0 bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-base sm:text-lg font-semibold tracking-tight text-transparent"
           >
             MPL Auction Manager
           </Link>

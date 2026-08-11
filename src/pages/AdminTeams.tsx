@@ -57,7 +57,7 @@ function ManagerPicker({
                   photoURL={m.photoURL}
                   avatarId={m.avatarId}
                 />
-                <span>
+                <span className="min-w-0 break-words">
                   {m.displayName}{' '}
                   <span className="text-gray-500">
                     — {m.userCode ? `ID ${m.userCode} · ` : ''}
@@ -252,17 +252,20 @@ export function AdminTeams() {
               }
 
               return (
-                <li key={t.teamId} className="flex items-center justify-between gap-2 py-2">
-                  <span className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                <li
+                  key={t.teamId}
+                  className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                     <TeamAvatar teamName={t.teamName} logoId={t.logoId} />
-                    {t.teamName}
+                    <span className="truncate">{t.teamName}</span>
                   </span>
-                  <span className="flex items-center gap-3 text-gray-500">
-                    Manager: {t.managerName}
+                  <span className="flex flex-wrap items-center gap-3 text-gray-500">
+                    <span className="truncate">Manager: {t.managerName}</span>
                     <WhatsAppButton phone={manager?.whatsapp || manager?.phone} />
                     <button
                       onClick={() => startEdit(t.teamId, t.teamName, t.managerId, t.logoId)}
-                      className="text-red-600 dark:text-red-400 hover:underline"
+                      className="shrink-0 text-red-600 dark:text-red-400 hover:underline"
                     >
                       Edit
                     </button>

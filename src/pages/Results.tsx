@@ -74,20 +74,20 @@ export function Results() {
                 className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-4"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="flex items-center gap-2 font-semibold text-gray-900 dark:text-gray-100">
+                  <h3 className="flex min-w-0 items-center gap-2 font-semibold text-gray-900 dark:text-gray-100">
                     <TeamAvatar teamName={team.teamName} logoId={team.logoId} />
-                    {team.teamName}
+                    <span className="truncate">{team.teamName}</span>
                   </h3>
-                  <span className="text-sm text-gray-500">Balance {team.balance}</span>
+                  <span className="shrink-0 text-sm text-gray-500">Balance {team.balance}</span>
                 </div>
                 <p className="mt-1 text-xs text-gray-500">
                   Spent {team.spent} of {team.initialPurse}
                 </p>
                 <ul className="mt-3 space-y-1 text-sm">
                   {team.players.map((p) => (
-                    <li key={p.playerId} className="flex justify-between text-gray-600 dark:text-gray-400">
-                      <span>{p.playerName}</span>
-                      <span className="font-mono">{p.soldAt}</span>
+                    <li key={p.playerId} className="flex justify-between gap-2 text-gray-600 dark:text-gray-400">
+                      <span className="truncate">{p.playerName}</span>
+                      <span className="shrink-0 font-mono">{p.soldAt}</span>
                     </li>
                   ))}
                   {team.players.length === 0 && (
@@ -149,7 +149,7 @@ export function Results() {
                     key={p.playerId}
                     className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm"
                   >
-                    <span className="text-gray-900 dark:text-gray-100">
+                    <span className="min-w-0 break-words text-gray-900 dark:text-gray-100">
                       {p.name} <span className="text-gray-500">({p.position}) · Base {p.basePrice}</span>
                     </span>
                     <div className="flex items-center gap-2">
