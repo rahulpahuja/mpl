@@ -12,9 +12,7 @@ import { useAuthStore } from '../store/authStore'
 import { placeBid } from '../lib/auctions'
 import { promoteViewerToPlayer } from '../lib/users'
 
-// Quick-bid shortcuts scale with the auction's own bid increment instead of
-// fixed amounts — a 50/100 jump is meaningless once the increment is 1000.
-const QUICK_BID_MULTIPLIERS = [1, 2, 5, 10, 20, 50]
+const QUICK_BID_STEPS = [500, 1000, 2000, 5000, 10000]
 
 export function TeamManagerBidding() {
   const { auctionId } = useParams<{ auctionId: string }>()
@@ -100,7 +98,7 @@ export function TeamManagerBidding() {
       ? currentPlayer.currentBid + auction.bidIncrement
       : currentPlayer.basePrice
     : 0
-  const quickBidSteps = QUICK_BID_MULTIPLIERS.map((m) => m * auction.bidIncrement)
+  const quickBidSteps = QUICK_BID_STEPS
   const isMyBid = currentPlayer?.currentBidder === user.uid
   const mySquad = auction.players
     .filter((p) => p.currentBidder === user.uid && p.status === 'sold')
