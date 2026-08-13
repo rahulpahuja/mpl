@@ -145,6 +145,24 @@ export async function addPlayers(auctionId: string, players: Omit<Player, 'curre
   })
 }
 
+// Player name is a snapshot copied into `players` when they're added (see
+// addPlayers), not read live from the users collection — so a later profile
+// name change has to be pushed out explicitly. Called from updateOwnProfile
+// for every auction the player is part of. Unlike basePrice/status, name is
+// just identity, so this applies regardless of the player's auction status.
+export async function syncPlayerName(auctionId: string, playerId: string, name: string) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) return
+    const auction = snap.data() as Auction
+    const player = auction.players.find((p) => p.playerId === playerId)
+    if (!player || player.name === name) return
+    tx.update(auctionRef(auctionId), {
+      players: auction.players.map((p) => (p.playerId === playerId ? { ...p, name } : p)),
+    })
+  })
+}
+
 // Only lets a still-open player (never went under the hammer) be removed —
 // a sold/unsold player has already affected a team's purse/roster or auction
 // history, and unwinding that safely is out of scope for a roster-cleanup action.
