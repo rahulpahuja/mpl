@@ -146,6 +146,7 @@ export function AdminTeams() {
       await updateTeam(teamId, {
         teamName: editName.trim(),
         logoId: editLogoId,
+        logoImage: editLogoImage,
         jerseyColor: editJerseyColor,
         ...(manager ? { managerId: manager.uid, managerName: manager.displayName } : {}),
       })
@@ -325,14 +326,21 @@ export function AdminTeams() {
                   className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
-                    <TeamAvatar teamName={t.teamName} logoId={t.logoId} />
+                    <TeamAvatar teamName={t.teamName} logoId={t.logoId} logoImage={t.logoImage} />
+                    <span
+                      title="Jersey color"
+                      className="h-3.5 w-3.5 shrink-0 rounded-full border border-black/10 dark:border-white/10"
+                      style={{ backgroundColor: t.jerseyColor || DEFAULT_JERSEY_COLOR }}
+                    />
                     <span className="truncate">{t.teamName}</span>
                   </span>
                   <span className="flex flex-wrap items-center gap-3 text-gray-500">
                     <span className="truncate">Manager: {t.managerName}</span>
                     <WhatsAppButton phone={manager?.whatsapp || manager?.phone} />
                     <button
-                      onClick={() => startEdit(t.teamId, t.teamName, t.managerId, t.logoId)}
+                      onClick={() =>
+                        startEdit(t.teamId, t.teamName, t.managerId, t.logoId, t.logoImage, t.jerseyColor)
+                      }
                       className="shrink-0 text-red-600 dark:text-red-400 hover:underline"
                     >
                       Edit
