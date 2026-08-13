@@ -72,7 +72,7 @@ function ManagerPicker({
           ))}
           {candidates.length === 0 && (
             <li className="px-3 py-2 text-gray-500">
-              No "Team Manager" users match. Promote someone to Team Manager from the Users page
+              No "Captain" users match. Promote someone to Captain from the Users page
               first.
             </li>
           )}

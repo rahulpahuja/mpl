@@ -27,8 +27,8 @@ export const helpSections: HelpSection[] = [
       {
         heading: 'What this app does',
         steps: [
-          'Runs a live player auction: an Auction Manager puts players up one at a time, Team Managers bid tokens from a fixed purse, and everyone else can watch live.',
-          'Five roles: Admin (sets up auctions and users), Auction Manager (runs the live auction), Team Manager (bids), Player (can be auctioned), and Viewer (watches, no account needed).',
+          'Runs a live player auction: an Auction Manager puts players up one at a time, Captains bid tokens from a fixed purse, and everyone else can watch live.',
+          'Five roles: Admin (sets up auctions and users), Auction Manager (runs the live auction), Captain (bids), Player (can be auctioned), and Viewer (watches, no account needed).',
           'All bids, purses, and the current player update in real time for everyone looking at the same auction.',
         ],
       },
@@ -36,7 +36,7 @@ export const helpSections: HelpSection[] = [
         heading: 'Getting an account',
         steps: [
           'Sign in with Google from the Sign in screen to get an account. New sign-ins have no special access until an Admin assigns them.',
-          'Only an Admin can promote someone to Team Manager, Auction Manager, or Admin, from the Admin Dashboard.',
+          'Only an Admin can promote someone to Captain, Auction Manager, or Admin, from the Admin Dashboard.',
           'Viewers don’t sign in at all — use "Join an auction as a viewer" and enter the Auction ID you were given.',
         ],
       },
@@ -67,7 +67,7 @@ export const helpSections: HelpSection[] = [
         steps: [
           'Create a new auction by typing a name and clicking "Create auction" — this generates a shareable Auction ID.',
           'Use the Setup / Manage / Results / View links next to an auction to configure it, run it live, see outcomes, or watch it as a spectator.',
-          'In the Users table, change anyone’s role, and assign Team Managers or Auction Managers to a specific auction.',
+          'In the Users table, change anyone’s role, and assign Captains or Auction Managers to a specific auction.',
           'Delete an auction from the Auctions table once it’s no longer needed — this is permanent and also removes it from every assigned manager’s list.',
         ],
       },

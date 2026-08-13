@@ -119,7 +119,7 @@ export function Home() {
           <div className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm px-4 py-3">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Want to be up for auction? Request to become a Player and an Admin, Auction Manager,
-              or Team Manager can approve it.
+              or Captain can approve it.
             </p>
             {user.playerRequested ? (
               <p className="mt-2 text-sm font-medium text-amber-600 dark:text-amber-400">

@@ -955,7 +955,7 @@ export function AuctionSetup() {
           {managersWithoutTeam.length > 0 && (
             <div className="mt-6 border-t border-gray-200 dark:border-gray-800 pt-4">
               <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                Team Manager users without a team yet
+                Captains without a team yet
               </h3>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Give them a team name to create their team and add it straight to this auction
