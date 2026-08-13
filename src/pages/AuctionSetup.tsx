@@ -74,8 +74,12 @@ export function AuctionSetup() {
   const [promoting, setPromoting] = useState(false)
   const [registeredBasePrices, setRegisteredBasePrices] = useState<Record<string, string>>({})
   const [registeredPlayerSearch, setRegisteredPlayerSearch] = useState('')
-  const [addingRegisteredPlayerId, setAddingRegisteredPlayerId] = useState<string | null>(null)
-  const addingRegisteredPlayerRef = useRef<string | null>(null)
+  // A Set (not a single id) so adding several registered players back-to-back
+  // only locks the row actually in flight — a single shared "is anything
+  // adding" flag disabled every other row's button too, silently dropping
+  // clicks on rows the admin tried to add while an earlier one was pending.
+  const [addingRegisteredPlayerIds, setAddingRegisteredPlayerIds] = useState<Set<string>>(new Set())
+  const addingRegisteredPlayerIdsRef = useRef<Set<string>>(new Set())
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [removingPlayerId, setRemovingPlayerId] = useState<string | null>(null)
   const removingPlayerRef = useRef<string | null>(null)
@@ -229,9 +233,9 @@ export function AuctionSetup() {
     role: UserRole,
     playingRole: PlayingRole | undefined,
   ) {
-    if (!auctionId || addingRegisteredPlayerRef.current) return
-    addingRegisteredPlayerRef.current = uid
-    setAddingRegisteredPlayerId(uid)
+    if (!auctionId || addingRegisteredPlayerIdsRef.current.has(uid)) return
+    addingRegisteredPlayerIdsRef.current.add(uid)
+    setAddingRegisteredPlayerIds((prev) => new Set(prev).add(uid))
     try {
       const basePrice = Number(registeredBasePrices[uid]) || 0
       // Adding a Viewer to a roster means they're playing — auto-promote them to
@@ -252,9 +256,15 @@ export function AuctionSetup() {
         delete next[uid]
         return next
       })
+    } catch (err) {
+      alert(err instanceof Error ? err.message : `Failed to add ${name}`)
     } finally {
-      addingRegisteredPlayerRef.current = null
-      setAddingRegisteredPlayerId(null)
+      addingRegisteredPlayerIdsRef.current.delete(uid)
+      setAddingRegisteredPlayerIds((prev) => {
+        const next = new Set(prev)
+        next.delete(uid)
+        return next
+      })
     }
   }
 
@@ -308,13 +318,27 @@ export function AuctionSetup() {
 
   async function handleImportCsv() {
     if (!csvText.trim() || !auctionId || importingCsvRef.current) return
+    const totalLines = csvText.split('\n').filter((line) => line.trim()).length
     const players = parseCsv(csvText)
-    if (players.length === 0) return
+    // Lines missing a name (e.g. a leading comma, or a pasted header row
+    // that doesn't parse the way it looks) are dropped silently by
+    // parseCsv's filter — surface that instead of the import looking like
+    // it just didn't do anything.
+    const skipped = totalLines - players.length
+    if (players.length === 0) {
+      alert('No valid rows found — each line needs at least a name before the first comma.')
+      return
+    }
     importingCsvRef.current = true
     setImportingCsv(true)
     try {
       await addPlayers(auctionId, players)
       setCsvText('')
+      if (skipped > 0) {
+        alert(`Imported ${players.length} player${players.length === 1 ? '' : 's'} — skipped ${skipped} line${skipped === 1 ? '' : 's'} with no name.`)
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to import players')
     } finally {
       importingCsvRef.current = false
       setImportingCsv(false)
@@ -855,10 +879,10 @@ export function AuctionSetup() {
                             p.playingRole,
                           )
                         }
-                        disabled={addingRegisteredPlayerId !== null}
+                        disabled={addingRegisteredPlayerIds.has(p.uid)}
                         className="whitespace-nowrap rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
                       >
-                        {addingRegisteredPlayerId === p.uid ? 'Adding...' : 'Add'}
+                        {addingRegisteredPlayerIds.has(p.uid) ? 'Adding...' : 'Add'}
                       </button>
                     </div>
                   </li>
