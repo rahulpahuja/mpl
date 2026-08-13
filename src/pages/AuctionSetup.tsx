@@ -1007,22 +1007,29 @@ export function AuctionSetup() {
           )}
 
           <ul className="mt-4 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
-            {auction.teamManagers.map((tm) => (
-              <li key={tm.teamId} className="flex flex-wrap justify-between gap-x-3 gap-y-1 py-2">
-                <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
-                  <TeamAvatar
-                    teamName={tm.name}
-                    logoId={tm.logoId}
-                    logoImage={tm.logoImage}
-                    jerseyColor={tm.jerseyColor}
-                  />
-                  <span className="truncate">{tm.name}</span>
-                </span>
-                <span className="shrink-0 text-gray-500">
-                  Purse: {tm.purse} · Max players: {tm.maxPlayers}
-                </span>
-              </li>
-            ))}
+            {auction.teamManagers.map((tm) => {
+              // Prefer the live Team doc over the snapshot taken at add-time —
+              // a logo/jersey color set on the Teams page afterwards would
+              // otherwise never show here (see TeamManagerEntry's never-
+              // re-synced-after-add caveat in types/index.ts).
+              const liveTeam = teams.find((t) => t.teamId === tm.teamId)
+              return (
+                <li key={tm.teamId} className="flex flex-wrap justify-between gap-x-3 gap-y-1 py-2">
+                  <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
+                    <TeamAvatar
+                      teamName={tm.name}
+                      logoId={liveTeam?.logoId ?? tm.logoId}
+                      logoImage={liveTeam?.logoImage ?? tm.logoImage}
+                      jerseyColor={liveTeam?.jerseyColor ?? tm.jerseyColor}
+                    />
+                    <span className="truncate">{tm.name}</span>
+                  </span>
+                  <span className="shrink-0 text-gray-500">
+                    Purse: {tm.purse} · Max players: {tm.maxPlayers}
+                  </span>
+                </li>
+              )
+            })}
             {auction.teamManagers.length === 0 && (
               <li className="py-2 text-gray-500">No teams added yet.</li>
             )}
