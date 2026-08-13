@@ -47,6 +47,9 @@ export function ProfileForm({
     initial.bowlingHandedness ?? '',
   )
   const [playingRole, setPlayingRole] = useState<PlayingRole | ''>(initial.playingRole ?? '')
+  const [jerseyNumber, setJerseyNumber] = useState(
+    initial.jerseyNumber !== undefined ? String(initial.jerseyNumber) : '',
+  )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
