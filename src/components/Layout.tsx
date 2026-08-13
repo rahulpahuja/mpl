@@ -10,7 +10,7 @@ import { useKeyboardShortcutsEnabled } from '../hooks/useKeyboardShortcutsEnable
 const roleLabel: Record<string, string> = {
   admin: 'Admin',
   auctionManager: 'Auction Manager',
-  manager: 'Team Manager',
+  manager: 'Captain',
   player: 'Player',
   viewer: 'Viewer',
 }
