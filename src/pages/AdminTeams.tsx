@@ -4,12 +4,15 @@ import { AdminNav } from '../components/AdminNav'
 import { Avatar } from '../components/Avatar'
 import { AvatarPicker } from '../components/AvatarPicker'
 import { TeamAvatar } from '../components/TeamAvatar'
+import { TeamLogoUpload } from '../components/TeamLogoUpload'
 import { WhatsAppButton } from '../components/WhatsAppButton'
 import { useUsers } from '../hooks/useUsers'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { createTeam, updateTeam } from '../lib/teams'
 import type { AppUser } from '../types'
+
+const DEFAULT_JERSEY_COLOR = '#dc2626'
 
 function managerMatches(candidates: AppUser[], search: string) {
   const q = search.trim().toLowerCase()
@@ -87,6 +90,7 @@ export function AdminTeams() {
 
   const [teamName, setTeamName] = useState('')
   const [teamLogoId, setTeamLogoId] = useState<string | null>(null)
+  const [teamJerseyColor, setTeamJerseyColor] = useState(DEFAULT_JERSEY_COLOR)
   const [managerSearch, setManagerSearch] = useState('')
   const [selectedManagerId, setSelectedManagerId] = useState('')
   const [creatingTeam, setCreatingTeam] = useState(false)
@@ -94,6 +98,8 @@ export function AdminTeams() {
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editLogoId, setEditLogoId] = useState<string | null>(null)
+  const [editLogoImage, setEditLogoImage] = useState<string | null>(null)
+  const [editJerseyColor, setEditJerseyColor] = useState(DEFAULT_JERSEY_COLOR)
   const [editManagerSearch, setEditManagerSearch] = useState('')
   const [editManagerId, setEditManagerId] = useState('')
   const [savingEdit, setSavingEdit] = useState(false)
@@ -104,9 +110,10 @@ export function AdminTeams() {
     if (!manager) return
     setCreatingTeam(true)
     try {
-      await createTeam(teamName.trim(), manager.uid, manager.displayName, teamLogoId)
+      await createTeam(teamName.trim(), manager.uid, manager.displayName, teamLogoId, teamJerseyColor)
       setTeamName('')
       setTeamLogoId(null)
+      setTeamJerseyColor(DEFAULT_JERSEY_COLOR)
       setSelectedManagerId('')
       setManagerSearch('')
     } finally {
@@ -119,8 +126,12 @@ export function AdminTeams() {
     currentName: string,
     currentManagerId: string,
     currentLogoId: string | null | undefined,
+    currentLogoImage: string | null | undefined,
+    currentJerseyColor: string | null | undefined,
   ) {
     setEditLogoId(currentLogoId ?? null)
+    setEditLogoImage(currentLogoImage ?? null)
+    setEditJerseyColor(currentJerseyColor ?? DEFAULT_JERSEY_COLOR)
     setEditingTeamId(teamId)
     setEditName(currentName)
     setEditManagerId(currentManagerId)
@@ -135,6 +146,7 @@ export function AdminTeams() {
       await updateTeam(teamId, {
         teamName: editName.trim(),
         logoId: editLogoId,
+        jerseyColor: editJerseyColor,
         ...(manager ? { managerId: manager.uid, managerName: manager.displayName } : {}),
       })
       setEditingTeamId(null)

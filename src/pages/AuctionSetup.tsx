@@ -845,23 +845,38 @@ export function AuctionSetup() {
           </p>
           <input
             value={teamSearch}
-            onChange={(e) => setTeamSearch(e.target.value)}
+            onChange={(e) => {
+              setTeamSearch(e.target.value)
+              setSelectedTeamId('')
+            }}
             placeholder="Search teams by name or manager..."
             className="mt-3 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
           />
-          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-4">
-            <select
-              value={selectedTeamId}
-              onChange={(e) => setSelectedTeamId(e.target.value)}
-              className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-            >
-              <option value="">Select team...</option>
+          {teamSearch && !selectedTeamId && (
+            <ul className="mt-2 max-h-40 divide-y divide-gray-200 dark:divide-gray-800 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 text-sm">
               {availableTeams.map((t) => (
-                <option key={t.teamId} value={t.teamId}>
-                  {t.teamName} ({t.managerName})
-                </option>
+                <li key={t.teamId}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedTeamId(t.teamId)
+                      setTeamSearch(`${t.teamName} (${t.managerName})`)
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    <TeamAvatar teamName={t.teamName} logoId={t.logoId} logoImage={t.logoImage} />
+                    <span className="min-w-0 break-words">
+                      {t.teamName} <span className="text-gray-500">— {t.managerName}</span>
+                    </span>
+                  </button>
+                </li>
               ))}
-            </select>
+              {availableTeams.length === 0 && (
+                <li className="px-3 py-2 text-gray-500">No teams match "{teamSearch}".</li>
+              )}
+            </ul>
+          )}
+          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
             <input
               type="number"
               value={purse}
@@ -911,12 +926,8 @@ export function AuctionSetup() {
               </div>
             </div>
           )}
-          {availableTeams.length === 0 && (
-            <p className="mt-2 text-xs text-gray-500">
-              {teamSearch
-                ? `No teams match "${teamSearch}".`
-                : 'No existing teams available to add.'}
-            </p>
+          {!teamSearch && availableTeams.length === 0 && (
+            <p className="mt-2 text-xs text-gray-500">No existing teams available to add.</p>
           )}
 
           {managersWithoutTeam.length > 0 && (

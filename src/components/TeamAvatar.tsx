@@ -3,15 +3,28 @@ import { getDefaultAvatar } from '../lib/avatars'
 export function TeamAvatar({
   teamName,
   logoId,
+  logoImage,
   size = 8,
 }: {
   teamName: string
   logoId?: string | null
+  logoImage?: string | null
   size?: number
 }) {
   const preset = getDefaultAvatar(logoId)
   const dimension = `${size * 0.25}rem`
   const style = { width: dimension, height: dimension }
+
+  if (logoImage) {
+    return (
+      <img
+        src={logoImage}
+        alt=""
+        style={style}
+        className="shrink-0 rounded-full object-cover"
+      />
+    )
+  }
 
   if (preset) {
     return (

@@ -33,6 +33,9 @@ export interface AppUser {
   // these than upload their own photo. Mutually exclusive with encryptedPhoto
   // — setting one clears the other, see lib/users.ts.
   avatarId?: string | null
+  // Shirt number a player wears, picked from their own profile. No uniqueness
+  // constraint across a team — teams reconcile clashes themselves.
+  jerseyNumber?: number | null
 }
 
 export type PlayerStatus = 'open' | 'active' | 'sold' | 'unsold'
@@ -59,6 +62,9 @@ export interface TeamManagerEntry {
   // Snapshotted from Team.logoId at addTeamToAuction time — same
   // never-re-synced-after-add caveat as `name`, see lib/auctions.ts.
   logoId?: string | null
+  // Same snapshot caveat as logoId, for Team.logoImage/jerseyColor.
+  logoImage?: string | null
+  jerseyColor?: string | null
 }
 
 export type AuctionStatus = 'draft' | 'live' | 'completed'
@@ -106,6 +112,8 @@ export interface AuctionTeamStats {
   teamName: string
   managerId: string
   logoId?: string | null
+  logoImage?: string | null
+  jerseyColor?: string | null
   initialPurse: number
   spent: number
   balance: number
@@ -119,7 +127,16 @@ export interface Team {
   managerName: string
   // Preset logo id (see lib/avatars.ts DEFAULT_AVATARS) — teams reuse the
   // same preset set as user avatars rather than a separate icon library.
+  // Mutually exclusive with logoImage — setting one clears the other, see
+  // lib/teams.ts.
   logoId?: string | null
+  // Compressed JPEG data URL (see lib/imageProcessing.ts) of an uploaded team
+  // logo. Unlike profile photos this isn't encrypted — a team logo isn't
+  // personal data, same reasoning as Venue.images.
+  logoImage?: string | null
+  // Hex color (e.g. "#dc2626") picked via a color input, shown as the team's
+  // jersey color.
+  jerseyColor?: string | null
   createdAt: Timestamp
 }
 
