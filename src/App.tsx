@@ -4,6 +4,7 @@ import { AuthProvider } from './components/AuthProvider'
 import { CricketMotifs } from './components/CricketMotifs'
 import { ProfileSetupModal } from './components/ProfileSetupModal'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { useTimeBasedTheme } from './hooks/useTimeBasedTheme'
 import { lazyWithRetry } from './lib/lazyWithRetry'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
@@ -41,6 +42,7 @@ const Results = lazyWithRetry(() => import('./pages/Results').then((m) => ({ def
 const Docs = lazyWithRetry(() => import('./pages/Docs').then((m) => ({ default: m.Docs })))
 
 export default function App() {
+  useTimeBasedTheme()
   return (
     <AuthProvider>
       <BrowserRouter>

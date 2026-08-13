@@ -1,6 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import { applyTimeBasedTheme } from './lib/timeBasedTheme'
+
+// Applied synchronously before the first render so there's no flash of the
+// wrong theme while React boots.
+applyTimeBasedTheme()
 
 const requiredEnvVars = [
   'VITE_FIREBASE_API_KEY',

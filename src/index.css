@@ -1,7 +1,13 @@
 @import "tailwindcss";
 
+/* Dark mode is driven by a `.dark` class on <html> (set by
+   lib/timeBasedTheme.ts based on local wall-clock time), not by the
+   browser/OS color-scheme preference — this makes `dark:` utilities key off
+   that class instead of the default `prefers-color-scheme` media query. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
   --bg-sky: #eef4f2;
   --bg-ground: #e2f0e2;
   --stripe-a: rgba(46, 125, 74, 0.08);
@@ -11,16 +17,15 @@
   --grid-line: rgba(20, 60, 35, 0.05);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-sky: #0a1120;
-    --bg-ground: #071b12;
-    --stripe-a: rgba(52, 168, 83, 0.07);
-    --stripe-b: rgba(52, 168, 83, 0.015);
-    --glow-teamblue: rgba(59, 130, 246, 0.2);
-    --glow-saffron: rgba(255, 140, 26, 0.16);
-    --grid-line: rgba(255, 255, 255, 0.045);
-  }
+:root.dark {
+  color-scheme: dark;
+  --bg-sky: #0a1120;
+  --bg-ground: #071b12;
+  --stripe-a: rgba(52, 168, 83, 0.07);
+  --stripe-b: rgba(52, 168, 83, 0.015);
+  --glow-teamblue: rgba(59, 130, 246, 0.2);
+  --glow-saffron: rgba(255, 140, 26, 0.16);
+  --grid-line: rgba(255, 255, 255, 0.045);
 }
 
 body {
