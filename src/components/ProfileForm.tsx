@@ -113,6 +113,7 @@ export function ProfileForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div>
         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone number</label>
         <div className="mt-1 flex overflow-hidden rounded-lg border border-gray-300 dark:border-gray-700 focus-within:ring-2 focus-within:ring-red-500">
@@ -225,35 +226,34 @@ export function ProfileForm({
           ))}
         </select>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Batting handedness
-          </label>
-          <select
-            value={battingHandedness}
-            onChange={(e) => setBattingHandedness(e.target.value as Handedness | '')}
-            className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            <option value="">Not set</option>
-            <option value="right">Right-handed</option>
-            <option value="left">Left-handed</option>
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Bowling handedness
-          </label>
-          <select
-            value={bowlingHandedness}
-            onChange={(e) => setBowlingHandedness(e.target.value as Handedness | '')}
-            className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            <option value="">Not set</option>
-            <option value="right">Right-arm</option>
-            <option value="left">Left-arm</option>
-          </select>
-        </div>
+      <div>
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Batting handedness
+        </label>
+        <select
+          value={battingHandedness}
+          onChange={(e) => setBattingHandedness(e.target.value as Handedness | '')}
+          className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+        >
+          <option value="">Not set</option>
+          <option value="right">Right-handed</option>
+          <option value="left">Left-handed</option>
+        </select>
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Bowling handedness
+        </label>
+        <select
+          value={bowlingHandedness}
+          onChange={(e) => setBowlingHandedness(e.target.value as Handedness | '')}
+          className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+        >
+          <option value="">Not set</option>
+          <option value="right">Right-arm</option>
+          <option value="left">Left-arm</option>
+        </select>
+      </div>
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
       <button
