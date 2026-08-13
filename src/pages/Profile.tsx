@@ -58,6 +58,7 @@ export function Profile() {
         </div>
         <ProfileForm
           initial={{
+            displayName: user.displayName,
             phone: user.phone ?? '',
             whatsapp: user.whatsapp ?? '',
             location: user.location ?? '',

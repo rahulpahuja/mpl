@@ -37,7 +37,7 @@ export function ProfileSetupModal() {
         </p>
         <div className="mt-4">
           <ProfileForm
-            initial={{ phone: '', whatsapp: '', location: '' }}
+            initial={{ displayName: user.displayName, phone: '', whatsapp: '', location: '' }}
             submitLabel="Save and continue"
             onSave={async (fields) => {
               await updateOwnProfile(user.uid, fields)

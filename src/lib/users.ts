@@ -22,6 +22,7 @@ export async function requestToBePlayer(uid: string) {
 }
 
 export interface ProfileFields {
+  displayName: string
   phone: string
   whatsapp: string
   location: string

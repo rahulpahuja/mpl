@@ -42,6 +42,7 @@ export function ProfileForm({
   onSave: (fields: ProfileFields) => Promise<void>
   submitLabel?: string
 }) {
+  const [displayName, setDisplayName] = useState(initial.displayName)
   const [phone, setPhone] = useState(localDigits(initial.phone))
   const [whatsapp, setWhatsapp] = useState(localDigits(initial.whatsapp))
   const [sameAsPhone, setSameAsPhone] = useState(
@@ -78,6 +79,10 @@ export function ProfileForm({
     e.preventDefault()
     setError(null)
 
+    if (displayName.trim() === '') {
+      setError('Enter your name')
+      return
+    }
     if (!isValidPhone(phone)) {
       setError('Enter a valid 10-digit phone number')
       return
@@ -94,6 +99,7 @@ export function ProfileForm({
     setSaving(true)
     try {
       await onSave({
+        displayName: displayName.trim(),
         phone: toStoredPhone(phone),
         whatsapp: toStoredPhone(whatsapp),
         location: location.trim(),
@@ -114,6 +120,15 @@ export function ProfileForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div>
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+        <input
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          maxLength={80}
+          className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+        />
+      </div>
       <div>
         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone number</label>
         <div className="mt-1 flex overflow-hidden rounded-lg border border-gray-300 dark:border-gray-700 focus-within:ring-2 focus-within:ring-red-500">
