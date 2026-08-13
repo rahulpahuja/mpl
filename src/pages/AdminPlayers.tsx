@@ -157,6 +157,7 @@ export function AdminPlayers() {
               <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
                 <tr>
                   <th className="px-4 py-2 font-medium">Name</th>
+                  <th className="px-4 py-2 font-medium">Jersey #</th>
                   <th className="px-4 py-2 font-medium">Role</th>
                   <th className="px-4 py-2 font-medium">Email</th>
                   <th className="px-4 py-2 font-medium">Phone</th>
@@ -178,6 +179,9 @@ export function AdminPlayers() {
                         />
                         {p.displayName}
                       </div>
+                    </td>
+                    <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
+                      {p.jerseyNumber ?? <span className="text-gray-400">—</span>}
                     </td>
                     <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
                       {p.playingRole ? (
@@ -206,7 +210,7 @@ export function AdminPlayers() {
                 ))}
                 {players.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-3 text-gray-500">
+                    <td colSpan={8} className="px-4 py-3 text-gray-500">
                       {playerSearch ? `No players match "${playerSearch}".` : 'No players yet.'}
                     </td>
                   </tr>

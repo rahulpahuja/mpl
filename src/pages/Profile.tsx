@@ -62,6 +62,7 @@ export function Profile() {
             battingHandedness: user.battingHandedness,
             bowlingHandedness: user.bowlingHandedness,
             playingRole: user.playingRole,
+            jerseyNumber: user.jerseyNumber ?? undefined,
           }}
           onSave={(fields) => updateOwnProfile(user.uid, fields)}
         />

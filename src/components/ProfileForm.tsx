@@ -25,6 +25,12 @@ function isValidPhone(value: string) {
   return value === '' || /^\d{10}$/.test(value)
 }
 
+function isValidJerseyNumber(value: string) {
+  if (value === '') return true
+  const n = Number(value)
+  return Number.isInteger(n) && n >= 0 && n <= 99
+}
+
 export function ProfileForm({
   initial,
   onSave,
@@ -76,6 +82,10 @@ export function ProfileForm({
       setError('Enter a valid 10-digit WhatsApp number')
       return
     }
+    if (!isValidJerseyNumber(jerseyNumber)) {
+      setError('Enter a jersey number between 0 and 99')
+      return
+    }
 
     setSaving(true)
     try {
@@ -86,6 +96,7 @@ export function ProfileForm({
         battingHandedness: battingHandedness || undefined,
         bowlingHandedness: bowlingHandedness || undefined,
         playingRole: playingRole || undefined,
+        jerseyNumber: jerseyNumber === '' ? undefined : Number(jerseyNumber),
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save profile')
@@ -143,6 +154,19 @@ export function ProfileForm({
         <div className="mt-1">
           <LocationAutocomplete value={location} onChange={setLocation} />
         </div>
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Jersey number
+        </label>
+        <input
+          value={jerseyNumber}
+          onChange={(e) => setJerseyNumber(e.target.value.replace(/\D/g, '').slice(0, 2))}
+          inputMode="numeric"
+          maxLength={2}
+          placeholder="e.g. 7"
+          className="mt-1 w-24 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+        />
       </div>
       <div>
         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
