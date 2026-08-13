@@ -83,7 +83,7 @@ export const helpSections: HelpSection[] = [
         steps: [
           'Set the bid increment — the minimum amount each new bid must beat the current bid by.',
           'Add players one at a time, or bulk-import with the CSV box: one player per line, formatted "name, position, basePrice".',
-          'Register each Team Manager with a team name and an initial token purse. They must already have a "Team Manager" account (ask an Admin to create/promote one if they don’t show up in the dropdown).',
+          'Register each Captain with a team name and an initial token purse. They must already have a "Captain" account (ask an Admin to create/promote one if they don’t show up in the dropdown).',
           'Click "Go live" once you have at least one player and one team registered.',
         ],
       },
@@ -91,8 +91,8 @@ export const helpSections: HelpSection[] = [
         heading: 'Running the live auction',
         steps: [
           'Pick a player from the "Next up" queue and click "Start" to put them on the block.',
-          'Optionally start the countdown timer — it’s synced, so Team Managers and Viewers see the same clock.',
-          'Watch the current bid and bidder update live as Team Managers bid.',
+          'Optionally start the countdown timer — it’s synced, so Captains and Viewers see the same clock.',
+          'Watch the current bid and bidder update live as Captains bid.',
           '"Mark sold" awards the player to the current highest bidder and deducts their purse. "Mark unsold" clears the player with no winner.',
           'Click "End auction" when every player has been sold or passed — anyone left in the queue is automatically marked unsold at this point.',
         ],
@@ -108,7 +108,7 @@ export const helpSections: HelpSection[] = [
   },
   {
     id: 'manager',
-    label: 'Team Manager',
+    label: 'Captain',
     summary: 'Place bids and track your team’s remaining budget.',
     body: [
       {
@@ -131,8 +131,8 @@ export const helpSections: HelpSection[] = [
       {
         heading: 'Being auctioned',
         steps: [
-          'A Viewer can request to become a Player, or an Admin/Auction Manager/Team Manager can promote one directly.',
-          'Once you’re a registered Player in an auction’s roster, you’ll be put on the block for Team Managers to bid on.',
+          'A Viewer can request to become a Player, or an Admin/Auction Manager/Captain can promote one directly.',
+          'Once you’re a registered Player in an auction’s roster, you’ll be put on the block for Captains to bid on.',
           'You can watch your own auction the same way a Viewer does, from the "Watch" link on your Home page.',
         ],
       },
