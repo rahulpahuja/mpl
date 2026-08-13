@@ -13,7 +13,7 @@ import { useAuthStore } from '../store/authStore'
 import { placeBid } from '../lib/auctions'
 import { promoteViewerToPlayer } from '../lib/users'
 
-const QUICK_BID_STEPS = [500, 1000, 2000, 5000, 10000]
+const QUICK_BID_STEPS = [1000, 2000, 5000, 10000]
 
 export function TeamManagerBidding() {
   const { auctionId } = useParams<{ auctionId: string }>()
