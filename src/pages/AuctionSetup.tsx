@@ -983,7 +983,7 @@ export function AuctionSetup() {
             {auction.teamManagers.map((tm) => (
               <li key={tm.teamId} className="flex flex-wrap justify-between gap-x-3 gap-y-1 py-2">
                 <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
-                  <TeamAvatar teamName={tm.name} logoId={tm.logoId} />
+                  <TeamAvatar teamName={tm.name} logoId={tm.logoId} logoImage={tm.logoImage} />
                   <span className="truncate">{tm.name}</span>
                 </span>
                 <span className="shrink-0 text-gray-500">

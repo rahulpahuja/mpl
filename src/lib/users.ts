@@ -28,6 +28,7 @@ export interface ProfileFields {
   battingHandedness?: Handedness
   bowlingHandedness?: Handedness
   playingRole?: PlayingRole
+  jerseyNumber?: number
 }
 
 export async function updateOwnProfile(uid: string, profile: ProfileFields) {
