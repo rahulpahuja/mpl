@@ -23,15 +23,7 @@ import {
 import { assignUserToAuction, promoteViewerToPlayer } from '../lib/users'
 import { createTeam } from '../lib/teams'
 import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
-import type { PlayingRole, UserRole } from '../types'
-
-const roleLabel: Record<UserRole, string> = {
-  admin: 'Admin',
-  auctionManager: 'Auction Manager',
-  manager: 'Captain',
-  player: 'Player',
-  viewer: 'Viewer',
-}
+import type { PlayingRole } from '../types'
 
 const DEFAULT_AUCTION_BG_COLOR = '#1e293b'
 
@@ -133,12 +125,9 @@ export function AuctionSetup() {
 
   const openPlayerCount = auction.players.filter((p) => p.status === 'open').length
   const rosterUids = new Set(auction.players.map((p) => p.playerId))
-  // Every signed-in user is a candidate, not just role=player/viewer — plenty of
-  // real users only ever hold a Team Manager/Auction Manager/Admin role (that's
-  // in fact the common case) and still need to be addable as a player without
-  // that changing their existing role. Only a Viewer gets auto-promoted to
-  // Player on add (see handleAddRegisteredPlayer); everyone else keeps their role.
-  const allRegisteredPlayers = users.filter((u) => !rosterUids.has(u.uid))
+  // Only users already holding the Player role — promote a Viewer to Player
+  // from the dedicated section below first if they're not showing up here.
+  const allRegisteredPlayers = users.filter((u) => u.role === 'player' && !rosterUids.has(u.uid))
   const registeredPlayers = allRegisteredPlayers.filter((u) => {
     const q = registeredPlayerSearch.trim().toLowerCase()
     if (!q) return true
@@ -230,7 +219,6 @@ export function AuctionSetup() {
     uid: string,
     name: string,
     assignedAuctions: string[],
-    role: UserRole,
     playingRole: PlayingRole | undefined,
   ) {
     if (!auctionId || addingRegisteredPlayerIdsRef.current.has(uid)) return
@@ -238,11 +226,6 @@ export function AuctionSetup() {
     setAddingRegisteredPlayerIds((prev) => new Set(prev).add(uid))
     try {
       const basePrice = Number(registeredBasePrices[uid]) || 0
-      // Adding a Viewer to a roster means they're playing — auto-promote them to
-      // Player instead of making the admin do that as a separate manual step first.
-      if (role === 'viewer') {
-        await promoteViewerToPlayer(uid)
-      }
       // Default to the role set on their profile; falls back to '' ("Not set")
       // if they haven't picked one, same as the manual-add and CSV flows. The
       // `|| ''` also covers a profile's playingRole holding a value that's
@@ -814,9 +797,9 @@ export function AuctionSetup() {
                 </button>
               </div>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Search anyone who has signed in and isn't on this roster yet, by name, email,
-                phone, or ID. Adding a Viewer auto-promotes them to Player; everyone else keeps
-                their existing role.
+                Search users with the Player role who aren't on this roster yet, by name, email,
+                phone, or ID. A Viewer isn't a Player yet — promote them first from the section
+                below.
               </p>
               <input
                 autoFocus
@@ -829,8 +812,8 @@ export function AuctionSetup() {
                 {registeredPlayers.length === 0 && (
                   <li className="py-2 text-gray-500">
                     {allRegisteredPlayers.length === 0
-                      ? 'No one has signed in yet.'
-                      : 'No users match.'}
+                      ? 'No registered Players available to add.'
+                      : 'No Players match.'}
                   </li>
                 )}
                 {registeredPlayers.map((p) => (
@@ -847,11 +830,6 @@ export function AuctionSetup() {
                       />
                       <span className="min-w-0 break-words">
                         {p.displayName}
-                        {p.role !== 'player' && (
-                          <span className="ml-2 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
-                            {roleLabel[p.role]}
-                          </span>
-                        )}
                         {p.playingRole && PLAYING_ROLE_LABELS[p.playingRole] && (
                           <span className="ml-2 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
                             {PLAYING_ROLE_LABELS[p.playingRole]}
@@ -880,7 +858,6 @@ export function AuctionSetup() {
                             p.uid,
                             p.displayName,
                             p.assignedAuctions,
-                            p.role,
                             p.playingRole,
                           )
                         }
