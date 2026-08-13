@@ -44,3 +44,15 @@ body {
   background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat;
   background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
 }
+
+/* iOS WebKit (Safari and Chrome-on-iOS both use it) has a long-standing bug
+   where `background-attachment: fixed` on body can make it miscalculate the
+   scrollable document height, clipping scroll to the initial viewport on
+   tall pages. iOS never renders `fixed` attachment as fixed anyway (it's
+   silently treated as `scroll`), so there's no visual effect to lose by
+   disabling it on touch devices. */
+@media (hover: none) and (pointer: coarse) {
+  body {
+    background-attachment: scroll, scroll, scroll, scroll, scroll, scroll;
+  }
+}
