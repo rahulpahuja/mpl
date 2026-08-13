@@ -122,52 +122,80 @@ export function Results() {
 
         <section>
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Sold players</h2>
-          <div className="mt-4 overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm">
-            <table className="w-full min-w-[480px] text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Player</th>
-                  <th className="px-4 py-2 font-medium">Position</th>
-                  <th className="px-4 py-2 font-medium">Sold to</th>
-                  <th className="px-4 py-2 font-medium">Price</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+          {sold.length === 0 ? (
+            <p className="mt-4 text-sm text-gray-500">No players sold yet.</p>
+          ) : (
+            <>
+              <ul className="mt-4 space-y-2 sm:hidden">
                 {sold.map((p) => (
-                  <tr key={p.playerId}>
-                    <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
-                      <span className="inline-flex items-center gap-1.5">
-                        {p.name}
-                        {p.wasUnsoldAssigned && (
-                          <span
-                            title="Went unsold in the auction, later force-assigned to this team"
-                            className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400"
-                          >
-                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                            Unsold → reassigned
-                          </span>
-                        )}
+                  <li
+                    key={p.playerId}
+                    className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-gray-900 dark:text-gray-100">{p.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{p.position}</p>
+                      </div>
+                      <p className="shrink-0 font-mono text-gray-900 dark:text-gray-100">{p.currentBid}</p>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Sold to {p.currentBidderName}
+                    </p>
+                    {p.wasUnsoldAssigned && (
+                      <span
+                        title="Went unsold in the auction, later force-assigned to this team"
+                        className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400"
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                        Unsold → reassigned
                       </span>
-                    </td>
-                    <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{p.position}</td>
-                    <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
-                      {p.currentBidderName}
-                    </td>
-                    <td className="px-4 py-2 font-mono text-gray-900 dark:text-gray-100">
-                      {p.currentBid}
-                    </td>
-                  </tr>
+                    )}
+                  </li>
                 ))}
-                {sold.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-3 text-gray-500">
-                      No players sold yet.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+              </ul>
+
+              <div className="mt-4 hidden overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm sm:block">
+                <table className="w-full min-w-[480px] text-sm">
+                  <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
+                    <tr>
+                      <th className="px-4 py-2 font-medium">Player</th>
+                      <th className="px-4 py-2 font-medium">Position</th>
+                      <th className="px-4 py-2 font-medium">Sold to</th>
+                      <th className="px-4 py-2 font-medium">Price</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                    {sold.map((p) => (
+                      <tr key={p.playerId}>
+                        <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
+                          <span className="inline-flex items-center gap-1.5">
+                            {p.name}
+                            {p.wasUnsoldAssigned && (
+                              <span
+                                title="Went unsold in the auction, later force-assigned to this team"
+                                className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400"
+                              >
+                                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                Unsold → reassigned
+                              </span>
+                            )}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{p.position}</td>
+                        <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
+                          {p.currentBidderName}
+                        </td>
+                        <td className="px-4 py-2 font-mono text-gray-900 dark:text-gray-100">
+                          {p.currentBid}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </section>
 
         {unsold.length > 0 && (

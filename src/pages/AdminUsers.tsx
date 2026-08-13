@@ -30,80 +30,144 @@ function UserTable({
   auctionNameById: Record<string, string>
 }) {
   return (
-    <div className="mt-2 overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm">
-      <table className="w-full min-w-[720px] text-sm">
-        <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
-          <tr>
-            <th className="px-4 py-2 font-medium">Name</th>
-            <th className="px-4 py-2 font-medium">Email</th>
-            <th className="px-4 py-2 font-medium">Phone</th>
-            <th className="px-4 py-2 font-medium"></th>
-            <th className="px-4 py-2 font-medium">Role</th>
-            <th className="px-4 py-2 font-medium">Assign to auction</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-          {users.map((u) => (
-            <tr key={u.uid}>
-              <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
-                <div className="flex items-center gap-2">
-                  <Avatar
-                    name={u.displayName}
-                    encryptedPhoto={u.encryptedPhoto}
-                    photoURL={u.photoURL}
-                    avatarId={u.avatarId}
-                  />
-                  {u.displayName}
-                </div>
-              </td>
-              <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{u.email}</td>
-              <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
-                {u.phone || <span className="text-gray-400">—</span>}
-              </td>
-              <td className="px-4 py-2">
+    <>
+      <ul className="mt-2 space-y-2 sm:hidden">
+        {users.map((u) => (
+          <li
+            key={u.uid}
+            className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-3"
+          >
+            <div className="flex items-center gap-2">
+              <Avatar
+                name={u.displayName}
+                encryptedPhoto={u.encryptedPhoto}
+                photoURL={u.photoURL}
+                avatarId={u.avatarId}
+              />
+              <div className="min-w-0">
+                <p className="truncate font-medium text-gray-900 dark:text-gray-100">{u.displayName}</p>
+                <p className="truncate text-xs text-gray-500 dark:text-gray-400">{u.email}</p>
+              </div>
+              <div className="ml-auto shrink-0">
                 <WhatsAppButton phone={u.whatsapp || u.phone} />
-              </td>
-              <td className="px-4 py-2">
-                <select
-                  value={u.role}
-                  onChange={(e) => updateUserRole(u.uid, e.target.value as UserRole)}
-                  className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
-                >
-                  <option value="admin">Admin</option>
-                  <option value="auctionManager">Auction Manager</option>
-                  <option value="manager">Captain</option>
-                  <option value="player">Player</option>
-                  <option value="viewer">Viewer</option>
-                </select>
-              </td>
-              <td className="px-4 py-2">
-                <select
-                  defaultValue=""
-                  onChange={(e) => {
-                    if (e.target.value)
-                      assignUserToAuction(u.uid, e.target.value, u.assignedAuctions, u.role)
-                    e.target.value = ''
-                  }}
-                  className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
-                >
-                  <option value="">Select auction...</option>
-                  {auctions.map((a) => (
-                    <option key={a.auctionId} value={a.auctionId}>
-                      {a.name} ({a.auctionId})
-                    </option>
-                  ))}
-                </select>
-                {u.assignedAuctions.length > 0 && (
-                  <span className="ml-2 text-xs text-gray-500">
-                    {u.assignedAuctions.map((id) => auctionNameById[id] ?? id).join(', ')}
-                  </span>
-                )}
-              </td>
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              {u.phone || <span className="text-gray-400">No phone</span>}
+            </p>
+            <div className="mt-2 flex flex-col gap-2">
+              <select
+                value={u.role}
+                onChange={(e) => updateUserRole(u.uid, e.target.value as UserRole)}
+                className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+              >
+                <option value="admin">Admin</option>
+                <option value="auctionManager">Auction Manager</option>
+                <option value="manager">Captain</option>
+                <option value="player">Player</option>
+                <option value="viewer">Viewer</option>
+              </select>
+              <select
+                defaultValue=""
+                onChange={(e) => {
+                  if (e.target.value)
+                    assignUserToAuction(u.uid, e.target.value, u.assignedAuctions, u.role)
+                  e.target.value = ''
+                }}
+                className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+              >
+                <option value="">Assign to auction...</option>
+                {auctions.map((a) => (
+                  <option key={a.auctionId} value={a.auctionId}>
+                    {a.name} ({a.auctionId})
+                  </option>
+                ))}
+              </select>
+              {u.assignedAuctions.length > 0 && (
+                <p className="text-xs text-gray-500">
+                  {u.assignedAuctions.map((id) => auctionNameById[id] ?? id).join(', ')}
+                </p>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-2 hidden overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm sm:block">
+        <table className="w-full min-w-[720px] text-sm">
+          <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
+            <tr>
+              <th className="px-4 py-2 font-medium">Name</th>
+              <th className="px-4 py-2 font-medium">Email</th>
+              <th className="px-4 py-2 font-medium">Phone</th>
+              <th className="px-4 py-2 font-medium"></th>
+              <th className="px-4 py-2 font-medium">Role</th>
+              <th className="px-4 py-2 font-medium">Assign to auction</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+            {users.map((u) => (
+              <tr key={u.uid}>
+                <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
+                  <div className="flex items-center gap-2">
+                    <Avatar
+                      name={u.displayName}
+                      encryptedPhoto={u.encryptedPhoto}
+                      photoURL={u.photoURL}
+                      avatarId={u.avatarId}
+                    />
+                    {u.displayName}
+                  </div>
+                </td>
+                <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{u.email}</td>
+                <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
+                  {u.phone || <span className="text-gray-400">—</span>}
+                </td>
+                <td className="px-4 py-2">
+                  <WhatsAppButton phone={u.whatsapp || u.phone} />
+                </td>
+                <td className="px-4 py-2">
+                  <select
+                    value={u.role}
+                    onChange={(e) => updateUserRole(u.uid, e.target.value as UserRole)}
+                    className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                  >
+                    <option value="admin">Admin</option>
+                    <option value="auctionManager">Auction Manager</option>
+                    <option value="manager">Captain</option>
+                    <option value="player">Player</option>
+                    <option value="viewer">Viewer</option>
+                  </select>
+                </td>
+                <td className="px-4 py-2">
+                  <select
+                    defaultValue=""
+                    onChange={(e) => {
+                      if (e.target.value)
+                        assignUserToAuction(u.uid, e.target.value, u.assignedAuctions, u.role)
+                      e.target.value = ''
+                    }}
+                    className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                  >
+                    <option value="">Select auction...</option>
+                    {auctions.map((a) => (
+                      <option key={a.auctionId} value={a.auctionId}>
+                        {a.name} ({a.auctionId})
+                      </option>
+                    ))}
+                  </select>
+                  {u.assignedAuctions.length > 0 && (
+                    <span className="ml-2 text-xs text-gray-500">
+                      {u.assignedAuctions.map((id) => auctionNameById[id] ?? id).join(', ')}
+                    </span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   )
 }
 

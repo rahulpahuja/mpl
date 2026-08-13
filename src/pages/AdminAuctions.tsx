@@ -71,76 +71,135 @@ export function AdminAuctions() {
           ) : auctions.length === 0 ? (
             <p className="mt-6 text-sm text-gray-500">No auctions yet.</p>
           ) : (
-            <div className="mt-6 overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm">
-              <table className="w-full min-w-[640px] text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
-                  <tr>
-                    <th className="px-4 py-2 font-medium">ID</th>
-                    <th className="px-4 py-2 font-medium">Name</th>
-                    <th className="px-4 py-2 font-medium">Status</th>
-                    <th className="px-4 py-2 font-medium">Players</th>
-                    <th className="px-4 py-2 font-medium">Teams</th>
-                    <th className="px-4 py-2 font-medium"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {auctions.map((a) => (
-                    <tr key={a.auctionId}>
-                      <td className="px-4 py-2 font-mono text-gray-900 dark:text-gray-100">
-                        {a.auctionId}
-                      </td>
-                      <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{a.name}</td>
-                      <td className="px-4 py-2">
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[a.status]}`}
-                        >
-                          {a.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
-                        {a.players.length}
-                      </td>
-                      <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
-                        {a.teamManagers.length}
-                      </td>
-                      <td className="px-4 py-2 text-right space-x-3">
-                        <Link
-                          to={`/admin/auctions/${a.auctionId}/setup`}
-                          className="text-red-600 dark:text-red-400 hover:underline"
-                        >
-                          Setup
-                        </Link>
-                        <Link
-                          to={`/manage/${a.auctionId}`}
-                          className="text-red-600 dark:text-red-400 hover:underline"
-                        >
-                          Manage
-                        </Link>
-                        <Link
-                          to={`/results/${a.auctionId}`}
-                          className="text-red-600 dark:text-red-400 hover:underline"
-                        >
-                          Results
-                        </Link>
-                        <Link
-                          to={`/viewer/${a.auctionId}`}
-                          className="text-red-600 dark:text-red-400 hover:underline"
-                        >
-                          View
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(a.auctionId, a.name)}
-                          disabled={deletingId === a.auctionId}
-                          className="text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
-                        >
-                          {deletingId === a.auctionId ? 'Deleting...' : 'Delete'}
-                        </button>
-                      </td>
+            <>
+              <ul className="mt-6 space-y-2 sm:hidden">
+                {auctions.map((a) => (
+                  <li
+                    key={a.auctionId}
+                    className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-gray-900 dark:text-gray-100">{a.name}</p>
+                        <p className="font-mono text-xs text-gray-500">{a.auctionId}</p>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[a.status]}`}
+                      >
+                        {a.status}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      {a.players.length} players · {a.teamManagers.length} teams
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                      <Link
+                        to={`/admin/auctions/${a.auctionId}/setup`}
+                        className="text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        Setup
+                      </Link>
+                      <Link
+                        to={`/manage/${a.auctionId}`}
+                        className="text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        Manage
+                      </Link>
+                      <Link
+                        to={`/results/${a.auctionId}`}
+                        className="text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        Results
+                      </Link>
+                      <Link
+                        to={`/viewer/${a.auctionId}`}
+                        className="text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        View
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(a.auctionId, a.name)}
+                        disabled={deletingId === a.auctionId}
+                        className="text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                      >
+                        {deletingId === a.auctionId ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-6 hidden overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm sm:block">
+                <table className="w-full min-w-[640px] text-sm">
+                  <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
+                    <tr>
+                      <th className="px-4 py-2 font-medium">ID</th>
+                      <th className="px-4 py-2 font-medium">Name</th>
+                      <th className="px-4 py-2 font-medium">Status</th>
+                      <th className="px-4 py-2 font-medium">Players</th>
+                      <th className="px-4 py-2 font-medium">Teams</th>
+                      <th className="px-4 py-2 font-medium"></th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                    {auctions.map((a) => (
+                      <tr key={a.auctionId}>
+                        <td className="px-4 py-2 font-mono text-gray-900 dark:text-gray-100">
+                          {a.auctionId}
+                        </td>
+                        <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{a.name}</td>
+                        <td className="px-4 py-2">
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[a.status]}`}
+                          >
+                            {a.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
+                          {a.players.length}
+                        </td>
+                        <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
+                          {a.teamManagers.length}
+                        </td>
+                        <td className="px-4 py-2 text-right space-x-3">
+                          <Link
+                            to={`/admin/auctions/${a.auctionId}/setup`}
+                            className="text-red-600 dark:text-red-400 hover:underline"
+                          >
+                            Setup
+                          </Link>
+                          <Link
+                            to={`/manage/${a.auctionId}`}
+                            className="text-red-600 dark:text-red-400 hover:underline"
+                          >
+                            Manage
+                          </Link>
+                          <Link
+                            to={`/results/${a.auctionId}`}
+                            className="text-red-600 dark:text-red-400 hover:underline"
+                          >
+                            Results
+                          </Link>
+                          <Link
+                            to={`/viewer/${a.auctionId}`}
+                            className="text-red-600 dark:text-red-400 hover:underline"
+                          >
+                            View
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(a.auctionId, a.name)}
+                            disabled={deletingId === a.auctionId}
+                            className="text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                          >
+                            {deletingId === a.auctionId ? 'Deleting...' : 'Delete'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </section>
       </div>

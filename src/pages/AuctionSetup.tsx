@@ -727,7 +727,146 @@ export function AuctionSetup() {
             </div>
           )}
 
-          <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80">
+          {auction.players.length === 0 ? (
+            <p className="mt-3 text-sm text-gray-500 sm:hidden">No players added yet.</p>
+          ) : (
+            <ul className="mt-3 space-y-2 sm:hidden">
+              {auction.players.map((p) => {
+                const jerseyNumber = users.find((u) => u.uid === p.playerId)?.jerseyNumber
+                return (
+                  <li
+                    key={p.playerId}
+                    className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 p-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      {editingNameId === p.playerId ? (
+                        <span className="flex min-w-0 flex-1 items-center gap-2">
+                          <input
+                            autoFocus
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="min-w-0 flex-1 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                          />
+                        </span>
+                      ) : (
+                        <span className="min-w-0 truncate font-medium text-gray-900 dark:text-gray-100">
+                          {p.name}
+                        </span>
+                      )}
+                      <span className="shrink-0 text-xs capitalize text-gray-500 dark:text-gray-400">
+                        {p.status}
+                      </span>
+                    </div>
+
+                    {editingNameId === p.playerId ? (
+                      <div className="mt-1.5 flex items-center gap-3">
+                        <button
+                          onClick={() => setEditingNameId(null)}
+                          disabled={savingNameId === p.playerId}
+                          className="text-xs font-medium text-gray-500 hover:underline disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => handleSaveName(p.playerId)}
+                          disabled={savingNameId === p.playerId || !editName.trim()}
+                          className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                        >
+                          {savingNameId === p.playerId ? 'Saving...' : 'Save'}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => startEditName(p.playerId, p.name)}
+                        className="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        Edit name
+                      </button>
+                    )}
+
+                    <dl className="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="flex justify-between gap-2">
+                        <dt>Jersey #</dt>
+                        <dd>{jerseyNumber ?? '—'}</dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt>Position</dt>
+                        <dd>{p.position || '—'}</dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <dt>Base price</dt>
+                        <dd>
+                          {editingBasePriceId === p.playerId ? (
+                            <input
+                              type="number"
+                              min={0}
+                              autoFocus
+                              value={editBasePrice}
+                              onChange={(e) => setEditBasePrice(e.target.value)}
+                              className="w-24 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                            />
+                          ) : (
+                            p.basePrice
+                          )}
+                        </dd>
+                      </div>
+                    </dl>
+
+                    {p.status === 'open' && (
+                      <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-gray-200 dark:border-gray-800 pt-2">
+                        {editingBasePriceId === p.playerId ? (
+                          <>
+                            <button
+                              onClick={() => setEditingBasePriceId(null)}
+                              disabled={savingBasePriceId === p.playerId}
+                              className="text-xs font-medium text-gray-500 hover:underline disabled:opacity-50"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleSaveBasePrice(p.playerId)}
+                              disabled={savingBasePriceId === p.playerId}
+                              className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                            >
+                              {savingBasePriceId === p.playerId ? 'Saving...' : 'Save'}
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => startEditBasePrice(p.playerId, p.basePrice)}
+                            className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                          >
+                            Edit price
+                          </button>
+                        )}
+                        {confirmRemoveId === p.playerId && (
+                          <button
+                            onClick={() => setConfirmRemoveId(null)}
+                            className="text-xs font-medium text-gray-500 hover:underline"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleRemovePlayer(p.playerId)}
+                          disabled={removingPlayerId !== null}
+                          className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                        >
+                          {removingPlayerId === p.playerId
+                            ? 'Removing...'
+                            : confirmRemoveId === p.playerId
+                              ? 'Confirm remove?'
+                              : 'Remove'}
+                        </button>
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+
+          <div className="mt-3 hidden overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 sm:block">
             <table className="w-full min-w-[480px] text-sm">
               <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
                 <tr>
