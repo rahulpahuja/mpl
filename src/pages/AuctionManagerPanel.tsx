@@ -4,6 +4,7 @@ import { Layout } from '../components/Layout'
 import { AuctionBackground } from '../components/AuctionBackground'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
+import { useAuctionVenueImage } from '../hooks/useAuctionVenueImage'
 import { useBids } from '../hooks/useBids'
 import { useCountdown } from '../hooks/useCountdown'
 import { usePageTitle } from '../hooks/usePageTitle'
@@ -21,6 +22,7 @@ export function AuctionManagerPanel() {
   const { auctionId } = useParams<{ auctionId: string }>()
   const { auction, loading } = useAuction(auctionId)
   usePageTitle(auction ? `${auction.name} · Manage` : 'Manage auction')
+  const venueImage = useAuctionVenueImage(auction)
   const [timerDuration, setTimerDuration] = useState('30')
   const [busy, setBusy] = useState(false)
   const [assignTeamByPlayer, setAssignTeamByPlayer] = useState<Record<string, string>>({})
@@ -75,7 +77,7 @@ export function AuctionManagerPanel() {
 
   return (
     <Layout>
-      <AuctionBackground color={auction.bgColor} />
+      <AuctionBackground color={auction.bgColor} imageUrl={venueImage} />
       <div className="space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>

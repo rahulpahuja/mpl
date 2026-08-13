@@ -4,6 +4,7 @@ import { Layout } from '../components/Layout'
 import { AuctionBackground } from '../components/AuctionBackground'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
+import { useAuctionVenueImage } from '../hooks/useAuctionVenueImage'
 import { useTeams } from '../hooks/useTeams'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
@@ -13,6 +14,7 @@ export function Results() {
   const { auctionId } = useParams<{ auctionId: string }>()
   const { auction, loading } = useAuction(auctionId)
   usePageTitle(auction ? `${auction.name} · Results` : 'Auction results')
+  const venueImage = useAuctionVenueImage(auction)
   const teams = useTeams(auctionId)
   const user = useAuthStore((s) => s.user)
   const canAssign = user?.role === 'admin' || user?.role === 'auctionManager'
@@ -55,7 +57,7 @@ export function Results() {
 
   return (
     <Layout>
-      <AuctionBackground color={auction.bgColor} />
+      <AuctionBackground color={auction.bgColor} imageUrl={venueImage} />
       <div className="space-y-10">
         <div>
           <h1

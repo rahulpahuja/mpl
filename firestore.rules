@@ -90,8 +90,11 @@ service cloud.firestore {
     }
 
     match /venues/{venueId} {
-      allow get: if isSignedIn();
-      allow list: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
+      // Public, matching /auctions — an auction's chosen venue photo backs
+      // its live bidding/viewer/results pages (see AuctionBackground.tsx),
+      // including for account-less Viewers, so reads can't require sign-in.
+      allow get: if true;
+      allow list: if true;
       allow create: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
       allow update: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
       allow delete: if isAdmin();

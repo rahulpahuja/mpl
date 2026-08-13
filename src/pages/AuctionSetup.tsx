@@ -8,6 +8,7 @@ import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
 import { useUsers } from '../hooks/useUsers'
+import { useVenuesRegistry } from '../hooks/useVenuesRegistry'
 import { usePageTitle } from '../hooks/usePageTitle'
 import {
   addPlayers,
@@ -57,6 +58,7 @@ export function AuctionSetup() {
   usePageTitle(auction ? `${auction.name} · Setup` : 'Auction setup')
   const { teams } = useTeamsRegistry()
   const { users } = useUsers()
+  const { venues } = useVenuesRegistry()
 
   const [playerName, setPlayerName] = useState('')
   const [playerPosition, setPlayerPosition] = useState('')
@@ -104,6 +106,7 @@ export function AuctionSetup() {
   const [bgColor, setBgColor] = useState(DEFAULT_AUCTION_BG_COLOR)
   const [titleColor, setTitleColor] = useState(DEFAULT_TITLE_COLOR)
   const [secondaryColor, setSecondaryColor] = useState(DEFAULT_SECONDARY_COLOR)
+  const [venueId, setVenueId] = useState('')
   const [applyingPurse, setApplyingPurse] = useState(false)
   const [purseError, setPurseError] = useState<string | null>(null)
   const [applyingMaxPlayers, setApplyingMaxPlayers] = useState(false)
@@ -117,6 +120,7 @@ export function AuctionSetup() {
       setBgColor(auction.bgColor || DEFAULT_AUCTION_BG_COLOR)
       setTitleColor(auction.titleColor || DEFAULT_TITLE_COLOR)
       setSecondaryColor(auction.secondaryColor || DEFAULT_SECONDARY_COLOR)
+      setVenueId(auction.venueId || '')
     }
   }, [auction?.auctionId])
 
@@ -404,6 +408,7 @@ export function AuctionSetup() {
       bgColor,
       titleColor,
       secondaryColor,
+      venueId: venueId || null,
     })
   }
 
@@ -440,9 +445,22 @@ export function AuctionSetup() {
     await updateAuctionStatus(auctionId, 'live')
   }
 
+  // Retired venues stay out of the picker going forward, but the auction's
+  // currently-selected one (if since retired) still needs to show up so its
+  // name/photo don't just disappear from this dropdown.
+  const venueOptions = venues.filter((v) => !v.retired || v.venueId === venueId)
+  const venuePreviewImage = venues.find((v) => v.venueId === venueId)?.images[0] ?? null
+
   return (
     <Layout>
-      <AuctionBackground color={auction.bgColor} />
+      <AuctionBackground
+        color={auction.bgColor}
+        imageUrl={
+          auction.venueId
+            ? (venues.find((v) => v.venueId === auction.venueId)?.images[0] ?? null)
+            : null
+        }
+      />
       <div className="space-y-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -471,6 +489,39 @@ export function AuctionSetup() {
         <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-5">
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Auction settings</h2>
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label className="text-sm text-gray-500" htmlFor="auction-venue">
+                Venue
+              </label>
+              <div className="mt-1 flex items-center gap-3">
+                {venueId && venuePreviewImage && (
+                  <img
+                    src={venuePreviewImage}
+                    alt=""
+                    className="h-9 w-14 shrink-0 rounded object-cover"
+                  />
+                )}
+                <select
+                  id="auction-venue"
+                  value={venueId}
+                  onChange={(e) => setVenueId(e.target.value)}
+                  className="w-full max-w-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                >
+                  <option value="">Default background (no venue)</option>
+                  {venueOptions.map((v) => (
+                    <option key={v.venueId} value={v.venueId}>
+                      {v.name} — {v.location}
+                      {v.retired ? ' (retired)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                Uses that venue's photo as the backdrop on this auction's setup, live bidding,
+                viewer, and results pages, tinted with the background color below. Add or manage
+                venues from Admin → Venues.
+              </p>
+            </div>
             <div>
               <label className="text-sm text-gray-500">Bid increment</label>
               <input

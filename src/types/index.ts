@@ -128,6 +128,10 @@ export interface Auction {
   // setup, live bidding, viewer, and results.
   titleColor?: string | null
   secondaryColor?: string | null
+  // Venue this auction is hosted at (see Venue). Null/absent falls back to
+  // the plain bgColor backdrop instead of a venue photo — see
+  // components/AuctionBackground.tsx.
+  venueId?: string | null
 }
 
 export interface BidEntry {
