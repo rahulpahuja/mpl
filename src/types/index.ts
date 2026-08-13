@@ -84,6 +84,9 @@ export interface Auction {
   timerEndsAt: Timestamp | null
   players: Player[]
   teamManagers: TeamManagerEntry[]
+  // Hex color (e.g. "#111827") the Auction Manager picks to theme this
+  // auction's pages — see components/AuctionBackground.tsx.
+  bgColor?: string | null
 }
 
 export interface BidEntry {
