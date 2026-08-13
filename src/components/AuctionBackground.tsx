@@ -1,9 +1,12 @@
-// Renders an auction's chosen backdrop behind CricketMotifs' stadium
-// imagery, so each auction can have its own look on the pages tied to it
-// (setup, live bidding, viewer feed, results). With no venue photo it's
-// just the bgColor tint (see AuctionSetup); with one, the photo fills the
-// backdrop and bgColor becomes a tint over it so title/body text set via
-// titleColor/secondaryColor stays readable against any photo.
+import { useEffect } from 'react'
+import { useBackdropStore } from '../store/backdropStore'
+
+// Renders an auction's chosen backdrop. With no venue photo it's just the
+// bgColor tint (see AuctionSetup) behind CricketMotifs' generic stadium
+// imagery. With a venue photo, that photo replaces both outright — it's
+// shown as-is, full-bleed, with no color tint blended over it and with
+// CricketMotifs' generic art hidden (see store/backdropStore.ts) so the
+// real venue isn't layered under placeholder stadium art.
 export function AuctionBackground({
   color,
   imageUrl,
@@ -11,14 +14,28 @@ export function AuctionBackground({
   color?: string | null
   imageUrl?: string | null
 }) {
+  const setVenuePhotoActive = useBackdropStore((s) => s.setVenuePhotoActive)
+
+  useEffect(() => {
+    setVenuePhotoActive(!!imageUrl)
+    return () => setVenuePhotoActive(false)
+  }, [imageUrl, setVenuePhotoActive])
+
   if (!color && !imageUrl) return null
+
+  if (imageUrl) {
+    return (
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20 overflow-hidden">
+        <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+      </div>
+    )
+  }
+
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20 overflow-hidden">
-      {imageUrl && <img src={imageUrl} alt="" className="h-full w-full object-cover" />}
-      <div
-        className="absolute inset-0"
-        style={{ backgroundColor: color || undefined, opacity: imageUrl ? 0.6 : 1 }}
-      />
-    </div>
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 -z-20"
+      style={{ backgroundColor: color || undefined }}
+    />
   )
 }

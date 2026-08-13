@@ -19,6 +19,15 @@ import type { Venue } from '../types'
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 
+// Higher than imageProcessing's avatar-sized default — a venue photo is
+// shown full-bleed as an auction page backdrop (see AuctionBackground.tsx),
+// not as a small thumbnail, so it needs real resolution to not look
+// blurry stretched across a whole screen. At ~50-110KB/photo this still
+// keeps MAX_VENUE_IMAGES photos on one venue well under Firestore's 1MB
+// document limit.
+const VENUE_PHOTO_MAX_DIMENSION_PX = 768
+const VENUE_PHOTO_JPEG_QUALITY = 0.75
+
 function formatAddedDate(venue: Venue): string {
   const date = venue.createdAt?.toDate?.()
   if (!date) return 'Unknown'
@@ -50,7 +59,10 @@ function VenueGallery({ venue }: { venue: Venue }) {
 
     setUploading(true)
     try {
-      const dataUrl = await compressImageToDataUrl(file)
+      const dataUrl = await compressImageToDataUrl(file, {
+        maxDimension: VENUE_PHOTO_MAX_DIMENSION_PX,
+        quality: VENUE_PHOTO_JPEG_QUALITY,
+      })
       await addVenueImage(venue.venueId, dataUrl)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add photo')

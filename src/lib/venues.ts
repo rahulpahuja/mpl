@@ -3,7 +3,9 @@ import { db } from './firebase'
 import type { Venue } from '../types'
 
 // Keeps a venue doc well under Firestore's 1MB limit even with every photo
-// compressed (~10-30KB each, see lib/imageProcessing.ts).
+// compressed at backdrop resolution (~50-110KB each, see the
+// VENUE_PHOTO_* constants in AdminVenues.tsx) — 8 photos lands around
+// 400-900KB, leaving headroom for the doc's other fields.
 export const MAX_VENUE_IMAGES = 8
 
 export async function createVenue(name: string, location: string): Promise<string> {

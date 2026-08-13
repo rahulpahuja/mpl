@@ -518,7 +518,7 @@ export function AuctionSetup() {
               </div>
               <p className="mt-1 text-xs text-gray-500">
                 Uses that venue's photo as the backdrop on this auction's setup, live bidding,
-                viewer, and results pages, tinted with the background color below. Add or manage
+                viewer, and results pages, replacing the background color below. Add or manage
                 venues from Admin → Venues.
               </p>
             </div>
@@ -558,7 +558,8 @@ export function AuctionSetup() {
                 className="mt-1 block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
               />
               <p className="mt-1 text-xs text-gray-500">
-                Themes this auction's setup, live bidding, viewer, and results pages.
+                Themes this auction's setup, live bidding, viewer, and results pages. Ignored
+                when a venue with a photo is selected above.
               </p>
             </div>
             <div>
