@@ -5,7 +5,7 @@ export function TeamAvatar({
   logoId,
   logoImage,
   jerseyColor,
-  size = 8,
+  size = 10,
 }: {
   teamName: string
   logoId?: string | null
@@ -16,8 +16,9 @@ export function TeamAvatar({
   const preset = getDefaultAvatar(logoId)
   const dimension = `${size * 0.25}rem`
   // A colored ring around the avatar doubles as the team's jersey color —
-  // box-shadow instead of border so it doesn't add to layout size.
-  const ring = jerseyColor ? { boxShadow: `0 0 0 2px ${jerseyColor}` } : {}
+  // box-shadow instead of border so it doesn't add to layout size. Thick
+  // enough (4px) to read clearly even at small avatar sizes.
+  const ring = jerseyColor ? { boxShadow: `0 0 0 4px ${jerseyColor}` } : {}
   const style = { width: dimension, height: dimension, ...ring }
 
   if (logoImage) {

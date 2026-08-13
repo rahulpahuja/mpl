@@ -143,7 +143,7 @@ export function TeamManagerBidding() {
                 logoId={myTeam.logoId}
                 logoImage={myTeam.logoImage}
                 jerseyColor={myTeam.jerseyColor}
-                size={5}
+                size={7}
               />
               <span className="truncate">{myTeam.name} balance</span>
             </div>
