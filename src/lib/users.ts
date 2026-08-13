@@ -1,6 +1,6 @@
 import { arrayUnion, doc, updateDoc, writeBatch } from 'firebase/firestore'
 import { db } from './firebase'
-import type { Handedness, PlayingRole, UserRole } from '../types'
+import type { BowlingType, Handedness, PlayingRole, UserRole } from '../types'
 
 export async function updateUserRole(uid: string, role: UserRole) {
   await updateDoc(doc(db, 'users', uid), { role })
@@ -28,6 +28,7 @@ export interface ProfileFields {
   battingHandedness?: Handedness
   bowlingHandedness?: Handedness
   playingRole?: PlayingRole
+  bowlingType?: BowlingType
   jerseyNumber?: number
 }
 

@@ -15,6 +15,20 @@ export type PlayingRole =
   | 'legOffSpinner'
   | 'wicketKeeper'
 
+export type BowlingType =
+  | 'fastBowler'
+  | 'mediumFastSwingSeam'
+  | 'medium'
+  | 'fast'
+  | 'mediumFastAngleSwing'
+  | 'offSpin'
+  | 'legSpin'
+  | 'orthodoxSpin'
+  | 'chinaman'
+  | 'slowerBallSpecialist'
+  | 'swingBowler'
+  | 'seamBowler'
+
 export interface AppUser {
   uid: string
   email: string
@@ -28,6 +42,7 @@ export interface AppUser {
   battingHandedness?: Handedness
   bowlingHandedness?: Handedness
   playingRole?: PlayingRole
+  bowlingType?: BowlingType
   playerRequested?: boolean
   // Short code assigned once at onboarding (see ensureUserDoc in lib/auth.ts).
   // Lets an Admin add someone as a team manager by ID instead of searching by
