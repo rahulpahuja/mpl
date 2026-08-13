@@ -18,11 +18,11 @@ export function KeyboardShortcutsHelp({ open, onClose }: { open: boolean; onClos
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-xl bg-white dark:bg-gray-900 p-6 shadow-xl"
+        className="w-full max-w-md max-h-full overflow-y-auto rounded-xl bg-white dark:bg-gray-900 p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">

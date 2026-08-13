@@ -26,8 +26,8 @@ export function ProfileSetupModal() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="w-full max-w-md rounded-xl bg-white dark:bg-gray-900 p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8">
+      <div className="w-full max-w-md max-h-full overflow-y-auto rounded-xl bg-white dark:bg-gray-900 p-6 shadow-xl">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
           Complete your profile
         </h2>
