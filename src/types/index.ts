@@ -4,7 +4,16 @@ export type UserRole = 'admin' | 'auctionManager' | 'manager' | 'player' | 'view
 
 export type Handedness = 'left' | 'right'
 
-export type PlayingRole = 'batsman' | 'bowler' | 'allRounder' | 'wicketKeeper'
+export type PlayingRole =
+  | 'batsman'
+  | 'bowler'
+  | 'allRounder'
+  | 'battingAllRounder'
+  | 'bowlingAllRounder'
+  | 'legSpinner'
+  | 'offSpinner'
+  | 'legOffSpinner'
+  | 'wicketKeeper'
 
 export interface AppUser {
   uid: string
