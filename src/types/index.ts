@@ -7,13 +7,9 @@ export type Handedness = 'left' | 'right'
 export type PlayingRole =
   | 'batsman'
   | 'bowler'
-  | 'allRounder'
   | 'battingAllRounder'
   | 'bowlingAllRounder'
-  | 'legSpinner'
-  | 'offSpinner'
-  | 'legOffSpinner'
-  | 'wicketKeeper'
+  | 'wicketKeeperBatsman'
 
 export type BowlingType =
   | 'fastBowler'
