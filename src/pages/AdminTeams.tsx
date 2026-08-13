@@ -252,13 +252,50 @@ export function AdminTeams() {
                         />
                       </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Team logo:</p>
-                      <div className="mt-1.5">
-                        <AvatarPicker
-                          selectedId={editLogoId}
-                          onSelect={(id) => setEditLogoId((current) => (current === id ? null : id))}
+                    <div className="flex flex-wrap items-end gap-4">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Team logo:</p>
+                        <div className="mt-1.5">
+                          <AvatarPicker
+                            selectedId={editLogoId}
+                            onSelect={(id) => {
+                              setEditLogoId((current) => (current === id ? null : id))
+                              setEditLogoImage(null)
+                            }}
+                            disabled={savingEdit}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label
+                          className="text-xs text-gray-500 dark:text-gray-400"
+                          htmlFor={`edit-team-jersey-color-${t.teamId}`}
+                        >
+                          Jersey color:
+                        </label>
+                        <input
+                          id={`edit-team-jersey-color-${t.teamId}`}
+                          type="color"
+                          value={editJerseyColor}
+                          onChange={(e) => setEditJerseyColor(e.target.value)}
                           disabled={savingEdit}
+                          className="mt-1.5 block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 disabled:opacity-50"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Upload a custom logo image (overrides the preset above):
+                      </p>
+                      <div className="mt-1.5">
+                        <TeamLogoUpload
+                          teamId={t.teamId}
+                          teamName={editName || t.teamName}
+                          logoImage={editLogoImage}
+                          onChange={(logoImage) => {
+                            setEditLogoImage(logoImage)
+                            if (logoImage) setEditLogoId(null)
+                          }}
                         />
                       </div>
                     </div>
