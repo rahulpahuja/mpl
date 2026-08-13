@@ -80,6 +80,11 @@ export interface Player {
   currentBidder: string | null
   currentBidderName: string | null
   status: PlayerStatus
+  // True once this player has gone through the "unsold" state and was later
+  // force-assigned to a team via assignUnsoldPlayer (rather than won by a
+  // live bid) — see lib/auctions.ts. Drives the "reassigned" marker on the
+  // Results page.
+  wasUnsoldAssigned?: boolean
 }
 
 export interface TeamManagerEntry {
@@ -139,6 +144,9 @@ export interface TeamPlayerRecord {
   playerId: string
   playerName: string
   soldAt: number
+  // Mirrors Player.wasUnsoldAssigned — set when this player was force-assigned
+  // to the team after going unsold, rather than won by a live bid.
+  wasUnsoldAssigned?: boolean
 }
 
 export interface AuctionTeamStats {

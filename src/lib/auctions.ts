@@ -330,7 +330,15 @@ async function recordTeamPurchase(auctionId: string, playerId: string) {
     await updateDoc(teamsSnapRef, {
       spent: teamData.spent + player.currentBid,
       balance: teamData.balance - player.currentBid,
-      players: [...teamData.players, { playerId: player.playerId, playerName: player.name, soldAt: player.currentBid }],
+      players: [
+        ...teamData.players,
+        {
+          playerId: player.playerId,
+          playerName: player.name,
+          soldAt: player.currentBid,
+          ...(player.wasUnsoldAssigned ? { wasUnsoldAssigned: true } : {}),
+        },
+      ],
     })
   }
 }
@@ -401,6 +409,7 @@ export async function assignUnsoldPlayer(
             currentBid: price,
             currentBidder: team.managerId,
             currentBidderName: team.name,
+            wasUnsoldAssigned: true,
           }
         : p,
     )

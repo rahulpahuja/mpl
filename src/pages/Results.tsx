@@ -93,7 +93,15 @@ export function Results() {
                 <ul className="mt-3 space-y-1 text-sm">
                   {team.players.map((p) => (
                     <li key={p.playerId} className="flex justify-between gap-2 text-gray-600 dark:text-gray-400">
-                      <span className="truncate">{p.playerName}</span>
+                      <span className="min-w-0 truncate flex items-center gap-1.5">
+                        <span className="truncate">{p.playerName}</span>
+                        {p.wasUnsoldAssigned && (
+                          <span
+                            title="Went unsold, later assigned to this team"
+                            className="shrink-0 inline-block h-2 w-2 rounded-full bg-amber-500"
+                          />
+                        )}
+                      </span>
                       <span className="shrink-0 font-mono">{p.soldAt}</span>
                     </li>
                   ))}
@@ -124,7 +132,20 @@ export function Results() {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {sold.map((p) => (
                   <tr key={p.playerId}>
-                    <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{p.name}</td>
+                    <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
+                      <span className="inline-flex items-center gap-1.5">
+                        {p.name}
+                        {p.wasUnsoldAssigned && (
+                          <span
+                            title="Went unsold in the auction, later force-assigned to this team"
+                            className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400"
+                          >
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                            Unsold → reassigned
+                          </span>
+                        )}
+                      </span>
+                    </td>
                     <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{p.position}</td>
                     <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
                       {p.currentBidderName}

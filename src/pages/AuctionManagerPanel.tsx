@@ -253,7 +253,15 @@ export function AuctionManagerPanel() {
                         key={p.playerId}
                         className="flex justify-between gap-2 text-gray-600 dark:text-gray-400"
                       >
-                        <span className="truncate">{p.name}</span>
+                        <span className="min-w-0 truncate flex items-center gap-1.5">
+                          <span className="truncate">{p.name}</span>
+                          {p.wasUnsoldAssigned && (
+                            <span
+                              title="Went unsold, later assigned to this team"
+                              className="shrink-0 inline-block h-2 w-2 rounded-full bg-amber-500"
+                            />
+                          )}
+                        </span>
                         <span className="shrink-0 font-mono">{p.currentBid}</span>
                       </li>
                     ))}
