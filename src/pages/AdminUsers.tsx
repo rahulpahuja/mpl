@@ -70,7 +70,7 @@ export function AdminUsers() {
             >
               <option value="admin">Admin</option>
               <option value="auctionManager">Auction Manager</option>
-              <option value="manager">Team Manager</option>
+              <option value="manager">Captain</option>
               <option value="player">Player</option>
               <option value="viewer">Viewer</option>
             </select>
@@ -148,7 +148,7 @@ export function AdminUsers() {
                       >
                         <option value="admin">Admin</option>
                         <option value="auctionManager">Auction Manager</option>
-                        <option value="manager">Team Manager</option>
+                        <option value="manager">Captain</option>
                         <option value="player">Player</option>
                         <option value="viewer">Viewer</option>
                       </select>
