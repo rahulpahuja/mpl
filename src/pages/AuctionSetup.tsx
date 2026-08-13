@@ -27,6 +27,11 @@ import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
 import type { PlayingRole } from '../types'
 
 const DEFAULT_AUCTION_BG_COLOR = '#1e293b'
+// Starting swatches for the title/secondary color pickers — <input type="color">
+// needs a valid hex value even before the Auction Manager has chosen one.
+// Matches the default text-gray-900/text-gray-500 these override once saved.
+const DEFAULT_TITLE_COLOR = '#111827'
+const DEFAULT_SECONDARY_COLOR = '#6b7280'
 
 function parseMaxPlayers(value: string): number {
   const n = Number(value)
@@ -97,6 +102,8 @@ export function AuctionSetup() {
   const [increment, setIncrement] = useState('10')
   const [timerSeconds, setTimerSeconds] = useState('30')
   const [bgColor, setBgColor] = useState(DEFAULT_AUCTION_BG_COLOR)
+  const [titleColor, setTitleColor] = useState(DEFAULT_TITLE_COLOR)
+  const [secondaryColor, setSecondaryColor] = useState(DEFAULT_SECONDARY_COLOR)
   const [applyingPurse, setApplyingPurse] = useState(false)
   const [purseError, setPurseError] = useState<string | null>(null)
   const [applyingMaxPlayers, setApplyingMaxPlayers] = useState(false)
@@ -108,6 +115,8 @@ export function AuctionSetup() {
       setIncrement(String(auction.bidIncrement))
       setTimerSeconds(String(auction.timerDurationSeconds))
       setBgColor(auction.bgColor || DEFAULT_AUCTION_BG_COLOR)
+      setTitleColor(auction.titleColor || DEFAULT_TITLE_COLOR)
+      setSecondaryColor(auction.secondaryColor || DEFAULT_SECONDARY_COLOR)
     }
   }, [auction?.auctionId])
 
@@ -393,6 +402,8 @@ export function AuctionSetup() {
       bidIncrement: Number(increment) || 10,
       timerDurationSeconds: Number(timerSeconds) || 30,
       bgColor,
+      titleColor,
+      secondaryColor,
     })
   }
 
@@ -435,10 +446,13 @@ export function AuctionSetup() {
       <div className="space-y-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+            <h1
+              className="text-2xl font-semibold text-gray-900 dark:text-gray-100"
+              style={{ color: auction.titleColor || undefined }}
+            >
               {auction.name}
             </h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500" style={{ color: auction.secondaryColor || undefined }}>
               Auction ID: <span className="font-mono">{auction.auctionId}</span> · Status:{' '}
               {auction.status}
             </p>
@@ -494,6 +508,34 @@ export function AuctionSetup() {
               />
               <p className="mt-1 text-xs text-gray-500">
                 Themes this auction's setup, live bidding, viewer, and results pages.
+              </p>
+            </div>
+            <div>
+              <label className="text-sm text-gray-500" htmlFor="auction-title-color">
+                Title text color
+              </label>
+              <input
+                id="auction-title-color"
+                type="color"
+                value={titleColor}
+                onChange={(e) => setTitleColor(e.target.value)}
+                className="mt-1 block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+              />
+              <p className="mt-1 text-xs text-gray-500">Colors the auction name heading.</p>
+            </div>
+            <div>
+              <label className="text-sm text-gray-500" htmlFor="auction-secondary-color">
+                Secondary color
+              </label>
+              <input
+                id="auction-secondary-color"
+                type="color"
+                value={secondaryColor}
+                onChange={(e) => setSecondaryColor(e.target.value)}
+                className="mt-1 block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Colors the supporting line under the title (status, auction ID, sold count).
               </p>
             </div>
           </div>

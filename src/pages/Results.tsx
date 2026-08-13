@@ -58,10 +58,13 @@ export function Results() {
       <AuctionBackground color={auction.bgColor} />
       <div className="space-y-10">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+          <h1
+            className="text-2xl font-semibold text-gray-900 dark:text-gray-100"
+            style={{ color: auction.titleColor || undefined }}
+          >
             {auction.name} — Results
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500" style={{ color: auction.secondaryColor || undefined }}>
             Auction ID: <span className="font-mono">{auction.auctionId}</span> · {sold.length} sold ·{' '}
             {unsold.length} unsold
           </p>

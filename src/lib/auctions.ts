@@ -83,7 +83,9 @@ export async function updateAuctionStatus(auctionId: string, status: Auction['st
 
 export async function updateAuctionSettings(
   auctionId: string,
-  settings: Partial<Pick<Auction, 'bidIncrement' | 'timerDurationSeconds' | 'bgColor'>>,
+  settings: Partial<
+    Pick<Auction, 'bidIncrement' | 'timerDurationSeconds' | 'bgColor' | 'titleColor' | 'secondaryColor'>
+  >,
 ) {
   await updateDoc(auctionRef(auctionId), settings)
 }

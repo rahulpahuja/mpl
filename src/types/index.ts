@@ -123,6 +123,11 @@ export interface Auction {
   // Hex color (e.g. "#111827") the Auction Manager picks to theme this
   // auction's pages — see components/AuctionBackground.tsx.
   bgColor?: string | null
+  // Colors for the auction name heading and the supporting line under it
+  // (status/auction ID/sold count) on every page that shows this auction —
+  // setup, live bidding, viewer, and results.
+  titleColor?: string | null
+  secondaryColor?: string | null
 }
 
 export interface BidEntry {

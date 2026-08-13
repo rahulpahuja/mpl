@@ -133,7 +133,10 @@ export function TeamManagerBidding() {
       <AuctionBackground color={auction.bgColor} />
       <div className="space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+          <h1
+            className="text-2xl font-semibold text-gray-900 dark:text-gray-100"
+            style={{ color: auction.titleColor || undefined }}
+          >
             {auction.name} <span className="text-gray-400 font-mono text-lg">#{auction.auctionId}</span>
           </h1>
           <div className="max-w-[70vw] text-right">
