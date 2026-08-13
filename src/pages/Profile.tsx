@@ -62,6 +62,7 @@ export function Profile() {
             battingHandedness: user.battingHandedness,
             bowlingHandedness: user.bowlingHandedness,
             playingRole: user.playingRole,
+            battingType: user.battingType,
             bowlingType: user.bowlingType,
             jerseyNumber: user.jerseyNumber ?? undefined,
           }}

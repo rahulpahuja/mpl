@@ -29,6 +29,16 @@ export type BowlingType =
   | 'swingBowler'
   | 'seamBowler'
 
+export type BattingType =
+  | 'aggressiveBatsman'
+  | 'defensiveBatsman'
+  | 'anchorBatsman'
+  | 'powerHitter'
+  | 'allRoundStrokePlayer'
+  | 'finisher'
+  | 'technicallySoundBatsman'
+  | 'unorthodoxBatsman'
+
 export interface AppUser {
   uid: string
   email: string
@@ -42,6 +52,7 @@ export interface AppUser {
   battingHandedness?: Handedness
   bowlingHandedness?: Handedness
   playingRole?: PlayingRole
+  battingType?: BattingType
   bowlingType?: BowlingType
   playerRequested?: boolean
   // Short code assigned once at onboarding (see ensureUserDoc in lib/auth.ts).

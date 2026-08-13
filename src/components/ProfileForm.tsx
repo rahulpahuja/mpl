@@ -2,7 +2,8 @@ import { useState } from 'react'
 import type { ProfileFields } from '../lib/users'
 import { PLAYING_ROLE_OPTIONS } from '../lib/playingRoles'
 import { BOWLING_TYPE_OPTIONS } from '../lib/bowlingTypes'
-import type { BowlingType, Handedness, PlayingRole } from '../types'
+import { BATTING_TYPE_OPTIONS } from '../lib/battingTypes'
+import type { BattingType, BowlingType, Handedness, PlayingRole } from '../types'
 import { LocationAutocomplete } from './LocationAutocomplete'
 
 const COUNTRY_CODE = '+91'
@@ -54,6 +55,7 @@ export function ProfileForm({
     initial.bowlingHandedness ?? '',
   )
   const [playingRole, setPlayingRole] = useState<PlayingRole | ''>(initial.playingRole ?? '')
+  const [battingType, setBattingType] = useState<BattingType | ''>(initial.battingType ?? '')
   const [bowlingType, setBowlingType] = useState<BowlingType | ''>(initial.bowlingType ?? '')
   const [jerseyNumber, setJerseyNumber] = useState(
     initial.jerseyNumber !== undefined ? String(initial.jerseyNumber) : '',
@@ -98,6 +100,7 @@ export function ProfileForm({
         battingHandedness: battingHandedness || undefined,
         bowlingHandedness: bowlingHandedness || undefined,
         playingRole: playingRole || undefined,
+        battingType: battingType || undefined,
         bowlingType: bowlingType || undefined,
         jerseyNumber: jerseyNumber === '' ? undefined : Number(jerseyNumber),
       })
@@ -184,6 +187,23 @@ export function ProfileForm({
           {PLAYING_ROLE_OPTIONS.map((r) => (
             <option key={r.value} value={r.value}>
               {r.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Batting type
+        </label>
+        <select
+          value={battingType}
+          onChange={(e) => setBattingType(e.target.value as BattingType | '')}
+          className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+        >
+          <option value="">Not set</option>
+          {BATTING_TYPE_OPTIONS.map((b) => (
+            <option key={b.value} value={b.value}>
+              {b.label}
             </option>
           ))}
         </select>
