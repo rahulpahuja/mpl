@@ -13,6 +13,14 @@ import { createTeam, updateTeam } from '../lib/teams'
 import type { AppUser } from '../types'
 
 const DEFAULT_JERSEY_COLOR = '#dc2626'
+const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i
+
+// The jersey color field accepts either a hex value from the color picker
+// (always valid, 7 chars) or free text typed by hand (e.g. "Maroon") — only
+// the latter needs a minimum-length check.
+function isValidJerseyColorText(value: string) {
+  return value === '' || HEX_COLOR_PATTERN.test(value) || value.trim().length >= 3
+}
 
 function managerMatches(candidates: AppUser[], search: string) {
   const q = search.trim().toLowerCase()
@@ -91,6 +99,7 @@ export function AdminTeams() {
   const [teamName, setTeamName] = useState('')
   const [teamLogoId, setTeamLogoId] = useState<string | null>(null)
   const [teamJerseyColor, setTeamJerseyColor] = useState(DEFAULT_JERSEY_COLOR)
+  const [teamJerseyColorError, setTeamJerseyColorError] = useState<string | null>(null)
   const [managerSearch, setManagerSearch] = useState('')
   const [selectedManagerId, setSelectedManagerId] = useState('')
   const [creatingTeam, setCreatingTeam] = useState(false)
@@ -100,12 +109,18 @@ export function AdminTeams() {
   const [editLogoId, setEditLogoId] = useState<string | null>(null)
   const [editLogoImage, setEditLogoImage] = useState<string | null>(null)
   const [editJerseyColor, setEditJerseyColor] = useState(DEFAULT_JERSEY_COLOR)
+  const [editJerseyColorError, setEditJerseyColorError] = useState<string | null>(null)
   const [editManagerSearch, setEditManagerSearch] = useState('')
   const [editManagerId, setEditManagerId] = useState('')
   const [savingEdit, setSavingEdit] = useState(false)
 
   async function handleCreateTeam() {
     if (!teamName.trim() || !selectedManagerId) return
+    if (!isValidJerseyColorText(teamJerseyColor)) {
+      setTeamJerseyColorError('Type at least 3 characters, or use the color picker instead')
+      return
+    }
+    setTeamJerseyColorError(null)
     const manager = users.find((u) => u.uid === selectedManagerId)
     if (!manager) return
     setCreatingTeam(true)
@@ -132,6 +147,7 @@ export function AdminTeams() {
     setEditLogoId(currentLogoId ?? null)
     setEditLogoImage(currentLogoImage ?? null)
     setEditJerseyColor(currentJerseyColor ?? DEFAULT_JERSEY_COLOR)
+    setEditJerseyColorError(null)
     setEditingTeamId(teamId)
     setEditName(currentName)
     setEditManagerId(currentManagerId)
@@ -140,6 +156,11 @@ export function AdminTeams() {
 
   async function handleSaveEdit(teamId: string) {
     if (!editName.trim()) return
+    if (!isValidJerseyColorText(editJerseyColor)) {
+      setEditJerseyColorError('Type at least 3 characters, or use the color picker instead')
+      return
+    }
+    setEditJerseyColorError(null)
     const manager = users.find((u) => u.uid === editManagerId)
     setSavingEdit(true)
     try {
@@ -216,14 +237,34 @@ export function AdminTeams() {
               <label className="text-xs text-gray-500 dark:text-gray-400" htmlFor="new-team-jersey-color">
                 Jersey color:
               </label>
-              <input
-                id="new-team-jersey-color"
-                type="color"
-                value={teamJerseyColor}
-                onChange={(e) => setTeamJerseyColor(e.target.value)}
-                disabled={creatingTeam}
-                className="mt-1.5 block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 disabled:opacity-50"
-              />
+              <div className="mt-1.5 flex items-center gap-2">
+                <input
+                  id="new-team-jersey-color"
+                  type="color"
+                  value={HEX_COLOR_PATTERN.test(teamJerseyColor) ? teamJerseyColor : DEFAULT_JERSEY_COLOR}
+                  onChange={(e) => {
+                    setTeamJerseyColor(e.target.value)
+                    setTeamJerseyColorError(null)
+                  }}
+                  disabled={creatingTeam}
+                  className="block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 disabled:opacity-50"
+                />
+                <input
+                  type="text"
+                  value={teamJerseyColor}
+                  onChange={(e) => {
+                    setTeamJerseyColor(e.target.value)
+                    setTeamJerseyColorError(null)
+                  }}
+                  placeholder="or type e.g. Maroon"
+                  minLength={3}
+                  disabled={creatingTeam}
+                  className="h-9 w-36 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50"
+                />
+              </div>
+              {teamJerseyColorError && (
+                <p className="mt-1 text-xs text-red-600">{teamJerseyColorError}</p>
+              )}
             </div>
           </div>
 
@@ -274,14 +315,34 @@ export function AdminTeams() {
                         >
                           Jersey color:
                         </label>
-                        <input
-                          id={`edit-team-jersey-color-${t.teamId}`}
-                          type="color"
-                          value={editJerseyColor}
-                          onChange={(e) => setEditJerseyColor(e.target.value)}
-                          disabled={savingEdit}
-                          className="mt-1.5 block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 disabled:opacity-50"
-                        />
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <input
+                            id={`edit-team-jersey-color-${t.teamId}`}
+                            type="color"
+                            value={HEX_COLOR_PATTERN.test(editJerseyColor) ? editJerseyColor : DEFAULT_JERSEY_COLOR}
+                            onChange={(e) => {
+                              setEditJerseyColor(e.target.value)
+                              setEditJerseyColorError(null)
+                            }}
+                            disabled={savingEdit}
+                            className="block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 disabled:opacity-50"
+                          />
+                          <input
+                            type="text"
+                            value={editJerseyColor}
+                            onChange={(e) => {
+                              setEditJerseyColor(e.target.value)
+                              setEditJerseyColorError(null)
+                            }}
+                            placeholder="or type e.g. Maroon"
+                            minLength={3}
+                            disabled={savingEdit}
+                            className="h-9 w-36 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50"
+                          />
+                        </div>
+                        {editJerseyColorError && (
+                          <p className="mt-1 text-xs text-red-600">{editJerseyColorError}</p>
+                        )}
                       </div>
                     </div>
                     <div>
