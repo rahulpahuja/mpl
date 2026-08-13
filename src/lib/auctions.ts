@@ -218,6 +218,8 @@ export async function addTeamToAuction(
       tokensSpent: 0,
       remainingTokens: purse,
       logoId: team.logoId ?? null,
+      logoImage: team.logoImage ?? null,
+      jerseyColor: team.jerseyColor ?? null,
     }
     tx.update(auctionRef(auctionId), {
       teamManagers: [...auction.teamManagers, entry],
@@ -228,6 +230,8 @@ export async function addTeamToAuction(
       teamName: team.teamName,
       managerId: team.managerId,
       logoId: team.logoId ?? null,
+      logoImage: team.logoImage ?? null,
+      jerseyColor: team.jerseyColor ?? null,
       initialPurse: purse,
       spent: 0,
       balance: purse,
