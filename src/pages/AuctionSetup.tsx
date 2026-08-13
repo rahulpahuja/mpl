@@ -658,6 +658,7 @@ export function AuctionSetup() {
               <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
                 <tr>
                   <th className="px-3 py-2 font-medium">Name</th>
+                  <th className="px-3 py-2 font-medium">Jersey #</th>
                   <th className="px-3 py-2 font-medium">Position</th>
                   <th className="px-3 py-2 font-medium">Base price</th>
                   <th className="px-3 py-2 font-medium">Status</th>
@@ -665,9 +666,18 @@ export function AuctionSetup() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                {auction.players.map((p) => (
+                {auction.players.map((p) => {
+                  // Manually-typed players (not added from a registered
+                  // account) have no linked AppUser, so there's no jersey
+                  // number to look up — see handleAddRegisteredPlayer vs.
+                  // handleAddPlayer's playerId source.
+                  const jerseyNumber = users.find((u) => u.uid === p.playerId)?.jerseyNumber
+                  return (
                   <tr key={p.playerId}>
                     <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{p.name}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
+                      {jerseyNumber ?? <span className="text-gray-400">—</span>}
+                    </td>
                     <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
                       {p.position || <span className="text-gray-400">—</span>}
                     </td>
@@ -739,10 +749,11 @@ export function AuctionSetup() {
                       )}
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
                 {auction.players.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-3 py-3 text-gray-500">
+                    <td colSpan={6} className="px-3 py-3 text-gray-500">
                       No players added yet.
                     </td>
                   </tr>
