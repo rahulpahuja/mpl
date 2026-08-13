@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { Avatar } from '../components/Avatar'
+import { AuctionBackground } from '../components/AuctionBackground'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useBids } from '../hooks/useBids'
@@ -129,6 +130,7 @@ export function TeamManagerBidding() {
 
   return (
     <Layout>
+      <AuctionBackground color={auction.bgColor} />
       <div className="space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">

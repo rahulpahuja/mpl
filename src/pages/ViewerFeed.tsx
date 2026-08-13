@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
+import { AuctionBackground } from '../components/AuctionBackground'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useBids } from '../hooks/useBids'
@@ -35,6 +36,7 @@ export function ViewerFeed() {
 
   return (
     <Layout>
+      <AuctionBackground color={auction.bgColor} />
       <div className="space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>

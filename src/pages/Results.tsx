@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
+import { AuctionBackground } from '../components/AuctionBackground'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useTeams } from '../hooks/useTeams'
@@ -54,6 +55,7 @@ export function Results() {
 
   return (
     <Layout>
+      <AuctionBackground color={auction.bgColor} />
       <div className="space-y-10">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
