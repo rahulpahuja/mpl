@@ -77,7 +77,12 @@ export function Results() {
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="flex min-w-0 items-center gap-2 font-semibold text-gray-900 dark:text-gray-100">
-                    <TeamAvatar teamName={team.teamName} logoId={team.logoId} logoImage={team.logoImage} />
+                    <TeamAvatar
+                      teamName={team.teamName}
+                      logoId={team.logoId}
+                      logoImage={team.logoImage}
+                      jerseyColor={team.jerseyColor}
+                    />
                     <span className="truncate">{team.teamName}</span>
                   </h3>
                   <span className="shrink-0 text-sm text-gray-500">Balance {team.balance}</span>
