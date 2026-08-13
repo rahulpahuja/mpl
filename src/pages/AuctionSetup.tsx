@@ -8,7 +8,6 @@ import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
 import { useUsers } from '../hooks/useUsers'
-import { useVenuesRegistry } from '../hooks/useVenuesRegistry'
 import { usePageTitle } from '../hooks/usePageTitle'
 import {
   addPlayers,
@@ -25,6 +24,7 @@ import {
 import { assignUserToAuction, promoteViewerToPlayer } from '../lib/users'
 import { createTeam } from '../lib/teams'
 import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
+import { BACKGROUND_IMAGES } from '../lib/backgroundImages'
 import type { PlayingRole } from '../types'
 
 const DEFAULT_AUCTION_BG_COLOR = '#1e293b'
@@ -58,7 +58,6 @@ export function AuctionSetup() {
   usePageTitle(auction ? `${auction.name} · Setup` : 'Auction setup')
   const { teams } = useTeamsRegistry()
   const { users } = useUsers()
-  const { venues } = useVenuesRegistry()
 
   const [playerName, setPlayerName] = useState('')
   const [playerPosition, setPlayerPosition] = useState('')
@@ -106,7 +105,7 @@ export function AuctionSetup() {
   const [bgColor, setBgColor] = useState(DEFAULT_AUCTION_BG_COLOR)
   const [titleColor, setTitleColor] = useState(DEFAULT_TITLE_COLOR)
   const [secondaryColor, setSecondaryColor] = useState(DEFAULT_SECONDARY_COLOR)
-  const [venueId, setVenueId] = useState('')
+  const [backgroundImage, setBackgroundImage] = useState('')
   const [applyingPurse, setApplyingPurse] = useState(false)
   const [purseError, setPurseError] = useState<string | null>(null)
   const [applyingMaxPlayers, setApplyingMaxPlayers] = useState(false)
@@ -120,7 +119,7 @@ export function AuctionSetup() {
       setBgColor(auction.bgColor || DEFAULT_AUCTION_BG_COLOR)
       setTitleColor(auction.titleColor || DEFAULT_TITLE_COLOR)
       setSecondaryColor(auction.secondaryColor || DEFAULT_SECONDARY_COLOR)
-      setVenueId(auction.venueId || '')
+      setBackgroundImage(auction.backgroundImage || '')
     }
   }, [auction?.auctionId])
 
@@ -408,7 +407,7 @@ export function AuctionSetup() {
       bgColor,
       titleColor,
       secondaryColor,
-      venueId: venueId || null,
+      backgroundImage: backgroundImage || null,
     })
   }
 
@@ -445,22 +444,9 @@ export function AuctionSetup() {
     await updateAuctionStatus(auctionId, 'live')
   }
 
-  // Retired venues stay out of the picker going forward, but the auction's
-  // currently-selected one (if since retired) still needs to show up so its
-  // name/photo don't just disappear from this dropdown.
-  const venueOptions = venues.filter((v) => !v.retired || v.venueId === venueId)
-  const venuePreviewImage = venues.find((v) => v.venueId === venueId)?.images[0] ?? null
-
   return (
     <Layout>
-      <AuctionBackground
-        color={auction.bgColor}
-        imageUrl={
-          auction.venueId
-            ? (venues.find((v) => v.venueId === auction.venueId)?.images[0] ?? null)
-            : null
-        }
-      />
+      <AuctionBackground color={auction.bgColor} imageUrl={auction.backgroundImage} />
       <div className="space-y-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -490,36 +476,40 @@ export function AuctionSetup() {
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Auction settings</h2>
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <label className="text-sm text-gray-500" htmlFor="auction-venue">
-                Venue
-              </label>
-              <div className="mt-1 flex items-center gap-3">
-                {venueId && venuePreviewImage && (
-                  <img
-                    src={venuePreviewImage}
-                    alt=""
-                    className="h-9 w-14 shrink-0 rounded object-cover"
-                  />
-                )}
-                <select
-                  id="auction-venue"
-                  value={venueId}
-                  onChange={(e) => setVenueId(e.target.value)}
-                  className="w-full max-w-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+              <label className="text-sm text-gray-500">Background image</label>
+              <div className="mt-1 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setBackgroundImage('')}
+                  aria-label="Use default background (no image)"
+                  className={`flex h-14 w-20 shrink-0 items-center justify-center rounded-lg border border-dashed border-gray-300 dark:border-gray-700 text-[10px] text-gray-500 dark:text-gray-400 ${
+                    backgroundImage === ''
+                      ? 'ring-2 ring-red-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900'
+                      : ''
+                  }`}
                 >
-                  <option value="">Default background (no venue)</option>
-                  {venueOptions.map((v) => (
-                    <option key={v.venueId} value={v.venueId}>
-                      {v.name} — {v.location}
-                      {v.retired ? ' (retired)' : ''}
-                    </option>
-                  ))}
-                </select>
+                  Default
+                </button>
+                {BACKGROUND_IMAGES.map((img) => (
+                  <button
+                    key={img.id}
+                    type="button"
+                    onClick={() => setBackgroundImage(img.path)}
+                    aria-label={`Use ${img.label} background`}
+                    title={img.label}
+                    className={`h-14 w-20 shrink-0 overflow-hidden rounded-lg ${
+                      backgroundImage === img.path
+                        ? 'ring-2 ring-red-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900'
+                        : ''
+                    }`}
+                  >
+                    <img src={img.path} alt={img.label} className="h-full w-full object-cover" />
+                  </button>
+                ))}
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                Uses that venue's photo as the backdrop on this auction's setup, live bidding,
-                viewer, and results pages, replacing the background color below. Add or manage
-                venues from Admin → Venues.
+                Used as the backdrop on this auction's setup, live bidding, viewer, and results
+                pages, replacing the background color below.
               </p>
             </div>
             <div>
@@ -550,42 +540,69 @@ export function AuctionSetup() {
               <label className="text-sm text-gray-500" htmlFor="auction-bg-color">
                 Background color
               </label>
-              <input
-                id="auction-bg-color"
-                type="color"
-                value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
-                className="mt-1 block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
-              />
+              <div className="mt-1 flex items-center gap-2">
+                <input
+                  id="auction-bg-color"
+                  type="color"
+                  value={bgColor}
+                  onChange={(e) => setBgColor(e.target.value)}
+                  className="block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+                />
+                <button
+                  type="button"
+                  onClick={() => setBgColor(DEFAULT_AUCTION_BG_COLOR)}
+                  className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                >
+                  Reset
+                </button>
+              </div>
               <p className="mt-1 text-xs text-gray-500">
                 Themes this auction's setup, live bidding, viewer, and results pages. Ignored
-                when a venue with a photo is selected above.
+                when a background image is selected above.
               </p>
             </div>
             <div>
               <label className="text-sm text-gray-500" htmlFor="auction-title-color">
                 Title text color
               </label>
-              <input
-                id="auction-title-color"
-                type="color"
-                value={titleColor}
-                onChange={(e) => setTitleColor(e.target.value)}
-                className="mt-1 block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
-              />
+              <div className="mt-1 flex items-center gap-2">
+                <input
+                  id="auction-title-color"
+                  type="color"
+                  value={titleColor}
+                  onChange={(e) => setTitleColor(e.target.value)}
+                  className="block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+                />
+                <button
+                  type="button"
+                  onClick={() => setTitleColor(DEFAULT_TITLE_COLOR)}
+                  className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                >
+                  Reset
+                </button>
+              </div>
               <p className="mt-1 text-xs text-gray-500">Colors the auction name heading.</p>
             </div>
             <div>
               <label className="text-sm text-gray-500" htmlFor="auction-secondary-color">
                 Secondary color
               </label>
-              <input
-                id="auction-secondary-color"
-                type="color"
-                value={secondaryColor}
-                onChange={(e) => setSecondaryColor(e.target.value)}
-                className="mt-1 block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
-              />
+              <div className="mt-1 flex items-center gap-2">
+                <input
+                  id="auction-secondary-color"
+                  type="color"
+                  value={secondaryColor}
+                  onChange={(e) => setSecondaryColor(e.target.value)}
+                  className="block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+                />
+                <button
+                  type="button"
+                  onClick={() => setSecondaryColor(DEFAULT_SECONDARY_COLOR)}
+                  className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                >
+                  Reset
+                </button>
+              </div>
               <p className="mt-1 text-xs text-gray-500">
                 Colors the supporting line under the title (status, auction ID, sold count).
               </p>

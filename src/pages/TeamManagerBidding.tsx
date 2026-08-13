@@ -5,7 +5,6 @@ import { Avatar } from '../components/Avatar'
 import { AuctionBackground } from '../components/AuctionBackground'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
-import { useAuctionVenueImage } from '../hooks/useAuctionVenueImage'
 import { useBids } from '../hooks/useBids'
 import { useCountdown } from '../hooks/useCountdown'
 import { useUsers } from '../hooks/useUsers'
@@ -20,7 +19,6 @@ export function TeamManagerBidding() {
   const { auctionId } = useParams<{ auctionId: string }>()
   const { auction, loading } = useAuction(auctionId)
   usePageTitle(auction ? `${auction.name} · Bid` : 'Bid')
-  const venueImage = useAuctionVenueImage(auction)
   const user = useAuthStore((s) => s.user)
   const [error, setError] = useState<string | null>(null)
   const [placing, setPlacing] = useState(false)
@@ -132,7 +130,7 @@ export function TeamManagerBidding() {
 
   return (
     <Layout>
-      <AuctionBackground color={auction.bgColor} imageUrl={venueImage} />
+      <AuctionBackground color={auction.bgColor} imageUrl={auction.backgroundImage} />
       <div className="space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1

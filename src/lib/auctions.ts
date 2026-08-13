@@ -86,7 +86,12 @@ export async function updateAuctionSettings(
   settings: Partial<
     Pick<
       Auction,
-      'bidIncrement' | 'timerDurationSeconds' | 'bgColor' | 'titleColor' | 'secondaryColor' | 'venueId'
+      | 'bidIncrement'
+      | 'timerDurationSeconds'
+      | 'bgColor'
+      | 'titleColor'
+      | 'secondaryColor'
+      | 'backgroundImage'
     >
   >,
 ) {
