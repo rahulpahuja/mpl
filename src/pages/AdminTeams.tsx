@@ -196,13 +196,32 @@ export function AdminTeams() {
               Create team
             </button>
           </div>
-          <div className="mt-2">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Team logo (optional):</p>
-            <div className="mt-1.5">
-              <AvatarPicker
-                selectedId={teamLogoId}
-                onSelect={(id) => setTeamLogoId((current) => (current === id ? null : id))}
+          <div className="mt-2 flex flex-wrap items-end gap-4">
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Team logo (optional):</p>
+              <div className="mt-1.5">
+                <AvatarPicker
+                  selectedId={teamLogoId}
+                  onSelect={(id) => setTeamLogoId((current) => (current === id ? null : id))}
+                  disabled={creatingTeam}
+                />
+              </div>
+              <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                Uploading a custom logo image is available once the team is created — edit it
+                from the list below.
+              </p>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 dark:text-gray-400" htmlFor="new-team-jersey-color">
+                Jersey color:
+              </label>
+              <input
+                id="new-team-jersey-color"
+                type="color"
+                value={teamJerseyColor}
+                onChange={(e) => setTeamJerseyColor(e.target.value)}
                 disabled={creatingTeam}
+                className="mt-1.5 block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 disabled:opacity-50"
               />
             </div>
           </div>
