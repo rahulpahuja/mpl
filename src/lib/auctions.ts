@@ -146,11 +146,16 @@ export async function addPlayers(auctionId: string, players: Omit<Player, 'curre
 }
 
 // Player name is a snapshot copied into `players` when they're added (see
-// addPlayers), not read live from the users collection — so a later profile
-// name change has to be pushed out explicitly. Called from updateOwnProfile
-// for every auction the player is part of. Unlike basePrice/status, name is
-// just identity, so this applies regardless of the player's auction status.
-export async function syncPlayerName(auctionId: string, playerId: string, name: string) {
+// addPlayers), not read live from the users collection, so it can go stale
+// two ways: a linked player (playerId === their uid, added via "Add
+// Registered Player") renames themselves on their profile, or a manually
+// typed/CSV-imported player (playerId is a random UUID, no linked account —
+// see the players.map comment in AuctionSetup) just has a typo. Unlike
+// basePrice/status this is pure identity, so it's editable regardless of the
+// player's auction status. Used both by syncPlayerNameAcrossAllAuctions
+// (automatic, for linked players) and directly by the Auction Setup UI
+// (manual correction, works for any player).
+export async function renamePlayer(auctionId: string, playerId: string, name: string) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(auctionRef(auctionId))
     if (!snap.exists()) return
@@ -161,6 +166,19 @@ export async function syncPlayerName(auctionId: string, playerId: string, name: 
       players: auction.players.map((p) => (p.playerId === playerId ? { ...p, name } : p)),
     })
   })
+}
+
+// Scans every auction for a player entry linked to this uid and pushes the
+// new name into it. A full scan (rather than trusting the user's
+// assignedAuctions) is deliberate: assignedAuctions has a history of missing
+// entries for reasons unrelated to naming (see scripts/backfillAssignedAuctions.cjs),
+// and this app's auction count is small enough that scanning all of them is cheap.
+export async function syncPlayerNameAcrossAllAuctions(uid: string, name: string) {
+  const snap = await getDocs(collection(db, 'auctions'))
+  const linkedAuctionIds = snap.docs
+    .filter((d) => (d.data() as Auction).players.some((p) => p.playerId === uid))
+    .map((d) => d.id)
+  await Promise.all(linkedAuctionIds.map((auctionId) => renamePlayer(auctionId, uid, name)))
 }
 
 // Only lets a still-open player (never went under the hammer) be removed —

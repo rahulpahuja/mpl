@@ -16,6 +16,7 @@ import {
   applyCommonPurseToAllTeams,
   applyMaxPlayersToAllTeams,
   removePlayer,
+  renamePlayer,
   updateAuctionSettings,
   updateAuctionStatus,
   updatePlayerBasePrice,
@@ -79,6 +80,9 @@ export function AuctionSetup() {
   const [editingBasePriceId, setEditingBasePriceId] = useState<string | null>(null)
   const [editBasePrice, setEditBasePrice] = useState('')
   const [savingBasePriceId, setSavingBasePriceId] = useState<string | null>(null)
+  const [editingNameId, setEditingNameId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [savingNameId, setSavingNameId] = useState<string | null>(null)
   const [bulkBasePrice, setBulkBasePrice] = useState('')
   const [applyingBulkBasePrice, setApplyingBulkBasePrice] = useState(false)
   const [bulkBasePriceError, setBulkBasePriceError] = useState<string | null>(null)
@@ -276,6 +280,22 @@ export function AuctionSetup() {
   function startEditBasePrice(playerId: string, currentBasePrice: number) {
     setEditingBasePriceId(playerId)
     setEditBasePrice(String(currentBasePrice))
+  }
+
+  function startEditName(playerId: string, currentName: string) {
+    setEditingNameId(playerId)
+    setEditName(currentName)
+  }
+
+  async function handleSaveName(playerId: string) {
+    if (!auctionId || !editName.trim()) return
+    setSavingNameId(playerId)
+    try {
+      await renamePlayer(auctionId, playerId, editName.trim())
+      setEditingNameId(null)
+    } finally {
+      setSavingNameId(null)
+    }
   }
 
   async function handleSaveBasePrice(playerId: string) {
@@ -686,7 +706,42 @@ export function AuctionSetup() {
                   const jerseyNumber = users.find((u) => u.uid === p.playerId)?.jerseyNumber
                   return (
                   <tr key={p.playerId}>
-                    <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{p.name}</td>
+                    <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
+                      {editingNameId === p.playerId ? (
+                        <span className="inline-flex items-center gap-2">
+                          <input
+                            autoFocus
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="w-36 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                          />
+                          <button
+                            onClick={() => setEditingNameId(null)}
+                            disabled={savingNameId === p.playerId}
+                            className="text-xs font-medium text-gray-500 hover:underline disabled:opacity-50"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleSaveName(p.playerId)}
+                            disabled={savingNameId === p.playerId || !editName.trim()}
+                            className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                          >
+                            {savingNameId === p.playerId ? 'Saving...' : 'Save'}
+                          </button>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-2">
+                          {p.name}
+                          <button
+                            onClick={() => startEditName(p.playerId, p.name)}
+                            className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                          >
+                            Edit
+                          </button>
+                        </span>
+                      )}
+                    </td>
                     <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
                       {jerseyNumber ?? <span className="text-gray-400">—</span>}
                     </td>

@@ -1,7 +1,7 @@
-import { arrayUnion, doc, getDoc, updateDoc, writeBatch } from 'firebase/firestore'
+import { arrayUnion, doc, updateDoc, writeBatch } from 'firebase/firestore'
 import { db } from './firebase'
-import { syncPlayerName } from './auctions'
-import type { AppUser, BattingType, BowlingType, Handedness, PlayingRole, UserRole } from '../types'
+import { syncPlayerNameAcrossAllAuctions } from './auctions'
+import type { BattingType, BowlingType, Handedness, PlayingRole, UserRole } from '../types'
 
 export async function updateUserRole(uid: string, role: UserRole) {
   await updateDoc(doc(db, 'users', uid), { role })
@@ -39,15 +39,10 @@ export async function updateOwnProfile(uid: string, profile: ProfileFields) {
   // Firestore's updateDoc rejects `undefined` field values, so drop unset
   // optional fields (e.g. handedness left unselected) instead of sending them.
   const fields = Object.fromEntries(Object.entries(profile).filter(([, v]) => v !== undefined))
-  const userRef = doc(db, 'users', uid)
-  const snap = await getDoc(userRef)
-  const assignedAuctions = (snap.data() as AppUser | undefined)?.assignedAuctions ?? []
-  await updateDoc(userRef, fields)
-  // Push the new name out to every auction this player is already part of —
-  // see syncPlayerName for why this can't just be read live.
-  await Promise.all(
-    assignedAuctions.map((auctionId) => syncPlayerName(auctionId, uid, profile.displayName)),
-  )
+  await updateDoc(doc(db, 'users', uid), fields)
+  // Push the new name out to every auction this player is linked to — see
+  // syncPlayerNameAcrossAllAuctions for why this can't just be read live.
+  await syncPlayerNameAcrossAllAuctions(uid, profile.displayName)
 }
 
 // `encryptedPhoto` is the AES-GCM ciphertext produced by lib/crypto.ts —
