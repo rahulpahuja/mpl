@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { Avatar } from '../components/Avatar'
+import { AuctionBackground } from '../components/AuctionBackground'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
@@ -27,10 +28,12 @@ import type { PlayingRole, UserRole } from '../types'
 const roleLabel: Record<UserRole, string> = {
   admin: 'Admin',
   auctionManager: 'Auction Manager',
-  manager: 'Team Manager',
+  manager: 'Captain',
   player: 'Player',
   viewer: 'Viewer',
 }
+
+const DEFAULT_AUCTION_BG_COLOR = '#1e293b'
 
 function parseMaxPlayers(value: string): number {
   const n = Number(value)
@@ -93,6 +96,7 @@ export function AuctionSetup() {
 
   const [increment, setIncrement] = useState('10')
   const [timerSeconds, setTimerSeconds] = useState('30')
+  const [bgColor, setBgColor] = useState(DEFAULT_AUCTION_BG_COLOR)
   const [applyingPurse, setApplyingPurse] = useState(false)
   const [purseError, setPurseError] = useState<string | null>(null)
   const [applyingMaxPlayers, setApplyingMaxPlayers] = useState(false)
@@ -103,6 +107,7 @@ export function AuctionSetup() {
     if (auction) {
       setIncrement(String(auction.bidIncrement))
       setTimerSeconds(String(auction.timerDurationSeconds))
+      setBgColor(auction.bgColor || DEFAULT_AUCTION_BG_COLOR)
     }
   }, [auction?.auctionId])
 
@@ -355,6 +360,7 @@ export function AuctionSetup() {
     await updateAuctionSettings(auctionId, {
       bidIncrement: Number(increment) || 10,
       timerDurationSeconds: Number(timerSeconds) || 30,
+      bgColor,
     })
   }
 
@@ -440,6 +446,21 @@ export function AuctionSetup() {
               <p className="mt-1 text-xs text-gray-500">
                 Pre-fills the countdown when a player goes on the block — the Auction Manager
                 can still override it per player from the live panel.
+              </p>
+            </div>
+            <div>
+              <label className="text-sm text-gray-500" htmlFor="auction-bg-color">
+                Background color
+              </label>
+              <input
+                id="auction-bg-color"
+                type="color"
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+                className="mt-1 block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Themes this auction's setup, live bidding, viewer, and results pages.
               </p>
             </div>
           </div>
