@@ -244,8 +244,13 @@ export function AuctionSetup() {
         await promoteViewerToPlayer(uid)
       }
       // Default to the role set on their profile; falls back to '' ("Not set")
-      // if they haven't picked one, same as the manual-add and CSV flows.
-      const position = playingRole ? PLAYING_ROLE_LABELS[playingRole] : ''
+      // if they haven't picked one, same as the manual-add and CSV flows. The
+      // `|| ''` also covers a profile's playingRole holding a value that's
+      // since been removed from PLAYING_ROLE_LABELS (the set of roles has
+      // changed over time) — an unrecognized value must never surface as
+      // `undefined` here, since Firestore's transaction.update() rejects the
+      // whole write if any field is undefined.
+      const position = (playingRole && PLAYING_ROLE_LABELS[playingRole]) || ''
       await addPlayers(auctionId, [{ playerId: uid, name, position, basePrice }])
       // So the player can see this auction (and what's happening in it) from
       // their own Home page once they log in — mirrors how Team Managers and
@@ -847,7 +852,7 @@ export function AuctionSetup() {
                             {roleLabel[p.role]}
                           </span>
                         )}
-                        {p.playingRole && (
+                        {p.playingRole && PLAYING_ROLE_LABELS[p.playingRole] && (
                           <span className="ml-2 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
                             {PLAYING_ROLE_LABELS[p.playingRole]}
                           </span>

@@ -184,7 +184,7 @@ export function AdminPlayers() {
                       {p.jerseyNumber ?? <span className="text-gray-400">—</span>}
                     </td>
                     <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
-                      {p.playingRole ? (
+                      {p.playingRole && PLAYING_ROLE_LABELS[p.playingRole] ? (
                         PLAYING_ROLE_LABELS[p.playingRole]
                       ) : (
                         <span className="text-gray-400">—</span>
