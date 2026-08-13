@@ -399,6 +399,7 @@ export function AuctionSetup() {
 
   return (
     <Layout>
+      <AuctionBackground color={auction.bgColor} />
       <div className="space-y-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
