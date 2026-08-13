@@ -326,11 +326,11 @@ export function AdminTeams() {
                   className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
-                    <TeamAvatar teamName={t.teamName} logoId={t.logoId} logoImage={t.logoImage} />
-                    <span
-                      title="Jersey color"
-                      className="h-3.5 w-3.5 shrink-0 rounded-full border border-black/10 dark:border-white/10"
-                      style={{ backgroundColor: t.jerseyColor || DEFAULT_JERSEY_COLOR }}
+                    <TeamAvatar
+                      teamName={t.teamName}
+                      logoId={t.logoId}
+                      logoImage={t.logoImage}
+                      jerseyColor={t.jerseyColor}
                     />
                     <span className="truncate">{t.teamName}</span>
                   </span>
