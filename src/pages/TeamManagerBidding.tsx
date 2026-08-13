@@ -138,7 +138,13 @@ export function TeamManagerBidding() {
           </h1>
           <div className="max-w-[70vw] text-right">
             <div className="flex items-center justify-end gap-2 text-sm text-gray-500">
-              <TeamAvatar teamName={myTeam.name} logoId={myTeam.logoId} logoImage={myTeam.logoImage} size={5} />
+              <TeamAvatar
+                teamName={myTeam.name}
+                logoId={myTeam.logoId}
+                logoImage={myTeam.logoImage}
+                jerseyColor={myTeam.jerseyColor}
+                size={5}
+              />
               <span className="truncate">{myTeam.name} balance</span>
             </div>
             <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
