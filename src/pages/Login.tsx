@@ -10,11 +10,11 @@ import { usingEmulators } from '../lib/firebase'
 const QUICK_LOGINS = [
   { label: 'Admin', name: 'Admin', email: 'admin@mpltest.com' },
   { label: 'Auction Manager', name: 'AuctionMgr', email: 'auctionmgr@mpltest.com' },
-  { label: 'Team Manager 1', name: 'TM1', email: 'tm1@mpltest.com' },
-  { label: 'Team Manager 2', name: 'TM2', email: 'tm2@mpltest.com' },
-  { label: 'Team Manager 3', name: 'TM3', email: 'tm3@mpltest.com' },
-  { label: 'Team Manager 4', name: 'TM4', email: 'tm4@mpltest.com' },
-  { label: 'Team Manager 5', name: 'TM5', email: 'tm5@mpltest.com' },
+  { label: 'Captain 1', name: 'TM1', email: 'tm1@mpltest.com' },
+  { label: 'Captain 2', name: 'TM2', email: 'tm2@mpltest.com' },
+  { label: 'Captain 3', name: 'TM3', email: 'tm3@mpltest.com' },
+  { label: 'Captain 4', name: 'TM4', email: 'tm4@mpltest.com' },
+  { label: 'Captain 5', name: 'TM5', email: 'tm5@mpltest.com' },
   { label: 'Viewer 1', name: 'Viewer1', email: 'viewer1@mpltest.com' },
   { label: 'Viewer 2', name: 'Viewer2', email: 'viewer2@mpltest.com' },
   { label: 'Viewer 3', name: 'Viewer3', email: 'viewer3@mpltest.com' },
@@ -74,7 +74,7 @@ export function Login() {
       <div className="w-full max-w-sm rounded-xl border border-gray-200/80 dark:border-gray-800/80 bg-white/80 dark:bg-gray-900/70 backdrop-blur-md p-8 shadow-xl shadow-red-950/5 dark:shadow-black/40 ring-1 ring-black/5">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Sign in</h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Sign in with Google to get an account. An Admin then assigns you as a Team Manager or
+          Sign in with Google to get an account. An Admin then assigns you as a Captain or
           Auction Manager — you don't need an account at all just to watch as a Viewer.
         </p>
         <button
