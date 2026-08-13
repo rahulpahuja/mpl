@@ -230,7 +230,7 @@ export function AuctionManagerPanel() {
                 >
                   <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                     <span className="flex min-w-0 items-center gap-2 font-medium text-gray-900 dark:text-gray-100">
-                      <TeamAvatar teamName={tm.name} logoId={tm.logoId} />
+                      <TeamAvatar teamName={tm.name} logoId={tm.logoId} logoImage={tm.logoImage} />
                       <span className="truncate">{tm.name}</span>
                     </span>
                     <span className="shrink-0 text-gray-500">
