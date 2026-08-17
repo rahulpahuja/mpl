@@ -3,6 +3,8 @@ import { Layout } from '../components/Layout'
 import { AdminNav } from '../components/AdminNav'
 import { Avatar } from '../components/Avatar'
 import { WhatsAppButton } from '../components/WhatsAppButton'
+import { UserDetailModal } from '../components/UserDetailModal'
+import { ChevronButton } from '../components/ChevronButton'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { useUsers } from '../hooks/useUsers'
 import { useInvites } from '../hooks/useInvites'
@@ -24,10 +26,12 @@ function UserTable({
   users,
   auctions,
   auctionNameById,
+  onSelectUser,
 }: {
   users: AppUser[]
   auctions: Auction[]
   auctionNameById: Record<string, string>
+  onSelectUser: (u: AppUser) => void
 }) {
   return (
     <>
@@ -48,8 +52,9 @@ function UserTable({
                 <p className="truncate font-medium text-gray-900 dark:text-gray-100">{u.displayName}</p>
                 <p className="truncate text-xs text-gray-500 dark:text-gray-400">{u.email}</p>
               </div>
-              <div className="ml-auto shrink-0">
+              <div className="ml-auto flex shrink-0 items-center gap-1">
                 <WhatsAppButton phone={u.whatsapp || u.phone} />
+                <ChevronButton onClick={() => onSelectUser(u)} label={`View ${u.displayName}'s profile`} />
               </div>
             </div>
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -103,6 +108,7 @@ function UserTable({
               <th className="px-4 py-2 font-medium"></th>
               <th className="px-4 py-2 font-medium">Role</th>
               <th className="px-4 py-2 font-medium">Assign to auction</th>
+              <th className="px-4 py-2 font-medium"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
@@ -162,6 +168,9 @@ function UserTable({
                     </span>
                   )}
                 </td>
+                <td className="px-4 py-2">
+                  <ChevronButton onClick={() => onSelectUser(u)} label={`View ${u.displayName}'s profile`} />
+                </td>
               </tr>
             ))}
           </tbody>
@@ -178,6 +187,8 @@ export function AdminUsers() {
   const { users } = useUsers()
   const invites = useInvites()
   const [userSearch, setUserSearch] = useState('')
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const selectedUser = users.find((u) => u.uid === selectedUserId) ?? null
 
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<UserRole>('manager')
@@ -278,12 +289,22 @@ export function AdminUsers() {
                 <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                   {label} <span className="font-normal text-gray-400">({roleUsers.length})</span>
                 </h2>
-                <UserTable users={roleUsers} auctions={auctions} auctionNameById={auctionNameById} />
+                <UserTable
+                  users={roleUsers}
+                  auctions={auctions}
+                  auctionNameById={auctionNameById}
+                  onSelectUser={(u) => setSelectedUserId(u.uid)}
+                />
               </div>
             )
           })}
         </section>
       </div>
+      <UserDetailModal
+        user={selectedUser}
+        auctionNameById={auctionNameById}
+        onClose={() => setSelectedUserId(null)}
+      />
     </Layout>
   )
 }

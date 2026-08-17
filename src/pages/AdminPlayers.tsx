@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Layout } from '../components/Layout'
 import { AdminNav } from '../components/AdminNav'
 import { Avatar } from '../components/Avatar'
+import { UserDetailModal } from '../components/UserDetailModal'
+import { ChevronButton } from '../components/ChevronButton'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { useUsers } from '../hooks/useUsers'
 import { usePageTitle } from '../hooks/usePageTitle'
@@ -17,6 +19,8 @@ export function AdminPlayers() {
   const [viewerSearch, setViewerSearch] = useState('')
   const [selectedViewerId, setSelectedViewerId] = useState('')
   const [promoting, setPromoting] = useState(false)
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
+  const selectedPlayer = users.find((u) => u.uid === selectedPlayerId) ?? null
 
   const players = users
     .filter((u) => u.role === 'player')
@@ -180,6 +184,12 @@ export function AdminPlayers() {
                         </p>
                         <p className="truncate text-xs text-gray-500 dark:text-gray-400">{p.email}</p>
                       </div>
+                      <div className="ml-auto shrink-0">
+                        <ChevronButton
+                          onClick={() => setSelectedPlayerId(p.uid)}
+                          label={`View ${p.displayName}'s profile`}
+                        />
+                      </div>
                     </div>
                     <dl className="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
                       <div className="flex justify-between gap-2">
@@ -223,6 +233,7 @@ export function AdminPlayers() {
                       <th className="px-4 py-2 font-medium">Assigned auctions</th>
                       <th className="px-4 py-2 font-medium">Auctions played</th>
                       <th className="px-4 py-2 font-medium">Matches played</th>
+                      <th className="px-4 py-2 font-medium"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
@@ -265,6 +276,12 @@ export function AdminPlayers() {
                         </td>
                         {/* Match-level stats aren't tracked yet — shown as NA until that data exists. */}
                         <td className="px-4 py-2 text-gray-400">NA</td>
+                        <td className="px-4 py-2">
+                          <ChevronButton
+                            onClick={() => setSelectedPlayerId(p.uid)}
+                            label={`View ${p.displayName}'s profile`}
+                          />
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -274,6 +291,11 @@ export function AdminPlayers() {
           )}
         </section>
       </div>
+      <UserDetailModal
+        user={selectedPlayer}
+        auctionNameById={auctionNameById}
+        onClose={() => setSelectedPlayerId(null)}
+      />
     </Layout>
   )
 }
