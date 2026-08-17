@@ -188,7 +188,18 @@ export async function syncPlayerNameAcrossAllAuctions(uid: string, name: string)
   const linkedAuctionIds = snap.docs
     .filter((d) => (d.data() as Auction).players.some((p) => p.playerId === uid))
     .map((d) => d.id)
-  await Promise.all(linkedAuctionIds.map((auctionId) => renamePlayer(auctionId, uid, name)))
+  await Promise.all(
+    linkedAuctionIds.map((auctionId) =>
+      renamePlayer(auctionId, uid, name).catch((err) => {
+        // Firestore rules only grant write access to an auction's managers,
+        // so a player syncing their own name has no permission on auctions
+        // they don't manage. Leave those stale rather than failing the
+        // profile save — a manager can fix it via Auction Setup's manual
+        // rename (see renamePlayer's doc comment).
+        if (err?.code !== 'permission-denied') throw err
+      }),
+    ),
+  )
 }
 
 // Only lets a still-open player (never went under the hammer) be removed —
