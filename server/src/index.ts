@@ -171,7 +171,19 @@ app.delete('/files/:id', requireFirebaseAuth, async (req, res) => {
   }
 })
 
-app.get('/health', (_req, res) => res.json({ ok: true }))
+// Server being reachable at all doesn't mean Filen is — this actually
+// exercises a live call (a cheap readdir) rather than just reporting process
+// liveness, so a dropped Filen session or account issue shows up here
+// instead of silently failing on the next real upload/download.
+app.get('/health', async (_req, res) => {
+  try {
+    await ensureFilenLoggedIn()
+    await filenFs().readdir({ path: env.filenBaseFolder })
+    res.json({ server: 'up', filen: 'up' })
+  } catch (err) {
+    res.json({ server: 'up', filen: 'down', error: err instanceof Error ? err.message : 'unknown error' })
+  }
+})
 
 ensureFilenLoggedIn()
   .then(() => {
