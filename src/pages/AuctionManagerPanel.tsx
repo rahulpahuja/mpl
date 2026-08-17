@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
+import { Avatar } from '../components/Avatar'
 import { AuctionBackground } from '../components/AuctionBackground'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
@@ -115,13 +116,23 @@ export function AuctionManagerPanel() {
               <p className="mt-3 text-sm text-gray-500">No player is currently on the block.</p>
             ) : (
               <div className="mt-4 space-y-4">
-                <div>
-                  <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                    {currentPlayer.name}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {currentPlayer.position} · Base price {currentPlayer.basePrice}
-                  </p>
+                <div className="flex items-center gap-4">
+                  <Avatar
+                    name={currentPlayer.name}
+                    encryptedPhoto={currentPlayer.encryptedPhoto}
+                    photoURL={currentPlayer.photoURL}
+                    avatarId={currentPlayer.avatarId}
+                    shape="square"
+                    size={24}
+                  />
+                  <div>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                      {currentPlayer.name}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {currentPlayer.position} · Base price {currentPlayer.basePrice}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-4">

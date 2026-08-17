@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { AuctionBackground } from '../components/AuctionBackground'
+import { Avatar } from '../components/Avatar'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useBids } from '../hooks/useBids'
@@ -66,13 +67,23 @@ export function ViewerFeed() {
             ) : (
               <div className="mt-4 space-y-4">
                 <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                      {currentPlayer.name}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {currentPlayer.position} · Base price {currentPlayer.basePrice}
-                    </p>
+                  <div className="flex items-center gap-4">
+                    <Avatar
+                      name={currentPlayer.name}
+                      encryptedPhoto={currentPlayer.encryptedPhoto}
+                      photoURL={currentPlayer.photoURL}
+                      avatarId={currentPlayer.avatarId}
+                      shape="square"
+                      size={24}
+                    />
+                    <div>
+                      <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                        {currentPlayer.name}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {currentPlayer.position} · Base price {currentPlayer.basePrice}
+                      </p>
+                    </div>
                   </div>
                   {remaining !== null && (
                     <span className="text-2xl font-mono text-gray-900 dark:text-gray-100">

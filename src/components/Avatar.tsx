@@ -7,12 +7,14 @@ export function Avatar({
   photoURL,
   avatarId,
   size = 8,
+  shape = 'circle',
 }: {
   name: string
   encryptedPhoto?: string | null
   photoURL?: string | null
   avatarId?: string | null
   size?: number
+  shape?: 'circle' | 'square'
 }) {
   const decryptedPhoto = useDecryptedPhoto(encryptedPhoto)
   // A chosen preset avatar and the OAuth photo are mutually exclusive at the
@@ -23,6 +25,7 @@ export function Avatar({
 
   const dimension = `${size * 0.25}rem`
   const style = { width: dimension, height: dimension }
+  const shapeClass = shape === 'square' ? 'rounded-xl' : 'rounded-full'
 
   if (src) {
     return (
@@ -31,7 +34,7 @@ export function Avatar({
         alt=""
         referrerPolicy="no-referrer"
         style={style}
-        className="shrink-0 rounded-full object-cover"
+        className={`shrink-0 object-cover ${shapeClass}`}
       />
     )
   }
@@ -40,7 +43,7 @@ export function Avatar({
     return (
       <div
         style={{ ...style, fontSize: `${size * 0.14}rem` }}
-        className={`flex shrink-0 items-center justify-center rounded-full ${preset.bg}`}
+        className={`flex shrink-0 items-center justify-center ${shapeClass} ${preset.bg}`}
       >
         {preset.emoji}
       </div>
@@ -50,7 +53,7 @@ export function Avatar({
   return (
     <div
       style={style}
-      className="flex shrink-0 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300"
+      className={`flex shrink-0 items-center justify-center ${shapeClass} bg-gray-200 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300`}
     >
       {name.charAt(0).toUpperCase()}
     </div>

@@ -166,11 +166,21 @@ export function TeamManagerBidding() {
             ) : (
               <div className="space-y-4">
                 <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                      {currentPlayer.name}
-                    </p>
-                    <p className="text-sm text-gray-500">{currentPlayer.position}</p>
+                  <div className="flex items-center gap-4">
+                    <Avatar
+                      name={currentPlayer.name}
+                      encryptedPhoto={currentPlayer.encryptedPhoto}
+                      photoURL={currentPlayer.photoURL}
+                      avatarId={currentPlayer.avatarId}
+                      shape="square"
+                      size={24}
+                    />
+                    <div>
+                      <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                        {currentPlayer.name}
+                      </p>
+                      <p className="text-sm text-gray-500">{currentPlayer.position}</p>
+                    </div>
                   </div>
                   {remaining !== null && (
                     <span className="text-2xl font-mono text-gray-900 dark:text-gray-100">

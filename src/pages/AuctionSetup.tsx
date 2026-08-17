@@ -236,6 +236,9 @@ export function AuctionSetup() {
     name: string,
     assignedAuctions: string[],
     playingRole: PlayingRole | undefined,
+    encryptedPhoto: string | null | undefined,
+    avatarId: string | null | undefined,
+    photoURL: string | null | undefined,
   ) {
     if (!auctionId || addingRegisteredPlayerIdsRef.current.has(uid)) return
     addingRegisteredPlayerIdsRef.current.add(uid)
@@ -250,7 +253,17 @@ export function AuctionSetup() {
       // `undefined` here, since Firestore's transaction.update() rejects the
       // whole write if any field is undefined.
       const position = (playingRole && PLAYING_ROLE_LABELS[playingRole]) || ''
-      await addPlayers(auctionId, [{ playerId: uid, name, position, basePrice }])
+      await addPlayers(auctionId, [
+        {
+          playerId: uid,
+          name,
+          position,
+          basePrice,
+          encryptedPhoto: encryptedPhoto ?? null,
+          avatarId: avatarId ?? null,
+          photoURL: photoURL ?? null,
+        },
+      ])
       // So the player can see this auction (and what's happening in it) from
       // their own Home page once they log in — mirrors how Team Managers and
       // Auction Managers already see their assigned auctions.
@@ -1164,6 +1177,9 @@ export function AuctionSetup() {
                             p.displayName,
                             p.assignedAuctions,
                             p.playingRole,
+                            p.encryptedPhoto,
+                            p.avatarId,
+                            p.photoURL,
                           )
                         }
                         disabled={addingRegisteredPlayerIds.has(p.uid)}

@@ -85,6 +85,14 @@ export interface Player {
   // live bid) — see lib/auctions.ts. Drives the "reassigned" marker on the
   // Results page.
   wasUnsoldAssigned?: boolean
+  // Snapshot of the linked user's photo, copied in when added via "Add
+  // Registered Player" — same staleness tradeoff as `name` (see renamePlayer's
+  // doc comment) and null for manually typed/CSV-imported players, who have
+  // no linked account. Lets the auction doc (publicly readable) show a photo
+  // without every viewer needing permission to read the users collection.
+  encryptedPhoto?: string | null
+  avatarId?: string | null
+  photoURL?: string | null
 }
 
 export interface TeamManagerEntry {
