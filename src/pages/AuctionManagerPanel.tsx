@@ -124,7 +124,7 @@ export function AuctionManagerPanel() {
                     photoURL={currentPlayer.photoURL}
                     avatarId={currentPlayer.avatarId}
                     shape="square"
-                    size={36}
+                    size={72}
                   />
                   <div className="space-y-1.5">
                     <div>

@@ -52,8 +52,8 @@ export function Avatar({
 
   return (
     <div
-      style={style}
-      className={`flex shrink-0 items-center justify-center ${shapeClass} bg-gray-200 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300`}
+      style={{ ...style, fontSize: `${size * 0.09}rem` }}
+      className={`flex shrink-0 items-center justify-center ${shapeClass} bg-gray-200 dark:bg-gray-700 font-medium text-gray-600 dark:text-gray-300`}
     >
       {name.charAt(0).toUpperCase()}
     </div>
