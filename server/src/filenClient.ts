@@ -1,4 +1,12 @@
-import FilenSDK from '@filen/sdk'
+// Named import, not default — @filen/sdk is a CJS package whose compiled
+// output doesn't set the __esModule marker, so Node's native ESM interop
+// for a default import yields the whole module namespace object instead of
+// unwrapping to the class (confirmed by actually running the compiled
+// output locally, not just type-checking it — `import FilenSDK from
+// '@filen/sdk'` type-checks fine but throws `FilenSDK is not a constructor`
+// at runtime). The named export is a real own property of module.exports,
+// so this path is reliable.
+import { FilenSDK } from '@filen/sdk'
 import { env } from './env.js'
 
 // Filen is E2E-encrypted, so there is no S3-style presigned/temporary URL —
