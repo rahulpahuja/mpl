@@ -14,7 +14,17 @@ import {
 } from 'firebase/firestore'
 import { db } from './firebase'
 import { assertUnsoldAssignment, assertValidBid, computeCommonPurseUpdate } from './auctionRules'
-import type { Auction, AuctionTeamStats, Player, PlayerBids, Team, TeamManagerEntry } from '../types'
+import type {
+  Auction,
+  AuctionTeamStats,
+  BattingType,
+  BowlingType,
+  Handedness,
+  Player,
+  PlayerBids,
+  Team,
+  TeamManagerEntry,
+} from '../types'
 
 function auctionRef(auctionId: string) {
   return doc(db, 'auctions', auctionId)
@@ -178,18 +188,24 @@ export async function renamePlayer(auctionId: string, playerId: string, name: st
   })
 }
 
-// Same staleness story as renamePlayer, for the photo snapshot instead of the
-// name: a linked player's photo can be missing (added to the roster before
-// this field existed) or out of date (they changed their profile photo
+// Same staleness story as renamePlayer, for the photo + handedness snapshot
+// instead of the name: a linked player's roster entry can be missing these
+// (added before the fields existed) or out of date (their profile changed
 // since). Called from AuctionSetup, which already holds both the write
 // access (Auction Manager) and the read access (users list) needed to
 // compare a linked player's roster entry against their live profile.
-export async function syncPlayerPhoto(
+export async function syncPlayerProfileSnapshot(
   auctionId: string,
   playerId: string,
-  encryptedPhoto: string | null,
-  avatarId: string | null,
-  photoURL: string | null,
+  snapshot: {
+    encryptedPhoto: string | null
+    avatarId: string | null
+    photoURL: string | null
+    battingHandedness: Handedness | null
+    bowlingHandedness: Handedness | null
+    battingType: BattingType | null
+    bowlingType: BowlingType | null
+  },
 ) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(auctionRef(auctionId))
@@ -198,14 +214,16 @@ export async function syncPlayerPhoto(
     const player = auction.players.find((p) => p.playerId === playerId)
     const unchanged =
       player &&
-      (player.encryptedPhoto ?? null) === encryptedPhoto &&
-      (player.avatarId ?? null) === avatarId &&
-      (player.photoURL ?? null) === photoURL
+      (player.encryptedPhoto ?? null) === snapshot.encryptedPhoto &&
+      (player.avatarId ?? null) === snapshot.avatarId &&
+      (player.photoURL ?? null) === snapshot.photoURL &&
+      (player.battingHandedness ?? null) === snapshot.battingHandedness &&
+      (player.bowlingHandedness ?? null) === snapshot.bowlingHandedness &&
+      (player.battingType ?? null) === snapshot.battingType &&
+      (player.bowlingType ?? null) === snapshot.bowlingType
     if (!player || unchanged) return
     tx.update(auctionRef(auctionId), {
-      players: auction.players.map((p) =>
-        p.playerId === playerId ? { ...p, encryptedPhoto, avatarId, photoURL } : p,
-      ),
+      players: auction.players.map((p) => (p.playerId === playerId ? { ...p, ...snapshot } : p)),
     })
   })
 }

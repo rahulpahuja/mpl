@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { Avatar } from '../components/Avatar'
+import { PlayerProfileBadges } from '../components/PlayerProfileBadges'
 import { AuctionBackground } from '../components/AuctionBackground'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
@@ -165,25 +166,33 @@ export function TeamManagerBidding() {
               <p className="text-sm text-gray-500">Waiting for the next player...</p>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-4">
                     <Avatar
                       name={currentPlayer.name}
                       encryptedPhoto={currentPlayer.encryptedPhoto}
                       photoURL={currentPlayer.photoURL}
                       avatarId={currentPlayer.avatarId}
                       shape="square"
-                      size={24}
+                      size={36}
                     />
-                    <div>
-                      <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                        {currentPlayer.name}
-                      </p>
-                      <p className="text-sm text-gray-500">{currentPlayer.position}</p>
+                    <div className="space-y-1.5">
+                      <div>
+                        <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                          {currentPlayer.name}
+                        </p>
+                        <p className="text-sm text-gray-500">{currentPlayer.position}</p>
+                      </div>
+                      <PlayerProfileBadges
+                        battingHandedness={currentPlayer.battingHandedness}
+                        bowlingHandedness={currentPlayer.bowlingHandedness}
+                        battingType={currentPlayer.battingType}
+                        bowlingType={currentPlayer.bowlingType}
+                      />
                     </div>
                   </div>
                   {remaining !== null && (
-                    <span className="text-2xl font-mono text-gray-900 dark:text-gray-100">
+                    <span className="shrink-0 text-2xl font-mono text-gray-900 dark:text-gray-100">
                       {remaining}s
                     </span>
                   )}

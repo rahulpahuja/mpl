@@ -17,7 +17,7 @@ import {
   applyMaxPlayersToAllTeams,
   removePlayer,
   renamePlayer,
-  syncPlayerPhoto,
+  syncPlayerProfileSnapshot,
   updateAuctionSettings,
   updateAuctionStatus,
   updatePlayerBasePrice,
@@ -26,7 +26,7 @@ import { assignUserToAuction, promoteViewerToPlayer } from '../lib/users'
 import { createTeam } from '../lib/teams'
 import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
 import { BACKGROUND_IMAGES } from '../lib/backgroundImages'
-import type { PlayingRole } from '../types'
+import type { AppUser } from '../types'
 
 const DEFAULT_AUCTION_BG_COLOR = '#1e293b'
 // Starting swatches for the title/secondary color pickers — <input type="color">
@@ -124,28 +124,37 @@ export function AuctionSetup() {
     }
   }, [auction?.auctionId])
 
-  // Backfills/refreshes a linked player's photo snapshot against their live
-  // profile — covers rosters added before this field existed, and profile
-  // photo changes since (see syncPlayerPhoto's doc comment). This page is a
-  // natural place for it: an Auction Manager here already has both the write
-  // access to the auction and the read access to the users list needed to
-  // compare them.
+  // Backfills/refreshes a linked player's photo + cricket-profile snapshot
+  // against their live profile — covers rosters added before these fields
+  // existed, and profile changes since (see syncPlayerProfileSnapshot's doc
+  // comment). This page is a natural place for it: an Auction Manager here
+  // already has both the write access to the auction and the read access to
+  // the users list needed to compare them.
   useEffect(() => {
     if (!auction || !auctionId) return
     for (const player of auction.players) {
       const linkedUser = users.find((u) => u.uid === player.playerId)
       if (!linkedUser) continue
-      const encryptedPhoto = linkedUser.encryptedPhoto ?? null
-      const avatarId = linkedUser.avatarId ?? null
-      const photoURL = linkedUser.photoURL ?? null
-      if (
-        (player.encryptedPhoto ?? null) === encryptedPhoto &&
-        (player.avatarId ?? null) === avatarId &&
-        (player.photoURL ?? null) === photoURL
-      )
-        continue
-      syncPlayerPhoto(auctionId, player.playerId, encryptedPhoto, avatarId, photoURL).catch((err) =>
-        console.error('Failed to sync player photo', err),
+      const snapshot = {
+        encryptedPhoto: linkedUser.encryptedPhoto ?? null,
+        avatarId: linkedUser.avatarId ?? null,
+        photoURL: linkedUser.photoURL ?? null,
+        battingHandedness: linkedUser.battingHandedness ?? null,
+        bowlingHandedness: linkedUser.bowlingHandedness ?? null,
+        battingType: linkedUser.battingType ?? null,
+        bowlingType: linkedUser.bowlingType ?? null,
+      }
+      const unchanged =
+        (player.encryptedPhoto ?? null) === snapshot.encryptedPhoto &&
+        (player.avatarId ?? null) === snapshot.avatarId &&
+        (player.photoURL ?? null) === snapshot.photoURL &&
+        (player.battingHandedness ?? null) === snapshot.battingHandedness &&
+        (player.bowlingHandedness ?? null) === snapshot.bowlingHandedness &&
+        (player.battingType ?? null) === snapshot.battingType &&
+        (player.bowlingType ?? null) === snapshot.bowlingType
+      if (unchanged) continue
+      syncPlayerProfileSnapshot(auctionId, player.playerId, snapshot).catch((err) =>
+        console.error('Failed to sync player profile snapshot', err),
       )
     }
   }, [auction, users, auctionId])
@@ -258,15 +267,8 @@ export function AuctionSetup() {
     }
   }
 
-  async function handleAddRegisteredPlayer(
-    uid: string,
-    name: string,
-    assignedAuctions: string[],
-    playingRole: PlayingRole | undefined,
-    encryptedPhoto: string | null | undefined,
-    avatarId: string | null | undefined,
-    photoURL: string | null | undefined,
-  ) {
+  async function handleAddRegisteredPlayer(user: AppUser) {
+    const { uid, displayName: name, assignedAuctions, playingRole } = user
     if (!auctionId || addingRegisteredPlayerIdsRef.current.has(uid)) return
     addingRegisteredPlayerIdsRef.current.add(uid)
     setAddingRegisteredPlayerIds((prev) => new Set(prev).add(uid))
@@ -286,9 +288,13 @@ export function AuctionSetup() {
           name,
           position,
           basePrice,
-          encryptedPhoto: encryptedPhoto ?? null,
-          avatarId: avatarId ?? null,
-          photoURL: photoURL ?? null,
+          encryptedPhoto: user.encryptedPhoto ?? null,
+          avatarId: user.avatarId ?? null,
+          photoURL: user.photoURL ?? null,
+          battingHandedness: user.battingHandedness ?? null,
+          bowlingHandedness: user.bowlingHandedness ?? null,
+          battingType: user.battingType ?? null,
+          bowlingType: user.bowlingType ?? null,
         },
       ])
       // So the player can see this auction (and what's happening in it) from
@@ -1198,17 +1204,7 @@ export function AuctionSetup() {
                         className="w-24 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
                       />
                       <button
-                        onClick={() =>
-                          handleAddRegisteredPlayer(
-                            p.uid,
-                            p.displayName,
-                            p.assignedAuctions,
-                            p.playingRole,
-                            p.encryptedPhoto,
-                            p.avatarId,
-                            p.photoURL,
-                          )
-                        }
+                        onClick={() => handleAddRegisteredPlayer(p)}
                         disabled={addingRegisteredPlayerIds.has(p.uid)}
                         className="whitespace-nowrap rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
                       >

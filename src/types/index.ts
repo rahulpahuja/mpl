@@ -93,6 +93,12 @@ export interface Player {
   encryptedPhoto?: string | null
   avatarId?: string | null
   photoURL?: string | null
+  // Same snapshot-at-add-time tradeoff as the photo fields above — the rest
+  // of the cricket profile for the "who's on the block" spotlight.
+  battingHandedness?: Handedness | null
+  bowlingHandedness?: Handedness | null
+  battingType?: BattingType | null
+  bowlingType?: BowlingType | null
 }
 
 export interface TeamManagerEntry {
