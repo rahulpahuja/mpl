@@ -6,6 +6,16 @@ import { getDefaultAvatar } from '../lib/avatars'
 import { AvatarPicker } from './AvatarPicker'
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024
+// Higher than compressImageToDataUrl's default (256px/0.7) — profile photos
+// now get shown much larger (the auction "current player" spotlight, up to
+// 288px, i.e. ~576px on a retina display), and the 256px default was visibly
+// blurry once upscaled that far. True lossless (PNG at full resolution)
+// would risk blowing past Firestore's 1MB document limit once combined with
+// the AES-GCM + base64 overhead from lib/crypto.ts, so this is a
+// visually-near-lossless JPEG instead — still comfortably under a few
+// hundred KB for a portrait photo.
+const PROFILE_PHOTO_MAX_DIMENSION_PX = 512
+const PROFILE_PHOTO_JPEG_QUALITY = 0.92
 
 export function ProfilePhotoUpload({
   uid,
@@ -62,7 +72,10 @@ export function ProfilePhotoUpload({
 
     setSaving(true)
     try {
-      const dataUrl = await compressImageToDataUrl(file)
+      const dataUrl = await compressImageToDataUrl(file, {
+        maxDimension: PROFILE_PHOTO_MAX_DIMENSION_PX,
+        quality: PROFILE_PHOTO_JPEG_QUALITY,
+      })
       const encrypted = await encryptToBase64(dataUrl)
       await updateOwnProfilePhoto(uid, encrypted)
       setPreviewUrl(dataUrl)
