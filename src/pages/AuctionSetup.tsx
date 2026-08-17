@@ -17,6 +17,7 @@ import {
   applyMaxPlayersToAllTeams,
   removePlayer,
   renamePlayer,
+  syncPlayerPhoto,
   updateAuctionSettings,
   updateAuctionStatus,
   updatePlayerBasePrice,
@@ -122,6 +123,32 @@ export function AuctionSetup() {
       setBackgroundImage(auction.backgroundImage || '')
     }
   }, [auction?.auctionId])
+
+  // Backfills/refreshes a linked player's photo snapshot against their live
+  // profile — covers rosters added before this field existed, and profile
+  // photo changes since (see syncPlayerPhoto's doc comment). This page is a
+  // natural place for it: an Auction Manager here already has both the write
+  // access to the auction and the read access to the users list needed to
+  // compare them.
+  useEffect(() => {
+    if (!auction || !auctionId) return
+    for (const player of auction.players) {
+      const linkedUser = users.find((u) => u.uid === player.playerId)
+      if (!linkedUser) continue
+      const encryptedPhoto = linkedUser.encryptedPhoto ?? null
+      const avatarId = linkedUser.avatarId ?? null
+      const photoURL = linkedUser.photoURL ?? null
+      if (
+        (player.encryptedPhoto ?? null) === encryptedPhoto &&
+        (player.avatarId ?? null) === avatarId &&
+        (player.photoURL ?? null) === photoURL
+      )
+        continue
+      syncPlayerPhoto(auctionId, player.playerId, encryptedPhoto, avatarId, photoURL).catch((err) =>
+        console.error('Failed to sync player photo', err),
+      )
+    }
+  }, [auction, users, auctionId])
 
   if (loading) {
     return (

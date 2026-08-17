@@ -178,6 +178,38 @@ export async function renamePlayer(auctionId: string, playerId: string, name: st
   })
 }
 
+// Same staleness story as renamePlayer, for the photo snapshot instead of the
+// name: a linked player's photo can be missing (added to the roster before
+// this field existed) or out of date (they changed their profile photo
+// since). Called from AuctionSetup, which already holds both the write
+// access (Auction Manager) and the read access (users list) needed to
+// compare a linked player's roster entry against their live profile.
+export async function syncPlayerPhoto(
+  auctionId: string,
+  playerId: string,
+  encryptedPhoto: string | null,
+  avatarId: string | null,
+  photoURL: string | null,
+) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) return
+    const auction = snap.data() as Auction
+    const player = auction.players.find((p) => p.playerId === playerId)
+    const unchanged =
+      player &&
+      (player.encryptedPhoto ?? null) === encryptedPhoto &&
+      (player.avatarId ?? null) === avatarId &&
+      (player.photoURL ?? null) === photoURL
+    if (!player || unchanged) return
+    tx.update(auctionRef(auctionId), {
+      players: auction.players.map((p) =>
+        p.playerId === playerId ? { ...p, encryptedPhoto, avatarId, photoURL } : p,
+      ),
+    })
+  })
+}
+
 // Scans every auction for a player entry linked to this uid and pushes the
 // new name into it. A full scan (rather than trusting the user's
 // assignedAuctions) is deliberate: assignedAuctions has a history of missing
