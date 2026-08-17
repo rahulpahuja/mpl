@@ -40,6 +40,9 @@ const TeamManagerBidding = lazyWithRetry(() =>
 const ViewerFeed = lazyWithRetry(() => import('./pages/ViewerFeed').then((m) => ({ default: m.ViewerFeed })))
 const Results = lazyWithRetry(() => import('./pages/Results').then((m) => ({ default: m.Results })))
 const Docs = lazyWithRetry(() => import('./pages/Docs').then((m) => ({ default: m.Docs })))
+const FilenTest = lazyWithRetry(() =>
+  import('./pages/FilenTest').then((m) => ({ default: m.FilenTest })),
+)
 
 export default function App() {
   useTimeBasedTheme()
@@ -95,6 +98,14 @@ export default function App() {
               element={
                 <ProtectedRoute roles={['admin']}>
                   <AdminPlayers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/filen-test"
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <FilenTest />
                 </ProtectedRoute>
               }
             />
