@@ -75,7 +75,7 @@ export function ViewerFeed() {
                       photoURL={currentPlayer.photoURL}
                       avatarId={currentPlayer.avatarId}
                       shape="square"
-                      size={72}
+                      size={36}
                     />
                     <div className="space-y-1.5">
                       <div>
