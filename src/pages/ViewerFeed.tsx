@@ -67,8 +67,8 @@ export function ViewerFeed() {
               <p className="mt-3 text-sm text-gray-500">Waiting for the next player...</p>
             ) : (
               <div className="mt-4 space-y-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:items-start sm:gap-4 sm:text-left">
                     <Avatar
                       name={currentPlayer.name}
                       encryptedPhoto={currentPlayer.encryptedPhoto}
@@ -76,8 +76,9 @@ export function ViewerFeed() {
                       avatarId={currentPlayer.avatarId}
                       shape="square"
                       size={72}
+                      mobileSize={32}
                     />
-                    <div className="space-y-1.5">
+                    <div className="min-w-0 space-y-1.5">
                       <div>
                         <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                           {currentPlayer.name}
@@ -95,7 +96,7 @@ export function ViewerFeed() {
                     </div>
                   </div>
                   {remaining !== null && (
-                    <span className="shrink-0 text-2xl font-mono text-gray-900 dark:text-gray-100">
+                    <span className="self-center text-2xl font-mono text-gray-900 dark:text-gray-100 sm:shrink-0 sm:self-auto">
                       {remaining}s
                     </span>
                   )}

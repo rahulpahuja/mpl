@@ -48,7 +48,7 @@ export function PlayerProfileBadges({
   if (badges.length === 0) return null
 
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap justify-center gap-1.5 sm:justify-start">
       {badges.map((b) => (
         <Badge key={b.key} tone={b.tone}>
           {b.label}
