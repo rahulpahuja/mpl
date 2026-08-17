@@ -13,6 +13,7 @@ import {
   assignUnsoldPlayer,
   markSold,
   markUnsold,
+  returnPlayerToQueue,
   setCurrentPlayer,
   startTimer,
   stopTimer,
@@ -340,6 +341,14 @@ export function AuctionManagerPanel() {
                       className="rounded-md bg-gray-800 dark:bg-gray-200 px-3 py-1 text-xs font-medium text-white dark:text-gray-900 hover:opacity-90 disabled:opacity-50"
                     >
                       Assign
+                    </button>
+                    <button
+                      onClick={() => run(() => returnPlayerToQueue(auctionId, p.playerId))}
+                      disabled={busy}
+                      title="Marked unsold by mistake? Put them back in the queue."
+                      className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                    >
+                      Return to queue
                     </button>
                   </div>
                 </li>

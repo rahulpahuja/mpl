@@ -3,13 +3,16 @@ import {
   arrayUnion,
   collection,
   doc,
+  documentId,
   getDoc,
   getDocs,
+  query,
   runTransaction,
   serverTimestamp,
   setDoc,
   Timestamp,
   updateDoc,
+  where,
   writeBatch,
 } from 'firebase/firestore'
 import { db } from './firebase'
@@ -550,6 +553,28 @@ export async function markUnsold(auctionId: string, playerId: string) {
   })
 }
 
+// Reverses an accidental "Mark unsold" — puts the player back into the open
+// queue so they can be started again like any other pending player. Only
+// valid from 'unsold': a sold player has already affected a team's purse and
+// squad, which this doesn't unwind (see removePlayer's similar 'open'-only
+// guard).
+export async function returnPlayerToQueue(auctionId: string, playerId: string) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) throw new Error('Auction not found')
+    const auction = snap.data() as Auction
+    const player = auction.players.find((p) => p.playerId === playerId)
+    if (!player) throw new Error('Player not found')
+    if (player.status !== 'unsold') {
+      throw new Error('Only unsold players can be returned to the queue')
+    }
+    const players = auction.players.map((p) =>
+      p.playerId === playerId ? { ...p, status: 'open' as const } : p,
+    )
+    tx.update(auctionRef(auctionId), { players })
+  })
+}
+
 export async function deleteAuction(auctionId: string) {
   const snap = await getDoc(auctionRef(auctionId))
   if (!snap.exists()) return
@@ -560,14 +585,31 @@ export async function deleteAuction(auctionId: string) {
     getDocs(collection(db, 'auctions', auctionId, 'bids')),
   ])
 
+  // Managers are always real accounts by construction, but a roster player's
+  // playerId may be a random UUID with no linked account (manually
+  // typed/CSV-imported — see the players.map comment in AuctionSetup).
+  // batch.update() on a nonexistent doc fails the *entire* batch, so verify
+  // which player ids actually have a user doc first via chunked `in`
+  // queries (Firestore caps `in` at 10 values).
+  const managerIds = new Set([...auction.auctionManagerIds, ...auction.teamManagerIds])
+  const candidatePlayerIds = auction.players
+    .map((p) => p.playerId)
+    .filter((id) => !managerIds.has(id))
+  const linkedPlayerIds: string[] = []
+  for (let i = 0; i < candidatePlayerIds.length; i += 10) {
+    const chunk = candidatePlayerIds.slice(i, i + 10)
+    const usersSnap = await getDocs(query(collection(db, 'users'), where(documentId(), 'in', chunk)))
+    linkedPlayerIds.push(...usersSnap.docs.map((d) => d.id))
+  }
+
   const batch = writeBatch(db)
   for (const d of teamsSnap.docs) batch.delete(d.ref)
   for (const d of bidsSnap.docs) batch.delete(d.ref)
-  // Without this, a manager's assignedAuctions would keep pointing at a
-  // deleted auction — the exact "shows an ID, no title" symptom this app
-  // already has a bug for, just from a different cause.
-  const managerIds = new Set([...auction.auctionManagerIds, ...auction.teamManagerIds])
-  for (const uid of managerIds) {
+  // Without this, a manager's or linked player's assignedAuctions would keep
+  // pointing at a deleted auction — the exact "shows an ID, no title"
+  // symptom this app already has a bug for, just from a different cause.
+  const uidsToClean = new Set([...managerIds, ...linkedPlayerIds])
+  for (const uid of uidsToClean) {
     batch.update(doc(db, 'users', uid), { assignedAuctions: arrayRemove(auctionId) })
   }
   batch.delete(auctionRef(auctionId))
