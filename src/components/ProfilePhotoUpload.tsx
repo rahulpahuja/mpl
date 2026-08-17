@@ -1,59 +1,51 @@
-import { useEffect, useState } from 'react'
-import { decryptFromBase64, encryptToBase64 } from '../lib/crypto'
+import { useState } from 'react'
+import { useDecryptedPhoto } from '../hooks/useDecryptedPhoto'
+import { useFilenPhoto } from '../hooks/useFilenPhoto'
 import { compressImageToDataUrl } from '../lib/imageProcessing'
+import { uploadToFilen } from '../lib/filen'
 import { updateOwnAvatar, updateOwnProfilePhoto } from '../lib/users'
 import { getDefaultAvatar } from '../lib/avatars'
 import { AvatarPicker } from './AvatarPicker'
 
-const MAX_UPLOAD_BYTES = 8 * 1024 * 1024
-// Higher than compressImageToDataUrl's default (256px/0.7) — profile photos
-// now get shown much larger (the auction "current player" spotlight, up to
-// 288px, i.e. ~576px on a retina display), and the 256px default was visibly
-// blurry once upscaled that far. True lossless (PNG at full resolution)
-// would risk blowing past Firestore's 1MB document limit once combined with
-// the AES-GCM + base64 overhead from lib/crypto.ts, so this is a
-// visually-near-lossless JPEG instead — still comfortably under a few
-// hundred KB for a portrait photo.
+// Applies to the originally-picked file, before compression — Filen itself
+// (10GiB free tier) has no reason to cap this tightly, but the proxy
+// (server/src/index.ts's MAX_UPLOAD_BYTES) enforces the same 25MB server-side,
+// so this is a fast client-side reject rather than the actual limit.
+const MAX_UPLOAD_BYTES = 25 * 1024 * 1024
+// Profile photos get shown up to 288px (up to ~576px on a retina display,
+// e.g. the auction "current player" spotlight) — 512px/0.92 is
+// visually-near-lossless at that size without uploading/downloading a much
+// larger original on every avatar render than the app ever actually displays.
 const PROFILE_PHOTO_MAX_DIMENSION_PX = 512
 const PROFILE_PHOTO_JPEG_QUALITY = 0.92
 
+function bytesToMB(bytes: number) {
+  return (bytes / (1024 * 1024)).toFixed(1)
+}
+
 export function ProfilePhotoUpload({
   uid,
+  filenPhotoId,
   encryptedPhoto,
   avatarId,
 }: {
   uid: string
+  filenPhotoId: string | null | undefined
   encryptedPhoto: string | null | undefined
   avatarId: string | null | undefined
 }) {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [decrypting, setDecrypting] = useState(false)
+  const filenPhoto = useFilenPhoto(filenPhotoId)
+  // Legacy fallback — accounts that haven't re-uploaded since the Filen
+  // migration still have their old photo here instead.
+  const legacyPhoto = useDecryptedPhoto(filenPhotoId ? null : encryptedPhoto)
+  const previewUrl = filenPhoto ?? legacyPhoto
+  const loadingPreview = Boolean((filenPhotoId && !filenPhoto) || (!filenPhotoId && encryptedPhoto && !legacyPhoto))
+
+  const [progress, setProgress] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const preset = getDefaultAvatar(avatarId)
-
-  useEffect(() => {
-    if (!encryptedPhoto) {
-      setPreviewUrl(null)
-      return
-    }
-    let cancelled = false
-    setDecrypting(true)
-    decryptFromBase64(encryptedPhoto)
-      .then((dataUrl) => {
-        if (!cancelled) setPreviewUrl(dataUrl)
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load photo')
-      })
-      .finally(() => {
-        if (!cancelled) setDecrypting(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [encryptedPhoto])
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -66,23 +58,25 @@ export function ProfilePhotoUpload({
       return
     }
     if (file.size > MAX_UPLOAD_BYTES) {
-      setError('Image is too large — choose a photo under 8MB.')
+      setError(`Image is too large (${bytesToMB(file.size)}MB) — choose a photo under 25MB.`)
       return
     }
 
-    setSaving(true)
+    setProgress(0)
     try {
       const dataUrl = await compressImageToDataUrl(file, {
         maxDimension: PROFILE_PHOTO_MAX_DIMENSION_PX,
         quality: PROFILE_PHOTO_JPEG_QUALITY,
       })
-      const encrypted = await encryptToBase64(dataUrl)
-      await updateOwnProfilePhoto(uid, encrypted)
-      setPreviewUrl(dataUrl)
+      const compressedFile = await (await fetch(dataUrl)).blob().then(
+        (blob) => new File([blob], file.name, { type: blob.type }),
+      )
+      const uploaded = await uploadToFilen(compressedFile, setProgress)
+      await updateOwnProfilePhoto(uid, uploaded.id)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save photo')
     } finally {
-      setSaving(false)
+      setProgress(null)
     }
   }
 
@@ -91,7 +85,6 @@ export function ProfilePhotoUpload({
     setError(null)
     try {
       await updateOwnProfilePhoto(uid, null)
-      setPreviewUrl(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to remove photo')
     } finally {
@@ -104,7 +97,6 @@ export function ProfilePhotoUpload({
     setError(null)
     try {
       await updateOwnAvatar(uid, id)
-      setPreviewUrl(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to set avatar')
     } finally {
@@ -112,12 +104,14 @@ export function ProfilePhotoUpload({
     }
   }
 
+  const busy = saving || progress !== null
+
   return (
     <div>
       <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Profile photo</label>
       <div className="mt-1 flex items-center gap-3">
         <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800 text-[10px] text-gray-400">
-          {decrypting ? (
+          {loadingPreview ? (
             'Loading...'
           ) : previewUrl ? (
             <img src={previewUrl} alt="Profile" className="h-full w-full object-cover" />
@@ -131,16 +125,21 @@ export function ProfilePhotoUpload({
         </div>
         <div className="flex flex-col items-start gap-1">
           <label className="cursor-pointer text-sm font-medium text-red-600 dark:text-red-400 hover:underline">
-            {saving ? 'Saving...' : previewUrl ? 'Change photo' : 'Upload photo'}
+            {progress !== null
+              ? `Uploading... ${Math.round(progress * 100)}%`
+              : previewUrl
+                ? 'Change photo'
+                : 'Upload photo'}
             <input
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              disabled={saving}
+              disabled={busy}
               className="hidden"
             />
           </label>
-          {(previewUrl || preset) && !saving && (
+          <p className="text-xs text-gray-400 dark:text-gray-500">Max 25MB</p>
+          {(previewUrl || preset) && !busy && (
             <button
               type="button"
               onClick={handleRemove}
@@ -159,7 +158,7 @@ export function ProfilePhotoUpload({
         <AvatarPicker
           selectedId={previewUrl ? null : preset?.id}
           onSelect={handleSelectAvatar}
-          disabled={saving}
+          disabled={busy}
         />
       </div>
 

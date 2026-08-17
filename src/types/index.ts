@@ -56,13 +56,19 @@ export interface AppUser {
   // name/email/phone. Optional because users created before this field existed
   // won't have one until the backfill script runs.
   userCode?: string
+  // Id of the uploaded profile photo on Filen storage (see server/ and
+  // lib/filen.ts) — the current upload mechanism. Mutually exclusive with
+  // avatarId, see lib/users.ts.
+  filenPhotoId?: string | null
   // AES-GCM ciphertext (IV + payload, base64-encoded) of a compressed photo
-  // data URL — see lib/crypto.ts and lib/imageProcessing.ts. Never store the
-  // plaintext data URL directly on the user doc.
+  // data URL — see lib/crypto.ts and lib/imageProcessing.ts. Legacy: photos
+  // uploaded before the Filen migration. No longer written by new uploads,
+  // but still read/rendered as a fallback so existing photos don't go blank
+  // until someone re-uploads (which sets filenPhotoId and clears this).
   encryptedPhoto?: string | null
   // Preset avatar id (see lib/avatars.ts), for users who'd rather pick one of
-  // these than upload their own photo. Mutually exclusive with encryptedPhoto
-  // — setting one clears the other, see lib/users.ts.
+  // these than upload their own photo. Mutually exclusive with
+  // filenPhotoId/encryptedPhoto — setting one clears the others, see lib/users.ts.
   avatarId?: string | null
   // Shirt number a player wears, picked from their own profile. No uniqueness
   // constraint across a team — teams reconcile clashes themselves.
@@ -93,6 +99,17 @@ export interface Player {
   encryptedPhoto?: string | null
   avatarId?: string | null
   photoURL?: string | null
+  // When the linked user's current photo lives in Filen (see AppUser's
+  // filenPhotoId), `encryptedPhoto` above holds a re-encrypted copy — Filen
+  // downloads require Firebase auth, which an anonymous viewer on the public
+  // auction feed doesn't have, so the public snapshot has to stay in the
+  // legacy publicly-readable format regardless of where the source photo
+  // lives. This field records *which* filenPhotoId that copy came from, so
+  // the resync check can compare ids (cheap, stable) instead of the
+  // encrypted bytes themselves — those get a fresh random IV every time
+  // they're re-encrypted (see lib/crypto.ts), so comparing them directly
+  // would never match and cause an infinite resync loop.
+  photoSourceFilenId?: string | null
   // Same snapshot-at-add-time tradeoff as the photo fields above — the rest
   // of the cricket profile for the "who's on the block" spotlight.
   battingHandedness?: Handedness | null

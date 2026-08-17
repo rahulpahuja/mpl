@@ -171,6 +171,7 @@ export function AdminPlayers() {
                     <div className="flex items-center gap-2">
                       <Avatar
                         name={p.displayName}
+                        filenPhotoId={p.filenPhotoId}
                         encryptedPhoto={p.encryptedPhoto}
                         photoURL={p.photoURL}
                         avatarId={p.avatarId}
@@ -243,6 +244,7 @@ export function AdminPlayers() {
                           <div className="flex items-center gap-2">
                             <Avatar
                               name={p.displayName}
+                              filenPhotoId={p.filenPhotoId}
                               encryptedPhoto={p.encryptedPhoto}
                               photoURL={p.photoURL}
                               avatarId={p.avatarId}

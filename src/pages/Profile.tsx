@@ -54,7 +54,12 @@ export function Profile() {
               </p>
             )}
           </div>
-          <ProfilePhotoUpload uid={user.uid} encryptedPhoto={user.encryptedPhoto} avatarId={user.avatarId} />
+          <ProfilePhotoUpload
+            uid={user.uid}
+            filenPhotoId={user.filenPhotoId}
+            encryptedPhoto={user.encryptedPhoto}
+            avatarId={user.avatarId}
+          />
         </div>
         <ProfileForm
           initial={{

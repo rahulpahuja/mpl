@@ -64,6 +64,7 @@ function ManagerPicker({
               >
                 <Avatar
                   name={m.displayName}
+                  filenPhotoId={m.filenPhotoId}
                   encryptedPhoto={m.encryptedPhoto}
                   photoURL={m.photoURL}
                   avatarId={m.avatarId}

@@ -37,6 +37,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 <Link to="/profile" title="View your profile" aria-label="View your profile">
                   <Avatar
                     name={user.displayName}
+                    filenPhotoId={user.filenPhotoId}
                     encryptedPhoto={user.encryptedPhoto}
                     photoURL={user.photoURL}
                     avatarId={user.avatarId}

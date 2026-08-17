@@ -1,8 +1,10 @@
 import { useDecryptedPhoto } from '../hooks/useDecryptedPhoto'
+import { useFilenPhoto } from '../hooks/useFilenPhoto'
 import { getDefaultAvatar } from '../lib/avatars'
 
 export function Avatar({
   name,
+  filenPhotoId,
   encryptedPhoto,
   photoURL,
   avatarId,
@@ -10,17 +12,20 @@ export function Avatar({
   shape = 'circle',
 }: {
   name: string
+  filenPhotoId?: string | null
   encryptedPhoto?: string | null
   photoURL?: string | null
   avatarId?: string | null
   size?: number
   shape?: 'circle' | 'square'
 }) {
+  const filenPhoto = useFilenPhoto(filenPhotoId)
   const decryptedPhoto = useDecryptedPhoto(encryptedPhoto)
-  // A chosen preset avatar and the OAuth photo are mutually exclusive at the
-  // data layer (see lib/users.ts), but guard the display priority anyway:
+  // Mutually exclusive at the data layer (see lib/users.ts), but guard the
+  // display priority anyway: current upload mechanism (Filen) > legacy
+  // uploaded photo (pre-Filen accounts that haven't re-uploaded yet) >
   // preset avatar > OAuth photo > initials.
-  const src = decryptedPhoto ?? (avatarId ? null : photoURL)
+  const src = filenPhoto ?? decryptedPhoto ?? (avatarId ? null : photoURL)
   const preset = getDefaultAvatar(avatarId)
 
   const dimension = `${size * 0.25}rem`

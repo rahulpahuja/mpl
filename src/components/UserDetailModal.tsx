@@ -48,6 +48,7 @@ export function UserDetailModal({
           <div className="flex items-center gap-3">
             <Avatar
               name={user.displayName}
+              filenPhotoId={user.filenPhotoId}
               encryptedPhoto={user.encryptedPhoto}
               photoURL={user.photoURL}
               avatarId={user.avatarId}

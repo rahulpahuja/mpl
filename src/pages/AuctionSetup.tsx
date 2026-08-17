@@ -26,7 +26,51 @@ import { assignUserToAuction, promoteViewerToPlayer } from '../lib/users'
 import { createTeam } from '../lib/teams'
 import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
 import { BACKGROUND_IMAGES } from '../lib/backgroundImages'
+import { downloadFilenFile } from '../lib/filen'
+import { encryptToBase64 } from '../lib/crypto'
 import type { AppUser } from '../types'
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(reader.error ?? new Error('Failed to read photo'))
+    reader.readAsDataURL(blob)
+  })
+}
+
+// A linked player's current photo may live in Filen (current uploads) or as
+// a legacy encryptedPhoto (pre-Filen accounts that haven't re-uploaded). The
+// roster snapshot always needs the legacy publicly-readable format though —
+// Filen downloads require Firebase auth, which an anonymous viewer on the
+// public auction feed doesn't have (see ViewerFeed.tsx) — so a Filen-backed
+// photo gets fetched here (the Auction Manager doing this IS authenticated)
+// and re-encrypted into that format. photoSourceFilenId records which
+// filenPhotoId the copy came from, so later resyncs can tell "unchanged"
+// without re-fetching (see its doc comment on the Player type).
+async function resolvePlayerPhotoFields(user: AppUser): Promise<{
+  encryptedPhoto: string | null
+  avatarId: string | null
+  photoURL: string | null
+  photoSourceFilenId: string | null
+}> {
+  if (user.filenPhotoId) {
+    try {
+      const blob = await downloadFilenFile(user.filenPhotoId)
+      const dataUrl = await blobToDataUrl(blob)
+      const encryptedPhoto = await encryptToBase64(dataUrl)
+      return { encryptedPhoto, avatarId: null, photoURL: null, photoSourceFilenId: user.filenPhotoId }
+    } catch (err) {
+      console.error('Failed to fetch Filen photo for roster snapshot', err)
+    }
+  }
+  return {
+    encryptedPhoto: user.encryptedPhoto ?? null,
+    avatarId: user.avatarId ?? null,
+    photoURL: user.photoURL ?? null,
+    photoSourceFilenId: null,
+  }
+}
 
 const DEFAULT_AUCTION_BG_COLOR = '#1e293b'
 // Starting swatches for the title/secondary color pickers — <input type="color">
@@ -135,27 +179,47 @@ export function AuctionSetup() {
     for (const player of auction.players) {
       const linkedUser = users.find((u) => u.uid === player.playerId)
       if (!linkedUser) continue
-      const snapshot = {
-        encryptedPhoto: linkedUser.encryptedPhoto ?? null,
-        avatarId: linkedUser.avatarId ?? null,
-        photoURL: linkedUser.photoURL ?? null,
-        battingHandedness: linkedUser.battingHandedness ?? null,
-        bowlingHandedness: linkedUser.bowlingHandedness ?? null,
-        battingType: linkedUser.battingType ?? null,
-        bowlingType: linkedUser.bowlingType ?? null,
-      }
-      const unchanged =
-        (player.encryptedPhoto ?? null) === snapshot.encryptedPhoto &&
-        (player.avatarId ?? null) === snapshot.avatarId &&
-        (player.photoURL ?? null) === snapshot.photoURL &&
-        (player.battingHandedness ?? null) === snapshot.battingHandedness &&
-        (player.bowlingHandedness ?? null) === snapshot.bowlingHandedness &&
-        (player.battingType ?? null) === snapshot.battingType &&
-        (player.bowlingType ?? null) === snapshot.bowlingType
-      if (unchanged) continue
-      syncPlayerProfileSnapshot(auctionId, player.playerId, snapshot).catch((err) =>
-        console.error('Failed to sync player profile snapshot', err),
-      )
+
+      // Cheap identity-signature comparison first — no Filen fetch unless
+      // something actually looks different, since this effect re-runs on
+      // every live update. Only one of filenPhotoId/encryptedPhoto/avatarId
+      // is ever set on a user at a time (see lib/users.ts), so this picks
+      // whichever is live and compares it against however the player entry
+      // recorded that same source last time it was synced.
+      const liveIdentity = linkedUser.filenPhotoId
+        ? `filen:${linkedUser.filenPhotoId}`
+        : linkedUser.encryptedPhoto
+          ? `legacy:${linkedUser.encryptedPhoto}`
+          : linkedUser.avatarId
+            ? `avatar:${linkedUser.avatarId}`
+            : 'none'
+      const syncedIdentity = player.photoSourceFilenId
+        ? `filen:${player.photoSourceFilenId}`
+        : player.encryptedPhoto
+          ? `legacy:${player.encryptedPhoto}`
+          : player.avatarId
+            ? `avatar:${player.avatarId}`
+            : 'none'
+      const photoChanged = liveIdentity !== syncedIdentity
+      const restChanged =
+        (player.photoURL ?? null) !== (linkedUser.photoURL ?? null) ||
+        (player.battingHandedness ?? null) !== (linkedUser.battingHandedness ?? null) ||
+        (player.bowlingHandedness ?? null) !== (linkedUser.bowlingHandedness ?? null) ||
+        (player.battingType ?? null) !== (linkedUser.battingType ?? null) ||
+        (player.bowlingType ?? null) !== (linkedUser.bowlingType ?? null)
+      if (!photoChanged && !restChanged) continue
+
+      resolvePlayerPhotoFields(linkedUser)
+        .then((photoFields) =>
+          syncPlayerProfileSnapshot(auctionId, player.playerId, {
+            ...photoFields,
+            battingHandedness: linkedUser.battingHandedness ?? null,
+            bowlingHandedness: linkedUser.bowlingHandedness ?? null,
+            battingType: linkedUser.battingType ?? null,
+            bowlingType: linkedUser.bowlingType ?? null,
+          }),
+        )
+        .catch((err) => console.error('Failed to sync player profile snapshot', err))
     }
   }, [auction, users, auctionId])
 
@@ -282,15 +346,14 @@ export function AuctionSetup() {
       // `undefined` here, since Firestore's transaction.update() rejects the
       // whole write if any field is undefined.
       const position = (playingRole && PLAYING_ROLE_LABELS[playingRole]) || ''
+      const photoFields = await resolvePlayerPhotoFields(user)
       await addPlayers(auctionId, [
         {
           playerId: uid,
           name,
           position,
           basePrice,
-          encryptedPhoto: user.encryptedPhoto ?? null,
-          avatarId: user.avatarId ?? null,
-          photoURL: user.photoURL ?? null,
+          ...photoFields,
           battingHandedness: user.battingHandedness ?? null,
           bowlingHandedness: user.bowlingHandedness ?? null,
           battingType: user.battingType ?? null,
@@ -742,6 +805,7 @@ export function AuctionSetup() {
                       <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                         <Avatar
                           name={v.displayName}
+                          filenPhotoId={v.filenPhotoId}
                           encryptedPhoto={v.encryptedPhoto}
                           photoURL={v.photoURL}
                           avatarId={v.avatarId}
@@ -797,6 +861,7 @@ export function AuctionSetup() {
                     >
                       <Avatar
                         name={v.displayName}
+                        filenPhotoId={v.filenPhotoId}
                         encryptedPhoto={v.encryptedPhoto}
                         photoURL={v.photoURL}
                         avatarId={v.avatarId}
@@ -1175,6 +1240,7 @@ export function AuctionSetup() {
                     <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                       <Avatar
                         name={p.displayName}
+                        filenPhotoId={p.filenPhotoId}
                         encryptedPhoto={p.encryptedPhoto}
                         photoURL={p.photoURL}
                         avatarId={p.avatarId}
@@ -1336,6 +1402,7 @@ export function AuctionSetup() {
                     <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                       <Avatar
                         name={m.displayName}
+                        filenPhotoId={m.filenPhotoId}
                         encryptedPhoto={m.encryptedPhoto}
                         photoURL={m.photoURL}
                         avatarId={m.avatarId}

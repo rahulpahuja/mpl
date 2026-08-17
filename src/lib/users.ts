@@ -45,19 +45,20 @@ export async function updateOwnProfile(uid: string, profile: ProfileFields) {
   await syncPlayerNameAcrossAllAuctions(uid, profile.displayName)
 }
 
-// `encryptedPhoto` is the AES-GCM ciphertext produced by lib/crypto.ts —
-// callers must encrypt before calling this, never pass a raw data URL.
-// Clears avatarId since a real photo and a preset avatar are mutually
-// exclusive (Avatar.tsx would otherwise have to pick a display priority).
-export async function updateOwnProfilePhoto(uid: string, encryptedPhoto: string | null) {
-  await updateDoc(doc(db, 'users', uid), { encryptedPhoto, avatarId: null })
+// `filenPhotoId` is the id returned by uploadToFilen (lib/filen.ts) after the
+// file lands in Filen storage — callers upload first, then pass the
+// resulting id here. Clears avatarId and the legacy encryptedPhoto field
+// since only one photo source is ever active at a time (Avatar.tsx would
+// otherwise have to pick a display priority).
+export async function updateOwnProfilePhoto(uid: string, filenPhotoId: string | null) {
+  await updateDoc(doc(db, 'users', uid), { filenPhotoId, avatarId: null, encryptedPhoto: null })
 }
 
 // Sets a preset avatar (see lib/avatars.ts) and clears any uploaded photo —
 // the inverse of updateOwnProfilePhoto, for users who'd rather pick one of
 // these than upload their own image.
 export async function updateOwnAvatar(uid: string, avatarId: string) {
-  await updateDoc(doc(db, 'users', uid), { avatarId, encryptedPhoto: null })
+  await updateDoc(doc(db, 'users', uid), { avatarId, filenPhotoId: null, encryptedPhoto: null })
 }
 
 // Assigning an Auction Manager must also grant them real write access to the

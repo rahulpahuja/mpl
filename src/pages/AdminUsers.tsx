@@ -44,6 +44,7 @@ function UserTable({
             <div className="flex items-center gap-2">
               <Avatar
                 name={u.displayName}
+                filenPhotoId={u.filenPhotoId}
                 encryptedPhoto={u.encryptedPhoto}
                 photoURL={u.photoURL}
                 avatarId={u.avatarId}
@@ -118,6 +119,7 @@ function UserTable({
                   <div className="flex items-center gap-2">
                     <Avatar
                       name={u.displayName}
+                      filenPhotoId={u.filenPhotoId}
                       encryptedPhoto={u.encryptedPhoto}
                       photoURL={u.photoURL}
                       avatarId={u.avatarId}

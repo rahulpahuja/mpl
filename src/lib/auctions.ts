@@ -204,6 +204,7 @@ export async function syncPlayerProfileSnapshot(
     encryptedPhoto: string | null
     avatarId: string | null
     photoURL: string | null
+    photoSourceFilenId: string | null
     battingHandedness: Handedness | null
     bowlingHandedness: Handedness | null
     battingType: BattingType | null
@@ -215,9 +216,18 @@ export async function syncPlayerProfileSnapshot(
     if (!snap.exists()) return
     const auction = snap.data() as Auction
     const player = auction.players.find((p) => p.playerId === playerId)
+    // Photo change detection: when the source is Filen, compare
+    // photoSourceFilenId (stable) rather than the encryptedPhoto bytes
+    // (re-encrypted with a fresh random IV every call — see photoSourceFilenId's
+    // doc comment on the Player type for why direct comparison would never
+    // match and loop forever).
+    const photoUnchanged = snapshot.photoSourceFilenId
+      ? (player?.photoSourceFilenId ?? null) === snapshot.photoSourceFilenId
+      : (player?.encryptedPhoto ?? null) === snapshot.encryptedPhoto &&
+        !player?.photoSourceFilenId
     const unchanged =
       player &&
-      (player.encryptedPhoto ?? null) === snapshot.encryptedPhoto &&
+      photoUnchanged &&
       (player.avatarId ?? null) === snapshot.avatarId &&
       (player.photoURL ?? null) === snapshot.photoURL &&
       (player.battingHandedness ?? null) === snapshot.battingHandedness &&
