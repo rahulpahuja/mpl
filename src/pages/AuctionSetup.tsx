@@ -137,6 +137,9 @@ export function AuctionSetup() {
   const [bulkBasePrice, setBulkBasePrice] = useState('')
   const [applyingBulkBasePrice, setApplyingBulkBasePrice] = useState(false)
   const [bulkBasePriceError, setBulkBasePriceError] = useState<string | null>(null)
+  const [editingAuctionName, setEditingAuctionName] = useState(false)
+  const [auctionNameDraft, setAuctionNameDraft] = useState('')
+  const [savingAuctionName, setSavingAuctionName] = useState(false)
 
   const [teamSearch, setTeamSearch] = useState('')
   const [selectedTeamId, setSelectedTeamId] = useState('')
@@ -553,18 +556,72 @@ export function AuctionSetup() {
     await updateAuctionStatus(auctionId, 'live')
   }
 
+  function startEditAuctionName() {
+    if (!auction) return
+    setAuctionNameDraft(auction.name)
+    setEditingAuctionName(true)
+  }
+
+  async function handleSaveAuctionName() {
+    if (!auctionId || !auctionNameDraft.trim()) return
+    setSavingAuctionName(true)
+    try {
+      await updateAuctionSettings(auctionId, { name: auctionNameDraft.trim() })
+      setEditingAuctionName(false)
+    } finally {
+      setSavingAuctionName(false)
+    }
+  }
+
   return (
     <Layout>
       <AuctionBackground color={auction.bgColor} imageUrl={auction.backgroundImage} />
       <div className="space-y-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1
-              className="text-2xl font-semibold text-gray-900 dark:text-gray-100"
-              style={{ color: auction.titleColor || undefined }}
-            >
-              {auction.name}
-            </h1>
+            {editingAuctionName ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  autoFocus
+                  value={auctionNameDraft}
+                  onChange={(e) => setAuctionNameDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveAuctionName()
+                    if (e.key === 'Escape') setEditingAuctionName(false)
+                  }}
+                  className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-2xl font-semibold text-gray-900 dark:text-gray-100"
+                />
+                <button
+                  onClick={handleSaveAuctionName}
+                  disabled={savingAuctionName || !auctionNameDraft.trim()}
+                  className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  {savingAuctionName ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  onClick={() => setEditingAuctionName(false)}
+                  disabled={savingAuctionName}
+                  className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <h1
+                className="group flex items-center gap-2 text-2xl font-semibold text-gray-900 dark:text-gray-100"
+                style={{ color: auction.titleColor || undefined }}
+              >
+                {auction.name}
+                <button
+                  onClick={startEditAuctionName}
+                  title="Rename auction"
+                  aria-label="Rename auction"
+                  className="text-base text-gray-400 opacity-60 hover:opacity-100"
+                >
+                  ✏️
+                </button>
+              </h1>
+            )}
             <p className="text-sm text-gray-500" style={{ color: auction.secondaryColor || undefined }}>
               Auction ID: <span className="font-mono">{auction.auctionId}</span> · Status:{' '}
               {auction.status}

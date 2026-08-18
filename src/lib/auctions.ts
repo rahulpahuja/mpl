@@ -99,6 +99,7 @@ export async function updateAuctionSettings(
   settings: Partial<
     Pick<
       Auction,
+      | 'name'
       | 'bidIncrement'
       | 'timerDurationSeconds'
       | 'bgColor'
