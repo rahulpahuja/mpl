@@ -1,0 +1,397 @@
+/* Six or Out — a first-person bowler-vs-batsman waiting-room mini-game.
+   Everything here is scoped under .six-or-out-game so none of these names
+   (very generic ones like .field, .crowd, .stump) ever leak into the rest
+   of the app, and none of the app's own tokens (--bg-sky etc. from
+   index.css) leak into this — deliberately its own bright stadium world,
+   the way SoldCelebration and the splash screen are each their own world
+   too. Keyframe names are prefixed the same way for the same reason. */
+
+.six-or-out-game {
+  --ink: #f5f3ee;
+  --ink-dim: #93a0ad;
+  --blue: #1d4ed8;
+  --orange: #f97316;
+  --gold: #fbbf24;
+  --violet: #8b5cf6;
+  --red: #dc2626;
+  --panel: rgba(15, 23, 42, 0.55);
+  --panel-border: rgba(255, 255, 255, 0.08);
+
+  --field-sky-top: #4fc3f7;
+  --field-sky-bottom: #bdeeff;
+  --field-turf-a: #6fd955;
+  --field-turf-b: #3fae35;
+  --field-pitch: #e7c88a;
+
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 7, 12, 0.7);
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0)
+    env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+}
+
+.six-or-out-game * { box-sizing: border-box; }
+
+.six-or-out-game .soo-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+  background:
+    radial-gradient(520px circle at 18% -6%, rgba(59, 130, 246, 0.26), transparent 60%),
+    radial-gradient(520px circle at 100% 8%, rgba(255, 140, 26, 0.2), transparent 55%),
+    linear-gradient(180deg, #0a1120 0%, #071b12 65%);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.six-or-out-game .soo-appbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: max(14px, env(safe-area-inset-top, 0px)) 16px 8px;
+}
+
+.six-or-out-game .soo-wordmark {
+  font-weight: 800;
+  font-size: 13px;
+  background: linear-gradient(90deg, var(--blue), var(--orange));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.six-or-out-game .soo-controls { display: flex; gap: 6px; }
+
+.six-or-out-game .soo-icon-btn {
+  appearance: none;
+  border: 1px solid var(--panel-border);
+  background: var(--panel);
+  color: var(--ink);
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.six-or-out-game .soo-game-area {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px max(16px, env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  gap: 12px;
+  min-height: 0;
+}
+
+.six-or-out-game .soo-view {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.six-or-out-game .soo-view-play { height: 100%; min-height: 0; }
+
+/* ---------- menu ---------- */
+
+.six-or-out-game .soo-title { font-size: 32px; font-weight: 900; letter-spacing: -0.01em; text-align: center; line-height: 1.05; }
+.six-or-out-game .soo-title .six { color: var(--gold); }
+.six-or-out-game .soo-title .or { color: var(--ink-dim); font-weight: 700; font-size: 0.55em; vertical-align: 2px; }
+.six-or-out-game .soo-title .out { color: var(--red); }
+.six-or-out-game .soo-sub { color: var(--ink-dim); font-size: 13px; text-align: center; max-width: 280px; line-height: 1.5; }
+
+.six-or-out-game .soo-mode-row { display: flex; gap: 10px; width: 100%; max-width: 320px; }
+
+.six-or-out-game .soo-mode-btn {
+  flex: 1;
+  appearance: none;
+  border: none;
+  color: #fff;
+  padding: 18px 10px 15px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: transform 90ms ease, box-shadow 90ms ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+.six-or-out-game .soo-mode-btn .glyph { font-size: 26px; filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.25)); }
+.six-or-out-game .soo-mode-btn:active { transform: translateY(3px); }
+.six-or-out-game .soo-mode-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.six-or-out-game .soo-mode-btn.bat { background: linear-gradient(180deg, #4d8dff, var(--blue)); box-shadow: 0 4px 0 #1638a6, 0 8px 14px -6px rgba(29, 78, 216, 0.6); }
+.six-or-out-game .soo-mode-btn.bat:active { box-shadow: 0 1px 0 #1638a6; }
+.six-or-out-game .soo-mode-btn.bowl { background: linear-gradient(180deg, #ffab54, var(--orange)); box-shadow: 0 4px 0 #c2540a, 0 8px 14px -6px rgba(249, 115, 22, 0.55); }
+.six-or-out-game .soo-mode-btn.bowl:active { box-shadow: 0 1px 0 #c2540a; }
+
+.six-or-out-game .soo-rules { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 300px; }
+.six-or-out-game .soo-chip { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; padding: 4px 9px; border-radius: 999px; background: var(--panel); border: 1px solid var(--panel-border); color: var(--ink-dim); }
+
+/* ---------- play hud ---------- */
+
+.six-or-out-game .soo-hud { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 340px; }
+.six-or-out-game .soo-hud-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); }
+.six-or-out-game .soo-hud-value { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.six-or-out-game .soo-hud-block { text-align: center; }
+.six-or-out-game .soo-pips { display: flex; gap: 5px; margin-top: 6px; }
+.six-or-out-game .soo-pip { width: 7px; height: 7px; border-radius: 2px; background: rgba(255, 255, 255, 0.14); }
+.six-or-out-game .soo-pip.done { background: var(--gold); }
+.six-or-out-game .soo-pip.current { background: var(--ink); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15); }
+.six-or-out-game .soo-status { height: 18px; font-size: 12px; font-weight: 700; color: var(--ink-dim); text-align: center; }
+
+/* ---------- field scene ---------- */
+
+.six-or-out-game .soo-field {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  flex: 1;
+  min-height: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--field-sky-top) 0%, var(--field-sky-bottom) 55%, var(--field-sky-bottom) 100%);
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 14px 30px -14px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.15);
+  transition: background 400ms ease;
+}
+
+.six-or-out-game .soo-field.night { background: linear-gradient(180deg, #0b1230 0%, #1b2350 55%, #1b2350 100%); }
+
+.six-or-out-game .soo-crowd {
+  position: absolute;
+  inset: 8% 0 0 0;
+  z-index: 1;
+  background-color: #55606e;
+  background-image:
+    radial-gradient(circle at 12% 25%, #f2c9a0 0 2.1px, transparent 2.2px),
+    radial-gradient(circle at 42% 60%, #8b5a2b 0 2.1px, transparent 2.2px),
+    radial-gradient(circle at 72% 20%, #3f3f46 0 2.1px, transparent 2.2px),
+    radial-gradient(circle at 28% 82%, #e0575f 0 1.9px, transparent 2px),
+    radial-gradient(circle at 85% 65%, #4c6ef5 0 1.9px, transparent 2px),
+    radial-gradient(circle at 58% 38%, #ffd43b 0 1.7px, transparent 1.8px),
+    radial-gradient(circle at 5% 68%, #d97706 0 1.7px, transparent 1.8px),
+    radial-gradient(circle at 95% 15%, #22c55e 0 1.7px, transparent 1.8px);
+  background-size: 17px 17px;
+  background-repeat: repeat;
+  filter: blur(0.3px);
+}
+
+.six-or-out-game .soo-crowd::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(17, 24, 39, 0.4));
+}
+
+.six-or-out-game .soo-field.night .soo-crowd { filter: brightness(0.4) blur(0.3px); }
+
+.six-or-out-game .soo-turf-oval {
+  position: absolute;
+  left: 1%;
+  right: 1%;
+  top: 21%;
+  height: 155%;
+  z-index: 2;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--field-turf-a), var(--field-turf-b) 55%);
+  border: 3px dashed rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 10px 26px rgba(0, 0, 0, 0.18);
+}
+
+.six-or-out-game .soo-floodlight { position: absolute; top: 2%; width: 4px; height: 22%; z-index: 3; }
+.six-or-out-game .soo-floodlight .pole { position: absolute; bottom: 0; left: 50%; width: 3px; height: 100%; background: linear-gradient(180deg, #e2e8f0, #94a3b8); transform: translateX(-50%); border-radius: 1px; }
+.six-or-out-game .soo-floodlight .head {
+  position: absolute; top: -3px; left: 50%; width: 22px; height: 9px; transform: translateX(-50%);
+  background: linear-gradient(180deg, #f1f5f9, #cbd5e1); border-radius: 3px;
+  display: flex; align-items: center; justify-content: space-evenly; padding: 0 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.six-or-out-game .soo-floodlight .bulb { width: 2.8px; height: 2.8px; border-radius: 50%; background: #fff; }
+.six-or-out-game .soo-field.night .soo-floodlight .bulb { background: #fff6cf; box-shadow: 0 0 5px 2px rgba(255, 246, 207, 0.95), 0 0 14px 7px rgba(255, 224, 130, 0.55); }
+.six-or-out-game .soo-field.night .soo-floodlight::after {
+  content: ""; position: absolute; top: 6%; left: 50%; width: 140px; height: 220px; transform: translateX(-50%);
+  background: radial-gradient(ellipse at top, rgba(255, 244, 180, 0.28), transparent 72%); pointer-events: none;
+}
+
+.six-or-out-game .soo-pitch {
+  position: absolute;
+  left: 0; right: 0; top: 30%; bottom: 2%;
+  z-index: 3;
+  background: linear-gradient(180deg, #c9a465, var(--field-pitch) 20%, var(--field-pitch) 85%, #b8925a);
+  clip-path: polygon(41% 0%, 59% 0%, 92% 100%, 8% 100%);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.08);
+}
+.six-or-out-game .soo-pitch::before {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0 3%, transparent 3% 7%);
+  mix-blend-mode: multiply;
+}
+.six-or-out-game .soo-crease { position: absolute; left: 12%; right: 12%; bottom: 9%; height: 2px; background: rgba(255, 255, 255, 0.8); }
+
+.six-or-out-game .soo-fielder {
+  position: absolute; width: 7px; height: 7px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #cbd5e1 60%, #94a3b8);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25);
+  transform: translate(-50%, -50%);
+}
+
+.six-or-out-game .soo-stumps { position: absolute; display: flex; gap: 1.5px; transform: translate(-50%, -100%); z-index: 9; }
+.six-or-out-game .soo-stump { width: 2px; height: 13px; background: #e7d9b8; border-radius: 1px; }
+.six-or-out-game .soo-bail { position: absolute; top: -2px; width: 6px; height: 1.5px; background: #e7d9b8; left: 2px; transition: none; }
+.six-or-out-game .soo-stumps.near { gap: 3px; }
+.six-or-out-game .soo-stumps.near .soo-stump { width: 4px; height: 28px; border-radius: 2px; }
+.six-or-out-game .soo-stumps.near .soo-bail { top: -3px; width: 12px; height: 3px; left: 4px; }
+
+.six-or-out-game .soo-figure {
+  position: absolute;
+  transform: translate(-50%, -100%) scale(var(--fig-scale, 1));
+  transform-origin: 50% 100%;
+  z-index: 6;
+  width: 46px;
+  height: 72px;
+}
+.six-or-out-game .soo-bob { width: 100%; height: 100%; animation: soo-idle-bob 1.9s ease-in-out infinite; }
+.six-or-out-game .soo-figure svg { display: block; width: 100%; height: 100%; overflow: visible; }
+@keyframes soo-idle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+
+.six-or-out-game .soo-bat { transform-origin: 24px 19px; transition: none; }
+.six-or-out-game .soo-bat.swing { animation: soo-bat-swing 300ms cubic-bezier(.3, .6, .3, 1) both; }
+@keyframes soo-bat-swing { 0% { transform: rotate(70deg); } 45% { transform: rotate(-65deg); } 100% { transform: rotate(-10deg); } }
+
+.six-or-out-game .soo-bowl-arm { transform-origin: 10px 19px; transition: none; }
+.six-or-out-game .soo-bowl-arm.swing { animation: soo-bowl-swing 320ms ease-out both; }
+@keyframes soo-bowl-swing { 0% { transform: rotate(65deg); } 55% { transform: rotate(-150deg); } 100% { transform: rotate(-95deg); } }
+
+.six-or-out-game .soo-hand-ball.released { animation: soo-hand-ball-release 180ms ease-out 110ms both; }
+@keyframes soo-hand-ball-release { to { opacity: 0; } }
+
+.six-or-out-game .soo-hand-ball.charging { animation-name: soo-charge-up; animation-timing-function: ease-in-out; animation-fill-mode: both; }
+@keyframes soo-charge-up { 0% { transform: scale(1); } 100% { transform: scale(1.6); } }
+
+.six-or-out-game .soo-ball {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #f87171, #dc2626 55%, #7f1d1d 100%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+  transform: translate(-50%, -50%) scale(var(--s, 1));
+  z-index: 7;
+}
+.six-or-out-game .soo-ball.hidden { display: none; }
+
+.six-or-out-game .soo-tap-target { position: absolute; inset: 0; z-index: 10; }
+
+.six-or-out-game .soo-tap-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--blue), var(--orange));
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25), 0 6px 12px -4px rgba(0, 0, 0, 0.4);
+  animation: soo-tap-pulse 900ms ease-in-out infinite;
+  z-index: 8;
+  white-space: nowrap;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+@keyframes soo-tap-pulse { 0%, 100% { transform: translateX(-50%) scale(1); opacity: 1; } 50% { transform: translateX(-50%) scale(1.05); opacity: 0.85; } }
+
+.six-or-out-game .soo-banner {
+  position: absolute;
+  left: 50%;
+  top: 46px;
+  transform: translateX(-50%) scale(0.5);
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 40;
+  text-align: center;
+  white-space: nowrap;
+  padding: 6px 22px;
+  border-radius: 999px;
+  background: rgba(8, 12, 24, 0.6);
+  backdrop-filter: blur(3px);
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+}
+.six-or-out-game .soo-banner.pop { animation: soo-outcome-pop 600ms cubic-bezier(.2, 1.6, .4, 1) both; }
+@keyframes soo-outcome-pop {
+  0% { transform: translateX(-50%) scale(0.4) rotate(-4deg); opacity: 0; }
+  55% { transform: translateX(-50%) scale(1.12) rotate(0deg); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 1; }
+}
+
+.six-or-out-game .soo-shake { animation: soo-shake 320ms ease-out; }
+@keyframes soo-shake {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-6px, 2px, 0); }
+  40% { transform: translate3d(6px, -2px, 0); }
+  60% { transform: translate3d(-4px, 1px, 0); }
+  80% { transform: translate3d(3px, 0, 0); }
+}
+
+.six-or-out-game .soo-confetti { position: absolute; inset: 0; pointer-events: none; z-index: 15; }
+
+/* ---------- end screen ---------- */
+
+.six-or-out-game .soo-result-card { width: 100%; max-width: 320px; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 18px; padding: 22px; text-align: center; backdrop-filter: blur(6px); }
+.six-or-out-game .soo-result-title { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); }
+.six-or-out-game .soo-result-score { font-size: 40px; font-weight: 900; margin: 6px 0; font-variant-numeric: tabular-nums; }
+.six-or-out-game .soo-result-verdict { font-size: 13px; color: var(--gold); font-weight: 700; }
+
+.six-or-out-game .soo-end-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 320px; margin-top: 16px; }
+.six-or-out-game .soo-btn {
+  appearance: none;
+  border: none;
+  background: linear-gradient(180deg, #2a3548, #1a2333);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 800;
+  padding: 14px 16px 12px;
+  border-radius: 13px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #0a0f18, 0 8px 14px -6px rgba(0, 0, 0, 0.5);
+  transition: transform 90ms ease, box-shadow 90ms ease;
+}
+.six-or-out-game .soo-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #0a0f18; }
+.six-or-out-game .soo-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.six-or-out-game .soo-btn.primary {
+  background: linear-gradient(180deg, #4d8dff, var(--blue));
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 0 #1638a6, 0 8px 14px -6px rgba(29, 78, 216, 0.6);
+}
+.six-or-out-game .soo-btn.primary:active { box-shadow: 0 1px 0 #1638a6; }
+
+@media (prefers-reduced-motion: reduce) {
+  .six-or-out-game * { animation-duration: 1ms !important; }
+}

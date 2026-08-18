@@ -10,7 +10,8 @@ const RELOAD_FLAG = 'mpl-chunk-reload'
 // it hasn't loaded yet. A full reload fetches the current index.html and
 // fixes it — the sessionStorage flag stops a genuinely broken chunk from
 // reload-looping forever.
-export function lazyWithRetry<T extends ComponentType<unknown>>(factory: () => Promise<{ default: T }>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches React's own lazy<T extends ComponentType<any>>, so components that take props (not just prop-less pages) can go through this too.
+export function lazyWithRetry<T extends ComponentType<any>>(factory: () => Promise<{ default: T }>) {
   return lazy(async () => {
     try {
       const mod = await factory()

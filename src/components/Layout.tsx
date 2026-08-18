@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { Suspense, useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { signOut } from '../lib/auth'
@@ -9,6 +9,14 @@ import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp'
 import { useGlobalKeyboardShortcuts } from '../hooks/useGlobalKeyboardShortcuts'
 import { useKeyboardShortcutsEnabled } from '../hooks/useKeyboardShortcutsEnabled'
 import { isSoundEnabled, setSoundEnabled, unlockAudio } from '../lib/sound'
+import { lazyWithRetry } from '../lib/lazyWithRetry'
+
+// Lazy-loaded, not just because it's big (a full mini-game's worth of SVG
+// and CSS) but because Layout wraps every page — without this, everyone's
+// first paint would pay for a game most visits never open.
+const SixOrOutGame = lazyWithRetry(() =>
+  import('./SixOrOutGame').then((m) => ({ default: m.SixOrOutGame })),
+)
 
 const roleLabel: Record<string, string> = {
   admin: 'Admin',
@@ -23,6 +31,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const [shortcutsEnabled] = useKeyboardShortcutsEnabled()
   const [helpOpen, setHelpOpen] = useState(false)
   const [soundOn, setSoundOn] = useState(() => isSoundEnabled())
+  const [gameOpen, setGameOpen] = useState(false)
   useGlobalKeyboardShortcuts(shortcutsEnabled, () => setHelpOpen((v) => !v))
 
   // Mobile browsers only allow audio playback after a real user gesture in
@@ -51,6 +60,15 @@ export function Layout({ children }: { children: ReactNode }) {
             MPL Auction Manager
           </Link>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm">
+            <button
+              type="button"
+              onClick={() => setGameOpen(true)}
+              title="Play a quick cricket game while you wait"
+              aria-label="Play a quick cricket game while you wait"
+              className="flex items-center gap-1.5 rounded-md bg-gradient-to-r from-blue-700 to-orange-500 px-3 py-1.5 font-medium text-white hover:opacity-90"
+            >
+              🏏 Play
+            </button>
             {user && (
               <>
                 <Link to="/profile" title="View your profile" aria-label="View your profile">
@@ -111,6 +129,11 @@ export function Layout({ children }: { children: ReactNode }) {
       <KeyboardShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
       <PhotoApprovalPrompt />
       <PhotoRequestOutcomeToast />
+      {gameOpen && (
+        <Suspense fallback={null}>
+          <SixOrOutGame onClose={() => setGameOpen(false)} />
+        </Suspense>
+      )}
     </div>
   )
 }
