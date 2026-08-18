@@ -5,9 +5,12 @@ import { Avatar } from '../components/Avatar'
 import { PlayerProfileBadges } from '../components/PlayerProfileBadges'
 import { AuctionBackground } from '../components/AuctionBackground'
 import { TeamAvatar } from '../components/TeamAvatar'
+import { SoldCelebration } from '../components/SoldCelebration'
 import { useAuction } from '../hooks/useAuction'
 import { useBids } from '../hooks/useBids'
+import { useBidSound } from '../hooks/useBidSound'
 import { useCountdown } from '../hooks/useCountdown'
+import { useJustSoldPlayer } from '../hooks/useJustSoldPlayer'
 import { usePageTitle } from '../hooks/usePageTitle'
 import {
   assignUnsoldPlayer,
@@ -36,6 +39,8 @@ export function AuctionManagerPanel() {
   const currentPlayer = auction?.players.find((p) => p.playerId === auction.currentPlayerId) ?? null
   const bids = useBids(auctionId, auction?.currentPlayerId)
   const remaining = useCountdown(auction?.timerEndsAt ?? null)
+  const { sold, clear } = useJustSoldPlayer(auction)
+  useBidSound(bids)
 
   if (loading) {
     return (
@@ -79,6 +84,7 @@ export function AuctionManagerPanel() {
   return (
     <Layout>
       <AuctionBackground color={auction.bgColor} imageUrl={auction.backgroundImage} />
+      <SoldCelebration sold={sold} onDone={clear} />
       <div className="space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>

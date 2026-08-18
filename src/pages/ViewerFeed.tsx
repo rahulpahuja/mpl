@@ -4,9 +4,12 @@ import { AuctionBackground } from '../components/AuctionBackground'
 import { Avatar } from '../components/Avatar'
 import { PlayerProfileBadges } from '../components/PlayerProfileBadges'
 import { TeamAvatar } from '../components/TeamAvatar'
+import { SoldCelebration } from '../components/SoldCelebration'
 import { useAuction } from '../hooks/useAuction'
 import { useBids } from '../hooks/useBids'
+import { useBidSound } from '../hooks/useBidSound'
 import { useCountdown } from '../hooks/useCountdown'
+import { useJustSoldPlayer } from '../hooks/useJustSoldPlayer'
 import { usePageTitle } from '../hooks/usePageTitle'
 
 export function ViewerFeed() {
@@ -16,6 +19,8 @@ export function ViewerFeed() {
   const currentPlayer = auction?.players.find((p) => p.playerId === auction.currentPlayerId) ?? null
   const bids = useBids(auctionId, auction?.currentPlayerId)
   const remaining = useCountdown(auction?.timerEndsAt ?? null)
+  const { sold, clear } = useJustSoldPlayer(auction)
+  useBidSound(bids)
 
   if (loading) {
     return (
@@ -39,6 +44,7 @@ export function ViewerFeed() {
   return (
     <Layout>
       <AuctionBackground color={auction.bgColor} imageUrl={auction.backgroundImage} />
+      <SoldCelebration sold={sold} onDone={clear} />
       <div className="space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -62,7 +68,15 @@ export function ViewerFeed() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <section className="lg:col-span-2 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Live scoreboard</h2>
+            <h2 className="flex items-center gap-2 text-lg font-medium text-gray-900 dark:text-gray-100">
+              Live scoreboard
+              {currentPlayer && (
+                <span className="relative flex h-2 w-2" title="On the block now">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-red-500" style={{ animation: 'live-pulse-ring 1.6s ease-out infinite' }} />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                </span>
+              )}
+            </h2>
             {!currentPlayer ? (
               <p className="mt-3 text-sm text-gray-500">Waiting for the next player...</p>
             ) : (
@@ -96,7 +110,13 @@ export function ViewerFeed() {
                     </div>
                   </div>
                   {remaining !== null && (
-                    <span className="self-center text-2xl font-mono text-gray-900 dark:text-gray-100 sm:shrink-0 sm:self-auto">
+                    <span
+                      className={`self-center rounded-lg px-3 py-1 font-mono text-2xl font-bold tabular-nums sm:shrink-0 sm:self-auto ${
+                        remaining <= 5
+                          ? 'animate-pulse bg-red-600 text-white'
+                          : 'text-gray-900 dark:text-gray-100'
+                      }`}
+                    >
                       {remaining}s
                     </span>
                   )}

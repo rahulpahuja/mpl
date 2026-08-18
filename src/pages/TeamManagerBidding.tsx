@@ -5,9 +5,12 @@ import { Avatar } from '../components/Avatar'
 import { PlayerProfileBadges } from '../components/PlayerProfileBadges'
 import { AuctionBackground } from '../components/AuctionBackground'
 import { TeamAvatar } from '../components/TeamAvatar'
+import { SoldCelebration } from '../components/SoldCelebration'
 import { useAuction } from '../hooks/useAuction'
 import { useBids } from '../hooks/useBids'
+import { useBidSound } from '../hooks/useBidSound'
 import { useCountdown } from '../hooks/useCountdown'
+import { useJustSoldPlayer } from '../hooks/useJustSoldPlayer'
 import { useUsers } from '../hooks/useUsers'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
@@ -31,6 +34,8 @@ export function TeamManagerBidding() {
   const currentPlayer = auction?.players.find((p) => p.playerId === auction.currentPlayerId) ?? null
   const bids = useBids(auctionId, auction?.currentPlayerId)
   const remaining = useCountdown(auction?.timerEndsAt ?? null)
+  const { sold, clear } = useJustSoldPlayer(auction)
+  useBidSound(bids)
 
   if (loading) {
     return (
@@ -132,6 +137,7 @@ export function TeamManagerBidding() {
   return (
     <Layout>
       <AuctionBackground color={auction.bgColor} imageUrl={auction.backgroundImage} />
+      <SoldCelebration sold={sold} onDone={clear} />
       <div className="space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1
@@ -192,7 +198,13 @@ export function TeamManagerBidding() {
                     </div>
                   </div>
                   {remaining !== null && (
-                    <span className="shrink-0 text-2xl font-mono text-gray-900 dark:text-gray-100">
+                    <span
+                      className={`shrink-0 rounded-lg px-3 py-1 font-mono text-2xl font-bold tabular-nums ${
+                        remaining <= 5
+                          ? 'animate-pulse bg-red-600 text-white'
+                          : 'text-gray-900 dark:text-gray-100'
+                      }`}
+                    >
                       {remaining}s
                     </span>
                   )}
@@ -211,7 +223,7 @@ export function TeamManagerBidding() {
                 <button
                   onClick={() => handleBid(minBid)}
                   disabled={!canBid || placing}
-                  className="w-full rounded-lg bg-red-600 px-4 py-3 text-base font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+                  className="w-full rounded-lg bg-red-600 px-4 py-4 text-lg font-bold text-white shadow-lg shadow-red-600/20 transition-transform duration-100 hover:bg-red-700 active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100"
                 >
                   Bid {minBid}
                 </button>
@@ -226,7 +238,7 @@ export function TeamManagerBidding() {
                         onClick={() => handleBid(amount)}
                         disabled={disabled}
                         title={`Bid ${amount}`}
-                        className="rounded-lg border border-gray-300 dark:border-gray-700 px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                        className="rounded-lg border border-gray-300 dark:border-gray-700 px-2 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 transition-transform duration-100 hover:bg-gray-50 active:scale-[0.96] dark:hover:bg-gray-800 disabled:opacity-50 disabled:active:scale-100"
                       >
                         +{step}
                       </button>

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { signOut } from '../lib/auth'
@@ -8,6 +8,7 @@ import { PhotoRequestOutcomeToast } from './PhotoRequestOutcomeToast'
 import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp'
 import { useGlobalKeyboardShortcuts } from '../hooks/useGlobalKeyboardShortcuts'
 import { useKeyboardShortcutsEnabled } from '../hooks/useKeyboardShortcutsEnabled'
+import { isSoundEnabled, setSoundEnabled, unlockAudio } from '../lib/sound'
 
 const roleLabel: Record<string, string> = {
   admin: 'Admin',
@@ -21,7 +22,23 @@ export function Layout({ children }: { children: ReactNode }) {
   const user = useAuthStore((s) => s.user)
   const [shortcutsEnabled] = useKeyboardShortcutsEnabled()
   const [helpOpen, setHelpOpen] = useState(false)
+  const [soundOn, setSoundOn] = useState(() => isSoundEnabled())
   useGlobalKeyboardShortcuts(shortcutsEnabled, () => setHelpOpen((v) => !v))
+
+  // Mobile browsers only allow audio playback after a real user gesture in
+  // the tab. Unlocking on the very first tap/keypress anywhere means the
+  // sold-celebration sound is already armed by the time anyone actually
+  // triggers it, instead of silently failing on the first auction of a
+  // session.
+  useEffect(() => {
+    const unlock = () => unlockAudio()
+    window.addEventListener('pointerdown', unlock, { once: true })
+    window.addEventListener('keydown', unlock, { once: true })
+    return () => {
+      window.removeEventListener('pointerdown', unlock)
+      window.removeEventListener('keydown', unlock)
+    }
+  }, [])
 
   return (
     <div className="min-h-screen">
@@ -60,6 +77,19 @@ export function Layout({ children }: { children: ReactNode }) {
                 </Link>
               </>
             )}
+            <button
+              type="button"
+              onClick={() => {
+                const next = !soundOn
+                setSoundOn(next)
+                setSoundEnabled(next)
+              }}
+              title={soundOn ? 'Mute auction sound effects' : 'Unmute auction sound effects'}
+              aria-label={soundOn ? 'Mute sound effects' : 'Unmute sound effects'}
+              className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              {soundOn ? '🔊' : '🔇'}
+            </button>
             <Link
               to="/docs"
               className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
