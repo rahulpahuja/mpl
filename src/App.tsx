@@ -4,6 +4,7 @@ import { AuthProvider } from './components/AuthProvider'
 import { CricketMotifs } from './components/CricketMotifs'
 import { ProfileSetupModal } from './components/ProfileSetupModal'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { SplashScreen } from './components/SplashScreen'
 import { useTimeBasedTheme } from './hooks/useTimeBasedTheme'
 import { lazyWithRetry } from './lib/lazyWithRetry'
 import { Home } from './pages/Home'
@@ -49,6 +50,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <SplashScreen />
         <CricketMotifs />
         <Suspense fallback={null}>
           <Routes>

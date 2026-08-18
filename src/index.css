@@ -162,3 +162,140 @@ body {
   }
 }
 
+/* App splash — a cricket ball rockets in and detonates into the MPL
+   wordmark. Reuses the same gold-impact grammar as the sold celebration
+   above so the two moments read as one system. transform/opacity only. */
+@keyframes splash-ball-fly {
+  0% {
+    transform: translate(150px, -170px) scale(0.55);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  92% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes splash-ball-fly-ghost {
+  0% {
+    transform: translate(150px, -170px) scale(0.55);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.3;
+  }
+  92% {
+    transform: translate(0, 0) scale(0.9);
+    opacity: 0.22;
+  }
+  100% {
+    transform: translate(0, 0) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes splash-flash-pop {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  18% {
+    transform: scale(1.6);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(3.4);
+    opacity: 0;
+  }
+}
+
+@keyframes splash-ring-out {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(4.4);
+    opacity: 0;
+  }
+}
+
+@keyframes splash-spark-out {
+  0% {
+    transform: translate(-50%, -50%) rotate(var(--sa)) translateX(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(var(--sa)) translateX(64px) scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes splash-shake {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  20% {
+    transform: translate3d(-3px, 2px, 0);
+  }
+  40% {
+    transform: translate3d(3px, -2px, 0);
+  }
+  60% {
+    transform: translate3d(-2px, 1px, 0);
+  }
+  80% {
+    transform: translate3d(1px, 0, 0);
+  }
+}
+
+@keyframes splash-mark-in {
+  0% {
+    transform: scale(0.4) rotate(-6deg);
+    opacity: 0;
+  }
+  62% {
+    transform: scale(1.08) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes splash-shimmer-sweep {
+  0% {
+    background-position: -140% 0;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 140% 0;
+    opacity: 0;
+  }
+}
+
+@keyframes splash-tagline-in {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes splash-underline-draw {
+  to {
+    width: 72px;
+  }
+}
+
