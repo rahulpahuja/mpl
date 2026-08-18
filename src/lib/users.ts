@@ -1,7 +1,14 @@
-import { arrayUnion, doc, updateDoc, writeBatch } from 'firebase/firestore'
+import { arrayUnion, doc, serverTimestamp, updateDoc, writeBatch } from 'firebase/firestore'
 import { db } from './firebase'
 import { syncPlayerNameAcrossAllAuctions } from './auctions'
-import type { BattingType, BowlingType, Handedness, PlayingRole, UserRole } from '../types'
+import type {
+  BattingType,
+  BowlingType,
+  Handedness,
+  PendingPhotoRequest,
+  PlayingRole,
+  UserRole,
+} from '../types'
 
 export async function updateUserRole(uid: string, role: UserRole) {
   await updateDoc(doc(db, 'users', uid), { role })
@@ -59,6 +66,61 @@ export async function updateOwnProfilePhoto(uid: string, filenPhotoId: string | 
 // these than upload their own image.
 export async function updateOwnAvatar(uid: string, avatarId: string) {
   await updateDoc(doc(db, 'users', uid), { avatarId, filenPhotoId: null, encryptedPhoto: null })
+}
+
+// An Admin/Auction Manager proposing a replacement profile photo for someone
+// else. `filenPhotoId` must already be uploaded to Filen (see uploadToFilen
+// in lib/filen.ts) — this only records the proposal so the target can
+// preview and approve/reject it; it never touches their live filenPhotoId
+// (enforced by firestore.rules' isRequestingPhotoChange, which restricts
+// this write to the pendingPhotoRequest field only). Firestore rejects the
+// write if one is already pending, so callers should check
+// `!targetUser.pendingPhotoRequest || targetUser.pendingPhotoRequest.status !== 'pending'` first.
+export async function requestProfilePhotoChange(
+  targetUid: string,
+  filenPhotoId: string,
+  requestedBy: string,
+  requestedByName: string,
+) {
+  await updateDoc(doc(db, 'users', targetUid), {
+    pendingPhotoRequest: {
+      filenPhotoId,
+      requestedBy,
+      requestedByName,
+      requestedAt: serverTimestamp(),
+      status: 'pending',
+    },
+  })
+}
+
+// The target approving a pending request: applies the proposed photo as
+// their real one (same fields updateOwnProfilePhoto touches) and marks the
+// request resolved so the requester's outcome listener (see
+// PhotoRequestOutcomeToast) picks it up in real time.
+export async function approvePhotoRequest(uid: string, request: PendingPhotoRequest) {
+  await updateDoc(doc(db, 'users', uid), {
+    filenPhotoId: request.filenPhotoId,
+    avatarId: null,
+    encryptedPhoto: null,
+    pendingPhotoRequest: { ...request, status: 'approved', resolvedAt: serverTimestamp() },
+  })
+}
+
+// The target rejecting a pending request: leaves their live photo untouched,
+// only marks the request resolved.
+export async function rejectPhotoRequest(uid: string, request: PendingPhotoRequest) {
+  await updateDoc(doc(db, 'users', uid), {
+    pendingPhotoRequest: { ...request, status: 'rejected', resolvedAt: serverTimestamp() },
+  })
+}
+
+// The original requester dismissing a resolved (approved/rejected) outcome
+// once they've seen it, so it stops showing up in their outcome listener and
+// a new request can be sent later. Requester-only (see
+// isClearingResolvedPhotoRequest in firestore.rules) — anyone else clearing
+// it could hide an outcome from the person who actually needs to see it.
+export async function clearPhotoRequestOutcome(uid: string) {
+  await updateDoc(doc(db, 'users', uid), { pendingPhotoRequest: null })
 }
 
 // Assigning an Auction Manager must also grant them real write access to the

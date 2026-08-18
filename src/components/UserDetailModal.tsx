@@ -1,5 +1,7 @@
 import { Avatar } from './Avatar'
 import { WhatsAppButton } from './WhatsAppButton'
+import { AdminPhotoRequestControl } from './AdminPhotoRequestControl'
+import { useAuthStore } from '../store/authStore'
 import { BATTING_TYPE_LABELS } from '../lib/battingTypes'
 import { BOWLING_TYPE_LABELS } from '../lib/bowlingTypes'
 import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
@@ -33,6 +35,9 @@ export function UserDetailModal({
   auctionNameById: Record<string, string>
   onClose: () => void
 }) {
+  const me = useAuthStore((s) => s.user)
+  const canRequestPhoto = me && me.uid !== user?.uid && (me.role === 'admin' || me.role === 'auctionManager')
+
   if (!user) return null
 
   return (
@@ -137,6 +142,8 @@ export function UserDetailModal({
             <Field label="Player request" value="Requested" />
           )}
         </dl>
+
+        {canRequestPhoto && me && <AdminPhotoRequestControl targetUser={user} requestedBy={me} />}
       </div>
     </div>
   )

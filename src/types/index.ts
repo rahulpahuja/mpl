@@ -73,6 +73,29 @@ export interface AppUser {
   // Shirt number a player wears, picked from their own profile. No uniqueness
   // constraint across a team — teams reconcile clashes themselves.
   jerseyNumber?: number | null
+  // An Admin/Auction Manager proposing a replacement profile photo on this
+  // user's behalf (see requestProfilePhotoChange in lib/users.ts) — never
+  // applied to filenPhotoId directly, only once the user themselves approves
+  // it (real-time via the same onSnapshot listener that already powers
+  // useAuthStore, see AuthProvider.tsx). One at a time: a new request can't
+  // be sent while this is still 'pending'. Cleared back to null by whichever
+  // admin/manager sent it, once they've seen the resolved outcome.
+  pendingPhotoRequest?: PendingPhotoRequest | null
+}
+
+export type PhotoRequestStatus = 'pending' | 'approved' | 'rejected'
+
+export interface PendingPhotoRequest {
+  // Id of the candidate photo, already uploaded to Filen (see lib/filen.ts)
+  // by the requester before this doc is written — lets the target preview it
+  // immediately via useFilenPhoto without the requester needing write access
+  // to apply it themselves.
+  filenPhotoId: string
+  requestedBy: string
+  requestedByName: string
+  requestedAt: Timestamp
+  status: PhotoRequestStatus
+  resolvedAt?: Timestamp | null
 }
 
 export type PlayerStatus = 'open' | 'active' | 'sold' | 'unsold'

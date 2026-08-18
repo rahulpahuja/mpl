@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { signOut } from '../lib/auth'
 import { Avatar } from './Avatar'
+import { PhotoApprovalPrompt } from './PhotoApprovalPrompt'
+import { PhotoRequestOutcomeToast } from './PhotoRequestOutcomeToast'
 import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp'
 import { useGlobalKeyboardShortcuts } from '../hooks/useGlobalKeyboardShortcuts'
 import { useKeyboardShortcutsEnabled } from '../hooks/useKeyboardShortcutsEnabled'
@@ -77,6 +79,8 @@ export function Layout({ children }: { children: ReactNode }) {
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
       <KeyboardShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <PhotoApprovalPrompt />
+      <PhotoRequestOutcomeToast />
     </div>
   )
 }

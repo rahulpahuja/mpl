@@ -5,23 +5,13 @@ import { compressImageToDataUrl } from '../lib/imageProcessing'
 import { uploadToFilen } from '../lib/filen'
 import { updateOwnAvatar, updateOwnProfilePhoto } from '../lib/users'
 import { getDefaultAvatar } from '../lib/avatars'
+import {
+  MAX_UPLOAD_BYTES,
+  PROFILE_PHOTO_JPEG_QUALITY,
+  PROFILE_PHOTO_MAX_DIMENSION_PX,
+  bytesToMB,
+} from '../lib/photoUpload'
 import { AvatarPicker } from './AvatarPicker'
-
-// Applies to the originally-picked file, before compression — Filen itself
-// (10GiB free tier) has no reason to cap this tightly, but the proxy
-// (server/src/index.ts's MAX_UPLOAD_BYTES) enforces the same 25MB server-side,
-// so this is a fast client-side reject rather than the actual limit.
-const MAX_UPLOAD_BYTES = 25 * 1024 * 1024
-// Profile photos get shown up to 288px (up to ~576px on a retina display,
-// e.g. the auction "current player" spotlight) — 512px/0.92 is
-// visually-near-lossless at that size without uploading/downloading a much
-// larger original on every avatar render than the app ever actually displays.
-const PROFILE_PHOTO_MAX_DIMENSION_PX = 512
-const PROFILE_PHOTO_JPEG_QUALITY = 0.92
-
-function bytesToMB(bytes: number) {
-  return (bytes / (1024 * 1024)).toFixed(1)
-}
 
 export function ProfilePhotoUpload({
   uid,

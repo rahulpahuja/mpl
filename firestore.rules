@@ -58,6 +58,44 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['playerRequested']);
     }
 
+    function isAdminOrAuctionManager() {
+      return isSignedIn() && (role() == 'admin' || role() == 'auctionManager');
+    }
+
+    function hasNoPendingPhotoRequest() {
+      return !('pendingPhotoRequest' in resource.data) ||
+        resource.data.pendingPhotoRequest == null ||
+        resource.data.pendingPhotoRequest.status != 'pending';
+    }
+
+    // An Admin/Auction Manager proposing a replacement photo for someone
+    // else. Restricted to touching pendingPhotoRequest only — never the live
+    // filenPhotoId — so the target's approval can never be bypassed. Blocks
+    // starting a new request while one is already pending (avoids a race
+    // between two managers), and requestedBy must be the caller (can't be
+    // spoofed as coming from someone else).
+    function isRequestingPhotoChange(userId) {
+      return isAdminOrAuctionManager() && userId != request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pendingPhotoRequest']) &&
+        hasNoPendingPhotoRequest() &&
+        request.resource.data.pendingPhotoRequest.status == 'pending' &&
+        request.resource.data.pendingPhotoRequest.requestedBy == request.auth.uid;
+    }
+
+    // The requester dismissing a resolved (non-pending) outcome on someone
+    // else's doc — the only write an Auction Manager (who lacks isAdmin())
+    // can make here besides isRequestingPhotoChange. The target's own
+    // approve/reject write goes through the generic self-update clause below
+    // (it's their own doc — no extra rule needed for that direction).
+    function isClearingResolvedPhotoRequest(userId) {
+      return isAdminOrAuctionManager() && userId != request.auth.uid &&
+        'pendingPhotoRequest' in resource.data && resource.data.pendingPhotoRequest != null &&
+        resource.data.pendingPhotoRequest.requestedBy == request.auth.uid &&
+        resource.data.pendingPhotoRequest.status != 'pending' &&
+        request.resource.data.pendingPhotoRequest == null &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pendingPhotoRequest']);
+    }
+
     match /users/{userId} {
       allow get: if isSignedIn();
       allow list: if isAdmin() || (isSignedIn() && (role() == 'auctionManager' || role() == 'manager'));
@@ -70,6 +108,8 @@ service cloud.firestore {
       allow update: if isAdmin() ||
         (canManageAuctions() && isPromotingViewerToPlayer()) ||
         (canManageAuctions() && isUpdatingAssignedAuctions()) ||
+        isRequestingPhotoChange(userId) ||
+        isClearingResolvedPhotoRequest(userId) ||
         (isSignedIn() && request.auth.uid == userId && isRequestingToBePlayer()) ||
         (isSignedIn() && request.auth.uid == userId &&
           request.resource.data.role == resource.data.role &&

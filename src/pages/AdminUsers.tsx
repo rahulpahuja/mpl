@@ -9,6 +9,7 @@ import { useAuctionsList } from '../hooks/useAuctionsList'
 import { useUsers } from '../hooks/useUsers'
 import { useInvites } from '../hooks/useInvites'
 import { usePageTitle } from '../hooks/usePageTitle'
+import { useAuthStore } from '../store/authStore'
 import { createInvite, deleteInvite } from '../lib/invites'
 import { assignUserToAuction, updateUserRole } from '../lib/users'
 import type { Auction, AppUser, UserRole } from '../types'
@@ -22,16 +23,22 @@ const ROLE_SECTIONS: { role: UserRole; label: string }[] = [
   { role: 'viewer', label: 'Viewer' },
 ]
 
+const ROLE_LABEL: Record<UserRole, string> = Object.fromEntries(
+  ROLE_SECTIONS.map(({ role, label }) => [role, label]),
+) as Record<UserRole, string>
+
 function UserTable({
   users,
   auctions,
   auctionNameById,
   onSelectUser,
+  canEditRole,
 }: {
   users: AppUser[]
   auctions: Auction[]
   auctionNameById: Record<string, string>
   onSelectUser: (u: AppUser) => void
+  canEditRole: boolean
 }) {
   return (
     <>
@@ -62,17 +69,21 @@ function UserTable({
               {u.phone || <span className="text-gray-400">No phone</span>}
             </p>
             <div className="mt-2 flex flex-col gap-2">
-              <select
-                value={u.role}
-                onChange={(e) => updateUserRole(u.uid, e.target.value as UserRole)}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
-              >
-                <option value="admin">Admin</option>
-                <option value="auctionManager">Auction Manager</option>
-                <option value="manager">Captain</option>
-                <option value="player">Player</option>
-                <option value="viewer">Viewer</option>
-              </select>
+              {canEditRole ? (
+                <select
+                  value={u.role}
+                  onChange={(e) => updateUserRole(u.uid, e.target.value as UserRole)}
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                >
+                  <option value="admin">Admin</option>
+                  <option value="auctionManager">Auction Manager</option>
+                  <option value="manager">Captain</option>
+                  <option value="player">Player</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+              ) : (
+                <p className="text-sm text-gray-600 dark:text-gray-400">{ROLE_LABEL[u.role]}</p>
+              )}
               <select
                 defaultValue=""
                 onChange={(e) => {
@@ -135,17 +146,21 @@ function UserTable({
                   <WhatsAppButton phone={u.whatsapp || u.phone} />
                 </td>
                 <td className="px-4 py-2">
-                  <select
-                    value={u.role}
-                    onChange={(e) => updateUserRole(u.uid, e.target.value as UserRole)}
-                    className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="auctionManager">Auction Manager</option>
-                    <option value="manager">Captain</option>
-                    <option value="player">Player</option>
-                    <option value="viewer">Viewer</option>
-                  </select>
+                  {canEditRole ? (
+                    <select
+                      value={u.role}
+                      onChange={(e) => updateUserRole(u.uid, e.target.value as UserRole)}
+                      className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="admin">Admin</option>
+                      <option value="auctionManager">Auction Manager</option>
+                      <option value="manager">Captain</option>
+                      <option value="player">Player</option>
+                      <option value="viewer">Viewer</option>
+                    </select>
+                  ) : (
+                    <span className="text-gray-600 dark:text-gray-400">{ROLE_LABEL[u.role]}</span>
+                  )}
                 </td>
                 <td className="px-4 py-2">
                   <select
@@ -184,6 +199,8 @@ function UserTable({
 
 export function AdminUsers() {
   usePageTitle('Admin · Users')
+  const me = useAuthStore((s) => s.user)
+  const isAdmin = me?.role === 'admin'
   const { auctions } = useAuctionsList()
   const auctionNameById = Object.fromEntries(auctions.map((a) => [a.auctionId, a.name]))
   const { users } = useUsers()
@@ -224,54 +241,59 @@ export function AdminUsers() {
         <AdminNav />
         <section>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Users</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Add someone by their Gmail address before they've ever signed in — the role you pick
-            here is applied automatically the moment they sign in with that Google account.
-          </p>
-          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
-            <input
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="name@gmail.com"
-              type="email"
-              className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 sm:col-span-2"
-            />
-            <select
-              value={inviteRole}
-              onChange={(e) => setInviteRole(e.target.value as UserRole)}
-              className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-            >
-              <option value="admin">Admin</option>
-              <option value="auctionManager">Auction Manager</option>
-              <option value="manager">Captain</option>
-              <option value="player">Player</option>
-              <option value="viewer">Viewer</option>
-            </select>
-            <button
-              onClick={handleInvite}
-              disabled={inviting || !inviteEmail.trim()}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-            >
-              Add user
-            </button>
-          </div>
+          {isAdmin && (
+            <>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Add someone by their Gmail address before they've ever signed in — the role you
+                pick here is applied automatically the moment they sign in with that Google
+                account.
+              </p>
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
+                <input
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="name@gmail.com"
+                  type="email"
+                  className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 sm:col-span-2"
+                />
+                <select
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value as UserRole)}
+                  className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                >
+                  <option value="admin">Admin</option>
+                  <option value="auctionManager">Auction Manager</option>
+                  <option value="manager">Captain</option>
+                  <option value="player">Player</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+                <button
+                  onClick={handleInvite}
+                  disabled={inviting || !inviteEmail.trim()}
+                  className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  Add user
+                </button>
+              </div>
 
-          {invites.length > 0 && (
-            <ul className="mt-3 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
-              {invites.map((inv) => (
-                <li key={inv.email} className="flex items-center justify-between gap-2 py-1.5">
-                  <span className="min-w-0 break-words text-gray-600 dark:text-gray-400">
-                    {inv.email} <span className="text-gray-400">— pending as {inv.role}</span>
-                  </span>
-                  <button
-                    onClick={() => deleteInvite(inv.email)}
-                    className="shrink-0 text-xs text-red-600 dark:text-red-400 hover:underline"
-                  >
-                    Cancel
-                  </button>
-                </li>
-              ))}
-            </ul>
+              {invites.length > 0 && (
+                <ul className="mt-3 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+                  {invites.map((inv) => (
+                    <li key={inv.email} className="flex items-center justify-between gap-2 py-1.5">
+                      <span className="min-w-0 break-words text-gray-600 dark:text-gray-400">
+                        {inv.email} <span className="text-gray-400">— pending as {inv.role}</span>
+                      </span>
+                      <button
+                        onClick={() => deleteInvite(inv.email)}
+                        className="shrink-0 text-xs text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        Cancel
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
 
           <input
@@ -296,6 +318,7 @@ export function AdminUsers() {
                   auctions={auctions}
                   auctionNameById={auctionNameById}
                   onSelectUser={(u) => setSelectedUserId(u.uid)}
+                  canEditRole={isAdmin}
                 />
               </div>
             )
