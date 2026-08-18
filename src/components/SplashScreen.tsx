@@ -1,19 +1,36 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 
-// Cold-open splash: a cricket ball rockets in and detonates into the MPL
-// wordmark, reusing the same gold-impact grammar as SoldCelebration so the
-// two moments read as one system. Mounted once at the app root (see App.tsx)
-// — it only ever plays on a real page load, never on client-side route
-// navigation, which is exactly when a native app would show one.
+// A cricket ball rockets in and detonates into the MPL wordmark, reusing the
+// same gold-impact grammar as SoldCelebration so every "arriving somewhere
+// new" moment in the app reads as one system. Plays once on the initial app
+// load, then replays on every route change (see the pathname effect below)
+// — it also conveniently masks the blank gap while a lazily-loaded route
+// chunk fetches, since <Suspense fallback={null}> would otherwise flash empty.
 const HOLD_MS = 950
 const FADE_MS = 260
 const SPARK_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315]
 
 export function SplashScreen() {
+  const { pathname } = useLocation()
   const reducedMotion = usePrefersReducedMotion()
   const [visible, setVisible] = useState(true)
   const [fading, setFading] = useState(false)
+  const [playKey, setPlayKey] = useState(0)
+  const isFirstRender = useRef(true)
+
+  // Replay on every page navigation — skip the very first run, since the
+  // mount-time effect below already plays the initial cold-open.
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    setPlayKey((k) => k + 1)
+    setVisible(true)
+    setFading(false)
+  }, [pathname])
 
   useEffect(() => {
     const holdMs = reducedMotion ? 120 : HOLD_MS
@@ -23,12 +40,13 @@ export function SplashScreen() {
       clearTimeout(fadeTimer)
       clearTimeout(doneTimer)
     }
-  }, [reducedMotion])
+  }, [reducedMotion, playKey])
 
   if (!visible) return null
 
   return (
     <div
+      key={playKey}
       aria-hidden="true"
       className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden transition-opacity ease-out"
       style={{
