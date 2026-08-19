@@ -1,6 +1,32 @@
+import { useState } from 'react'
 import { useDecryptedPhoto } from '../hooks/useDecryptedPhoto'
 import { useFilenPhoto } from '../hooks/useFilenPhoto'
 import { getDefaultAvatar } from '../lib/avatars'
+
+// Full-size view of a photo, opened by clicking an Avatar rendered with
+// enlargeOnClick — see that prop's doc comment on Avatar below.
+function PhotoLightbox({ src, name, onClose }: { src: string; name: string; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4"
+      onClick={onClose}
+    >
+      <img
+        src={src}
+        alt={name}
+        referrerPolicy="no-referrer"
+        className="max-h-full max-w-full rounded-lg object-contain shadow-2xl"
+      />
+      <button
+        onClick={onClose}
+        aria-label="Close"
+        className="absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1 text-sm font-medium text-white hover:bg-black/70"
+      >
+        Close
+      </button>
+    </div>
+  )
+}
 
 function AvatarAtSize({
   size,
@@ -9,6 +35,7 @@ function AvatarAtSize({
   src,
   preset,
   shapeClass,
+  onEnlarge,
 }: {
   size: number
   className?: string
@@ -16,6 +43,7 @@ function AvatarAtSize({
   src: string | null
   preset: ReturnType<typeof getDefaultAvatar>
   shapeClass: string
+  onEnlarge?: () => void
 }) {
   const dimension = `${size * 0.25}rem`
   const style = { width: dimension, height: dimension }
@@ -27,7 +55,8 @@ function AvatarAtSize({
         alt=""
         referrerPolicy="no-referrer"
         style={style}
-        className={`shrink-0 object-cover ${shapeClass} ${className ?? ''}`}
+        onClick={onEnlarge}
+        className={`shrink-0 object-cover ${shapeClass} ${className ?? ''} ${onEnlarge ? 'cursor-zoom-in' : ''}`}
       />
     )
   }
@@ -67,6 +96,12 @@ export function Avatar({
   // omit it and sizing behaves exactly as before.
   mobileSize,
   shape = 'circle',
+  // Clicking a real photo (not a preset/initials placeholder — there's
+  // nothing to enlarge there) opens it full-size in an overlay. Used on
+  // Admin/Auction Manager screens where photos are otherwise shown small
+  // (roster rows, the current-player spotlight) and there's a real need to
+  // check a face closely — e.g. matching a bidder to who's in the room.
+  enlargeOnClick = false,
 }: {
   name: string
   filenPhotoId?: string | null
@@ -76,6 +111,7 @@ export function Avatar({
   size?: number
   mobileSize?: number
   shape?: 'circle' | 'square'
+  enlargeOnClick?: boolean
 }) {
   const filenPhoto = useFilenPhoto(filenPhotoId)
   const decryptedPhoto = useDecryptedPhoto(encryptedPhoto)
@@ -86,9 +122,20 @@ export function Avatar({
   const src = filenPhoto ?? decryptedPhoto ?? (avatarId ? null : photoURL) ?? null
   const preset = getDefaultAvatar(avatarId)
   const shapeClass = shape === 'square' ? 'rounded-xl' : 'rounded-full'
+  const [expanded, setExpanded] = useState(false)
+  const onEnlarge = enlargeOnClick && src ? () => setExpanded(true) : undefined
+
+  const lightbox = expanded && src && (
+    <PhotoLightbox src={src} name={name} onClose={() => setExpanded(false)} />
+  )
 
   if (mobileSize === undefined) {
-    return <AvatarAtSize size={size} name={name} src={src} preset={preset} shapeClass={shapeClass} />
+    return (
+      <>
+        <AvatarAtSize size={size} name={name} src={src} preset={preset} shapeClass={shapeClass} onEnlarge={onEnlarge} />
+        {lightbox}
+      </>
+    )
   }
 
   return (
@@ -100,6 +147,7 @@ export function Avatar({
         src={src}
         preset={preset}
         shapeClass={shapeClass}
+        onEnlarge={onEnlarge}
       />
       <AvatarAtSize
         size={size}
@@ -108,7 +156,9 @@ export function Avatar({
         src={src}
         preset={preset}
         shapeClass={shapeClass}
+        onEnlarge={onEnlarge}
       />
+      {lightbox}
     </>
   )
 }

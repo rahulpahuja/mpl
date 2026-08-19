@@ -57,6 +57,7 @@ export function UserDetailModal({
               encryptedPhoto={user.encryptedPhoto}
               photoURL={user.photoURL}
               avatarId={user.avatarId}
+              enlargeOnClick
             />
             <div className="min-w-0">
               <h2 className="truncate text-lg font-semibold text-gray-900 dark:text-gray-100">

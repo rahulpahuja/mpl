@@ -132,6 +132,7 @@ export function AuctionManagerPanel() {
                     avatarId={currentPlayer.avatarId}
                     shape="square"
                     size={36}
+                    enlargeOnClick
                   />
                   <div className="space-y-1.5">
                     <div>

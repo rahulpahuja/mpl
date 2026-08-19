@@ -975,20 +975,27 @@ export function AuctionSetup() {
                     className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 p-3"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      {editingNameId === p.playerId ? (
-                        <span className="flex min-w-0 flex-1 items-center gap-2">
+                      <span className="flex min-w-0 flex-1 items-center gap-2">
+                        <Avatar
+                          name={p.name}
+                          encryptedPhoto={p.encryptedPhoto}
+                          photoURL={p.photoURL}
+                          avatarId={p.avatarId}
+                          enlargeOnClick
+                        />
+                        {editingNameId === p.playerId ? (
                           <input
                             autoFocus
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
                             className="min-w-0 flex-1 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
                           />
-                        </span>
-                      ) : (
-                        <span className="min-w-0 truncate font-medium text-gray-900 dark:text-gray-100">
-                          {p.name}
-                        </span>
-                      )}
+                        ) : (
+                          <span className="min-w-0 truncate font-medium text-gray-900 dark:text-gray-100">
+                            {p.name}
+                          </span>
+                        )}
+                      </span>
                       <span className="shrink-0 text-xs capitalize text-gray-500 dark:text-gray-400">
                         {p.status}
                       </span>
@@ -1106,6 +1113,7 @@ export function AuctionSetup() {
             <table className="w-full min-w-[480px] text-sm">
               <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
                 <tr>
+                  <th className="px-3 py-2 font-medium"></th>
                   <th className="px-3 py-2 font-medium">Name</th>
                   <th className="px-3 py-2 font-medium">Jersey #</th>
                   <th className="px-3 py-2 font-medium">Position</th>
@@ -1123,6 +1131,15 @@ export function AuctionSetup() {
                   const jerseyNumber = users.find((u) => u.uid === p.playerId)?.jerseyNumber
                   return (
                   <tr key={p.playerId}>
+                    <td className="px-3 py-2">
+                      <Avatar
+                        name={p.name}
+                        encryptedPhoto={p.encryptedPhoto}
+                        photoURL={p.photoURL}
+                        avatarId={p.avatarId}
+                        enlargeOnClick
+                      />
+                    </td>
                     <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
                       {editingNameId === p.playerId ? (
                         <span className="inline-flex items-center gap-2">

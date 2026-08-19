@@ -175,6 +175,7 @@ export function AdminPlayers() {
                         encryptedPhoto={p.encryptedPhoto}
                         photoURL={p.photoURL}
                         avatarId={p.avatarId}
+                        enlargeOnClick
                       />
                       <div className="min-w-0">
                         <p className="truncate font-medium text-gray-900 dark:text-gray-100">

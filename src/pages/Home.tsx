@@ -137,28 +137,40 @@ export function Home() {
           </div>
         )}
 
-        {user.role === 'viewer' && (
+        {(user.role === 'viewer' || user.role === 'player') && (
           <div>
-            <p className="text-gray-500 dark:text-gray-400">
-              {liveAuctions.length === 0
-                ? 'No auctions are live right now.'
-                : 'Ongoing auctions you can watch:'}
-            </p>
-            <ul className="mt-2 space-y-2">
-              {liveAuctions.map((a) => (
-                <li key={a.auctionId}>
-                  <Link
-                    to={`/viewer/${a.auctionId}`}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800"
-                  >
-                    <span className="truncate font-medium text-gray-900 dark:text-gray-100">{a.name}</span>
-                    <span className="shrink-0 rounded-full bg-green-100 dark:bg-green-900/40 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
-                      live
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {/* A Player also sees their own assigned live auctions highlighted
+                below (the green "is live now" banner + assigned-auctions list)
+                — skip those here so a player isn't shown the same auction twice. */}
+            {(() => {
+              const browsableLiveAuctions = liveAuctions.filter(
+                (a) => !user.assignedAuctions.includes(a.auctionId),
+              )
+              return (
+                <>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {browsableLiveAuctions.length === 0
+                      ? 'No other auctions are live right now.'
+                      : 'Ongoing auctions you can watch:'}
+                  </p>
+                  <ul className="mt-2 space-y-2">
+                    {browsableLiveAuctions.map((a) => (
+                      <li key={a.auctionId}>
+                        <Link
+                          to={`/viewer/${a.auctionId}`}
+                          className="flex items-center justify-between gap-3 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800"
+                        >
+                          <span className="truncate font-medium text-gray-900 dark:text-gray-100">{a.name}</span>
+                          <span className="shrink-0 rounded-full bg-green-100 dark:bg-green-900/40 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                            live
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )
+            })()}
           </div>
         )}
 
