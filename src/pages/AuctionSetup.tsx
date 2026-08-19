@@ -28,16 +28,9 @@ import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
 import { BACKGROUND_IMAGES } from '../lib/backgroundImages'
 import { downloadFilenFile } from '../lib/filen'
 import { encryptToBase64 } from '../lib/crypto'
+import { compressImageToDataUrl } from '../lib/imageProcessing'
+import { ROSTER_PHOTO_JPEG_QUALITY, ROSTER_PHOTO_MAX_DIMENSION_PX } from '../lib/photoUpload'
 import type { AppUser } from '../types'
-
-function blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = () => reject(reader.error ?? new Error('Failed to read photo'))
-    reader.readAsDataURL(blob)
-  })
-}
 
 // A linked player's current photo may live in Filen (current uploads) or as
 // a legacy encryptedPhoto (pre-Filen accounts that haven't re-uploaded). The
@@ -57,7 +50,13 @@ async function resolvePlayerPhotoFields(user: AppUser): Promise<{
   if (user.filenPhotoId) {
     try {
       const blob = await downloadFilenFile(user.filenPhotoId)
-      const dataUrl = await blobToDataUrl(blob)
+      // Recompressed well below the profile-photo original — see
+      // ROSTER_PHOTO_MAX_DIMENSION_PX's doc comment for why this snapshot
+      // needs to be much smaller than the source photo.
+      const dataUrl = await compressImageToDataUrl(blob, {
+        maxDimension: ROSTER_PHOTO_MAX_DIMENSION_PX,
+        quality: ROSTER_PHOTO_JPEG_QUALITY,
+      })
       const encryptedPhoto = await encryptToBase64(dataUrl)
       return { encryptedPhoto, avatarId: null, photoURL: null, photoSourceFilenId: user.filenPhotoId }
     } catch (err) {

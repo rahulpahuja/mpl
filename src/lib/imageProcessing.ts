@@ -8,7 +8,7 @@ const DEFAULT_MAX_DIMENSION_PX = 256
 const DEFAULT_JPEG_QUALITY = 0.7
 
 export async function compressImageToDataUrl(
-  file: File,
+  file: Blob,
   options?: { maxDimension?: number; quality?: number },
 ): Promise<string> {
   const maxDimension = options?.maxDimension ?? DEFAULT_MAX_DIMENSION_PX

@@ -14,6 +14,19 @@ export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024
 export const PROFILE_PHOTO_MAX_DIMENSION_PX = 512
 export const PROFILE_PHOTO_JPEG_QUALITY = 0.92
 
+// A player's roster-snapshot photo (see resolvePlayerPhotoFields in
+// AuctionSetup.tsx) gets embedded, base64-encoded, and encrypted directly
+// into the auction document's `players` array — unlike a profile photo it
+// isn't fetched on demand, so every player added multiplies the document
+// size. At PROFILE_PHOTO settings a single photo can run 60-160KB once
+// double-base64'd for encryption, so a few dozen players blows past
+// Firestore's 1MB document cap and every future write to the auction starts
+// failing. 320px/0.75 keeps a photo in the ~10-25KB range — still sharp
+// enough for the largest on-screen use (the ~288px "current player"
+// spotlight) while leaving headroom for a large roster.
+export const ROSTER_PHOTO_MAX_DIMENSION_PX = 320
+export const ROSTER_PHOTO_JPEG_QUALITY = 0.75
+
 export function bytesToMB(bytes: number) {
   return (bytes / (1024 * 1024)).toFixed(1)
 }
