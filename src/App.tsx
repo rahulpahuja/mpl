@@ -98,7 +98,7 @@ export default function App() {
             <Route
               path="/admin/players"
               element={
-                <ProtectedRoute roles={['admin']}>
+                <ProtectedRoute roles={['admin', 'auctionManager']}>
                   <AdminPlayers />
                 </ProtectedRoute>
               }

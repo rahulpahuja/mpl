@@ -24,6 +24,6 @@ export const NAV_DESTINATIONS: NavDestination[] = [
   { to: '/admin/venues', label: 'Venues', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g v' },
   { to: '/admin/users', label: 'Users', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g u' },
   // "g l" (not "g p") — "p" is already Profile above.
-  { to: '/admin/players', label: 'Players', roles: ['admin'], section: 'admin', chord: 'g l' },
+  { to: '/admin/players', label: 'Players', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g l' },
   { to: '/admin/filen-test', label: 'Filen test', roles: ['admin'], section: 'admin', chord: 'g f' },
 ]

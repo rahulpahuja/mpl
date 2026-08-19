@@ -367,6 +367,63 @@ export async function addTeamToAuction(
   })
 }
 
+// TeamManagerEntry.logoId/logoImage/jerseyColor are a snapshot taken at
+// addTeamToAuction time (see its doc comment and the Team type) — a logo
+// changed afterward on the global team registry never reaches an auction
+// already in progress. Called from lib/teams.ts right after a team update,
+// mirroring syncPlayerNameAcrossAllAuctions below. Skips (rather than
+// throws on) auctions the caller doesn't manage, same reasoning as that
+// function — team logos are edited from the global Teams admin page, which
+// isn't scoped to a single auction's managers.
+async function updateTeamSnapshotInAuction(
+  auctionId: string,
+  teamId: string,
+  snapshot: { name?: string; logoId: string | null; logoImage: string | null; jerseyColor: string | null },
+) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) return
+    const auction = snap.data() as Auction
+    if (!auction.teamManagers.some((tm) => tm.teamId === teamId)) return
+    tx.update(auctionRef(auctionId), {
+      teamManagers: auction.teamManagers.map((tm) =>
+        tm.teamId === teamId
+          ? {
+              ...tm,
+              ...(snapshot.name !== undefined ? { name: snapshot.name } : {}),
+              logoId: snapshot.logoId,
+              logoImage: snapshot.logoImage,
+              jerseyColor: snapshot.jerseyColor,
+            }
+          : tm,
+      ),
+    })
+    tx.update(teamRef(auctionId, teamId), {
+      ...(snapshot.name !== undefined ? { teamName: snapshot.name } : {}),
+      logoId: snapshot.logoId,
+      logoImage: snapshot.logoImage,
+      jerseyColor: snapshot.jerseyColor,
+    })
+  })
+}
+
+export async function syncTeamAcrossAllAuctions(
+  teamId: string,
+  snapshot: { name?: string; logoId: string | null; logoImage: string | null; jerseyColor: string | null },
+) {
+  const snap = await getDocs(collection(db, 'auctions'))
+  const linkedAuctionIds = snap.docs
+    .filter((d) => (d.data() as Auction).teamManagers.some((tm) => tm.teamId === teamId))
+    .map((d) => d.id)
+  await Promise.all(
+    linkedAuctionIds.map((auctionId) =>
+      updateTeamSnapshotInAuction(auctionId, teamId, snapshot).catch((err) => {
+        if (err?.code !== 'permission-denied') throw err
+      }),
+    ),
+  )
+}
+
 export async function setCurrentPlayer(auctionId: string, playerId: string) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(auctionRef(auctionId))
