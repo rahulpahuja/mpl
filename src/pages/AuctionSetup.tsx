@@ -588,7 +588,7 @@ export function AuctionSetup() {
                     if (e.key === 'Enter') handleSaveAuctionName()
                     if (e.key === 'Escape') setEditingAuctionName(false)
                   }}
-                  className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-2xl font-semibold text-gray-900 dark:text-gray-100"
+                  className="rounded-lg input-glass px-3 py-1.5 text-2xl font-semibold text-gray-900 dark:text-gray-100"
                 />
                 <button
                   onClick={handleSaveAuctionName}
@@ -637,9 +637,9 @@ export function AuctionSetup() {
           )}
         </div>
 
-        <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-5">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Auction settings</h2>
-          <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <section className="glass-card p-5">
+          <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">Auction settings</h2>
+          <div className="relative z-[3] mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label className="text-sm text-gray-500">Background image</label>
               <div className="mt-1 flex flex-wrap gap-2">
@@ -649,7 +649,7 @@ export function AuctionSetup() {
                   aria-label="Use default background (no image)"
                   className={`flex h-14 w-20 shrink-0 items-center justify-center rounded-lg border border-dashed border-gray-300 dark:border-gray-700 text-[10px] text-gray-500 dark:text-gray-400 ${
                     backgroundImage === ''
-                      ? 'ring-2 ring-red-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900'
+                      ? 'ring-2 ring-orange-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900'
                       : ''
                   }`}
                 >
@@ -664,7 +664,7 @@ export function AuctionSetup() {
                     title={img.label}
                     className={`h-14 w-20 shrink-0 overflow-hidden rounded-lg ${
                       backgroundImage === img.path
-                        ? 'ring-2 ring-red-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900'
+                        ? 'ring-2 ring-orange-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900'
                         : ''
                     }`}
                   >
@@ -683,7 +683,7 @@ export function AuctionSetup() {
                 type="number"
                 value={increment}
                 onChange={(e) => setIncrement(e.target.value)}
-                className="mt-1 w-32 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                className="mt-1 w-32 rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
@@ -694,7 +694,7 @@ export function AuctionSetup() {
                 type="number"
                 value={timerSeconds}
                 onChange={(e) => setTimerSeconds(e.target.value)}
-                className="mt-1 w-32 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                className="mt-1 w-32 rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
               />
               <p className="mt-1 text-xs text-gray-500">
                 Pre-fills the countdown when a player goes on the block — the Auction Manager
@@ -711,12 +711,12 @@ export function AuctionSetup() {
                   type="color"
                   value={bgColor}
                   onChange={(e) => setBgColor(e.target.value)}
-                  className="block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+                  className="input-glass block h-9 w-14 cursor-pointer rounded"
                 />
                 <button
                   type="button"
                   onClick={() => setBgColor(DEFAULT_AUCTION_BG_COLOR)}
-                  className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                  className="relative z-[3] text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline"
                 >
                   Reset
                 </button>
@@ -736,12 +736,12 @@ export function AuctionSetup() {
                   type="color"
                   value={titleColor}
                   onChange={(e) => setTitleColor(e.target.value)}
-                  className="block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+                  className="input-glass block h-9 w-14 cursor-pointer rounded"
                 />
                 <button
                   type="button"
                   onClick={() => setTitleColor(DEFAULT_TITLE_COLOR)}
-                  className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                  className="relative z-[3] text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline"
                 >
                   Reset
                 </button>
@@ -758,12 +758,12 @@ export function AuctionSetup() {
                   type="color"
                   value={secondaryColor}
                   onChange={(e) => setSecondaryColor(e.target.value)}
-                  className="block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+                  className="input-glass block h-9 w-14 cursor-pointer rounded"
                 />
                 <button
                   type="button"
                   onClick={() => setSecondaryColor(DEFAULT_SECONDARY_COLOR)}
-                  className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                  className="relative z-[3] text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline"
                 >
                   Reset
                 </button>
@@ -775,53 +775,53 @@ export function AuctionSetup() {
           </div>
           <button
             onClick={handleSaveSettings}
-            className="mt-4 rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="btn-brand relative z-[3] mt-4 rounded-lg px-4 py-2 text-sm font-medium"
           >
             Save
           </button>
         </section>
 
-        <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-5">
-          <div className="flex items-center justify-between gap-2">
+        <section className="glass-card p-5">
+          <div className="relative z-[3] flex items-center justify-between gap-2">
             <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Player roster</h2>
             <button
               onClick={() => setShowImportDialog(true)}
-              className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5"
             >
               Import players
             </button>
           </div>
 
-          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
+          <div className="relative z-[3] mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
             <input
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
               placeholder="Name"
-              className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+              className="rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             />
             <input
               value={playerPosition}
               onChange={(e) => setPlayerPosition(e.target.value)}
               placeholder="Position"
-              className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+              className="rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             />
             <input
               type="number"
               value={playerBasePrice}
               onChange={(e) => setPlayerBasePrice(e.target.value)}
               placeholder="Base price"
-              className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+              className="rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             />
             <button
               onClick={handleAddPlayer}
               disabled={addingPlayer || !playerName.trim()}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              className="btn-brand rounded-lg px-4 py-2 text-sm font-medium"
             >
               {addingPlayer ? 'Adding...' : 'Add player'}
             </button>
           </div>
 
-          <div className="mt-4">
+          <div className="relative z-[3] mt-4">
             <label className="text-sm text-gray-500">
               Bulk import (CSV: name, position, basePrice — one per line)
             </label>
@@ -830,18 +830,18 @@ export function AuctionSetup() {
               onChange={(e) => setCsvText(e.target.value)}
               rows={4}
               placeholder={'Virat Kohli, Batsman, 200\nJasprit Bumrah, Bowler, 250'}
-              className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 font-mono"
+              className="mt-1 w-full rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100 font-mono"
             />
             <button
               onClick={handleImportCsv}
               disabled={importingCsv || !csvText.trim()}
-              className="mt-2 rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+              className="mt-2 rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
             >
               {importingCsv ? 'Importing...' : 'Import'}
             </button>
           </div>
 
-          <div className="mt-6 border-t border-gray-200 dark:border-gray-800 pt-4">
+          <div className="relative z-[3] mt-6 border-t border-gray-200/70 dark:border-gray-800/70 pt-4">
             <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
               Promote a viewer to Player
             </h3>
@@ -850,15 +850,15 @@ export function AuctionSetup() {
               auction's roster below.
             </p>
             {playerRequestCount > 0 && (
-              <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-800 rounded-lg border border-amber-300 dark:border-amber-700 text-sm">
+              <ul className="mt-2 space-y-2 text-sm">
                 {viewerCandidates
                   .filter((v) => v.playerRequested)
                   .map((v) => (
                     <li
                       key={v.uid}
-                      className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                      className="glass-card flex flex-col gap-2 border-amber-300/70! px-3 py-2 dark:border-amber-700/60! sm:flex-row sm:items-center sm:justify-between"
                     >
-                      <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
+                      <span className="relative z-[3] flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                         <Avatar
                           name={v.displayName}
                           filenPhotoId={v.filenPhotoId}
@@ -869,7 +869,7 @@ export function AuctionSetup() {
                         <span className="min-w-0 break-words">
                           {v.displayName}{' '}
                           <span className="text-gray-500">— {v.phone || v.email}</span>
-                          <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                          <span className="ml-2 rounded-full bg-amber-100/90 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
                             Requested
                           </span>
                         </span>
@@ -877,7 +877,7 @@ export function AuctionSetup() {
                       <button
                         onClick={() => handleApproveRequest(v.uid)}
                         disabled={promoting}
-                        className="self-start rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 sm:self-auto"
+                        className="relative z-[3] self-start rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50 sm:self-auto"
                       >
                         Approve
                       </button>
@@ -885,7 +885,7 @@ export function AuctionSetup() {
                   ))}
               </ul>
             )}
-            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="relative z-[3] mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
               <input
                 value={viewerSearch}
                 onChange={(e) => {
@@ -893,18 +893,18 @@ export function AuctionSetup() {
                   setSelectedViewerId('')
                 }}
                 placeholder="Search viewers by name, email, phone..."
-                className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 sm:col-span-2"
+                className="rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100 sm:col-span-2"
               />
               <button
                 onClick={handlePromoteViewer}
                 disabled={promoting || !selectedViewerId}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                className="btn-brand rounded-lg px-4 py-2 text-sm font-medium"
               >
                 Promote to Player
               </button>
             </div>
             {viewerSearch && !selectedViewerId && (
-              <ul className="mt-2 max-h-40 divide-y divide-gray-200 dark:divide-gray-800 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 text-sm">
+              <ul className="relative z-[3] mt-2 max-h-40 divide-y divide-gray-200/70 dark:divide-gray-800/70 overflow-y-auto rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm text-sm">
                 {viewerCandidates.map((v) => (
                   <li key={v.uid}>
                     <button
@@ -948,7 +948,7 @@ export function AuctionSetup() {
                 value={bulkBasePrice}
                 onChange={(e) => setBulkBasePrice(e.target.value)}
                 placeholder="Base price"
-                className="w-32 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                className="w-32 rounded-lg input-glass px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
               />
               <button
                 onClick={handleApplyBasePriceToAll}
@@ -988,7 +988,7 @@ export function AuctionSetup() {
                             autoFocus
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            className="min-w-0 flex-1 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                            className="min-w-0 flex-1 rounded-md input-glass px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
                           />
                         ) : (
                           <span className="min-w-0 truncate font-medium text-gray-900 dark:text-gray-100">
@@ -1046,7 +1046,7 @@ export function AuctionSetup() {
                               autoFocus
                               value={editBasePrice}
                               onChange={(e) => setEditBasePrice(e.target.value)}
-                              className="w-24 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                              className="w-24 rounded-md input-glass px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
                             />
                           ) : (
                             p.basePrice
@@ -1077,7 +1077,7 @@ export function AuctionSetup() {
                         ) : (
                           <button
                             onClick={() => startEditBasePrice(p.playerId, p.basePrice)}
-                            className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                            className="relative z-[3] text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline"
                           >
                             Edit price
                           </button>
@@ -1147,7 +1147,7 @@ export function AuctionSetup() {
                             autoFocus
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            className="w-36 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                            className="w-36 rounded-md input-glass px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
                           />
                           <button
                             onClick={() => setEditingNameId(null)}
@@ -1169,7 +1169,7 @@ export function AuctionSetup() {
                           {p.name}
                           <button
                             onClick={() => startEditName(p.playerId, p.name)}
-                            className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                            className="relative z-[3] text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline"
                           >
                             Edit
                           </button>
@@ -1190,7 +1190,7 @@ export function AuctionSetup() {
                           autoFocus
                           value={editBasePrice}
                           onChange={(e) => setEditBasePrice(e.target.value)}
-                          className="w-24 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                          className="w-24 rounded-md input-glass px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
                         />
                       ) : (
                         p.basePrice
@@ -1222,7 +1222,7 @@ export function AuctionSetup() {
                           ) : (
                             <button
                               onClick={() => startEditBasePrice(p.playerId, p.basePrice)}
-                              className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                              className="relative z-[3] text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline"
                             >
                               Edit
                             </button>
@@ -1295,7 +1295,7 @@ export function AuctionSetup() {
                 value={registeredPlayerSearch}
                 onChange={(e) => setRegisteredPlayerSearch(e.target.value)}
                 placeholder="Search by name, email, phone, or ID..."
-                className="mt-3 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                className="mt-3 w-full rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
               />
               <ul className="mt-3 flex-1 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-800 text-sm">
                 {registeredPlayers.length === 0 && (
@@ -1340,7 +1340,7 @@ export function AuctionSetup() {
                           setRegisteredBasePrices((prev) => ({ ...prev, [p.uid]: e.target.value }))
                         }
                         placeholder="Base price"
-                        className="w-24 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                        className="w-24 rounded-lg input-glass px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
                       />
                       <button
                         onClick={() => handleAddRegisteredPlayer(p)}
@@ -1357,7 +1357,7 @@ export function AuctionSetup() {
           </div>
         )}
 
-        <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-5">
+        <section className="glass-card p-5">
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Team managers</h2>
 
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -1372,7 +1372,7 @@ export function AuctionSetup() {
               setSelectedTeamId('')
             }}
             placeholder="Search teams by name or manager..."
-            className="mt-3 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+            className="mt-3 w-full rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
           />
           {teamSearch && !selectedTeamId && (
             <ul className="mt-2 max-h-40 divide-y divide-gray-200 dark:divide-gray-800 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 text-sm">
@@ -1409,7 +1409,7 @@ export function AuctionSetup() {
               value={purse}
               onChange={(e) => setPurse(e.target.value)}
               placeholder="Common purse"
-              className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+              className="rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             />
             <input
               type="number"
@@ -1417,7 +1417,7 @@ export function AuctionSetup() {
               value={maxPlayers}
               onChange={(e) => setMaxPlayers(e.target.value)}
               placeholder="Max players"
-              className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+              className="rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             />
             <button
               onClick={handleAddTeam}
@@ -1491,7 +1491,7 @@ export function AuctionSetup() {
                           setNewTeamNames((prev) => ({ ...prev, [m.uid]: e.target.value }))
                         }
                         placeholder={`${m.displayName}'s Team`}
-                        className="w-48 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                        className="w-48 rounded-lg input-glass px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
                       />
                       <button
                         onClick={() => handleCreateTeamFor(m.uid, m.displayName)}
