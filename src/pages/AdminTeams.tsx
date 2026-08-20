@@ -250,6 +250,7 @@ export function AdminTeams() {
   const [selectedManagerId, setSelectedManagerId] = useState('')
   const [creatingTeam, setCreatingTeam] = useState(false)
 
+  const [expandedRosterTeamId, setExpandedRosterTeamId] = useState<string | null>(null)
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editLogoId, setEditLogoId] = useState<string | null>(null)
