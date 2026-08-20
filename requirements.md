@@ -57,6 +57,8 @@ An Admin or Auction Manager creates a match by picking:
 - **Format**: `friendly` (stands alone) or `tournament` (linked to a
   Tournament — see below)
 - **Day/Night**: day or night, purely descriptive/display
+- **Ball type**: tennis or leather
+- **Ground type**: ground, box cricket, or gully — also purely descriptive
 - **Overs**: the overs limit for each innings
 - Optional venue
 
