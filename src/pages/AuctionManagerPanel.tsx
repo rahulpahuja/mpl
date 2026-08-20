@@ -101,7 +101,7 @@ export function AuctionManagerPanel() {
           <div className="flex flex-wrap gap-2">
             <Link
               to={`/results/${auction.auctionId}`}
-              className="rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5"
             >
               View results
             </Link>
@@ -118,12 +118,12 @@ export function AuctionManagerPanel() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <section className="lg:col-span-2 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Current player</h2>
+          <section className="glass-card lg:col-span-2 p-6">
+            <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">Current player</h2>
             {!currentPlayer ? (
-              <p className="mt-3 text-sm text-gray-500">No player is currently on the block.</p>
+              <p className="relative z-[3] mt-3 text-sm text-gray-500">No player is currently on the block.</p>
             ) : (
-              <div className="mt-4 space-y-4">
+              <div className="relative z-[3] mt-4 space-y-4">
                 <div className="flex items-start gap-4">
                   <Avatar
                     name={currentPlayer.name}
@@ -152,7 +152,7 @@ export function AuctionManagerPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-4">
+                <div className="rounded-lg bg-white/40 dark:bg-white/5 p-4">
                   <p className="text-sm text-gray-500">Current bid</p>
                   <p className="text-3xl font-bold text-red-600 dark:text-red-400">
                     {currentPlayer.currentBid || currentPlayer.basePrice}
@@ -169,12 +169,12 @@ export function AuctionManagerPanel() {
                         type="number"
                         value={timerDuration}
                         onChange={(e) => setTimerDuration(e.target.value)}
-                        className="w-20 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                        className="input-glass w-20 rounded-lg px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
                       />
                       <button
                         onClick={() => run(() => startTimer(auctionId, Number(timerDuration) || 30))}
                         disabled={busy}
-                        className="rounded-lg bg-gray-800 dark:bg-gray-200 px-3 py-1.5 text-sm font-medium text-white dark:text-gray-900 hover:opacity-90 disabled:opacity-50"
+                        className="btn-brand rounded-lg px-3 py-1.5 text-sm font-medium"
                       >
                         Start timer
                       </button>
@@ -187,7 +187,7 @@ export function AuctionManagerPanel() {
                       <button
                         onClick={() => run(() => stopTimer(auctionId))}
                         disabled={busy}
-                        className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                        className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
                       >
                         Stop
                       </button>
@@ -206,7 +206,7 @@ export function AuctionManagerPanel() {
                   <button
                     onClick={() => run(() => markUnsold(auctionId, currentPlayer.playerId))}
                     disabled={busy}
-                    className="rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                    className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
                   >
                     Mark unsold
                   </button>
@@ -228,19 +228,19 @@ export function AuctionManagerPanel() {
             )}
           </section>
 
-          <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Next up</h2>
-            <ul className="mt-3 space-y-2">
+          <section className="glass-card p-6">
+            <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">Next up</h2>
+            <ul className="relative z-[3] mt-3 space-y-2">
               {queue.map((p) => (
                 <li
                   key={p.playerId}
-                  className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm"
+                  className="flex items-center justify-between gap-2 rounded-lg bg-white/40 dark:bg-white/5 px-3 py-2 text-sm"
                 >
                   <span className="truncate text-gray-900 dark:text-gray-100">{p.name}</span>
                   <button
                     onClick={() => run(() => setCurrentPlayer(auctionId, p.playerId))}
                     disabled={busy || !!currentPlayer}
-                    className="shrink-0 text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                    className="shrink-0 font-medium text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50"
                   >
                     Start
                   </button>
@@ -251,18 +251,15 @@ export function AuctionManagerPanel() {
           </section>
         </div>
 
-        <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Team squads</h2>
-          <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="glass-card p-6">
+          <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">Team squads</h2>
+          <div className="relative z-[3] mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {wallets.map((tm) => {
               const squad = auction.players
                 .filter((p) => p.currentBidder === tm.managerId && p.status === 'sold')
                 .sort((a, b) => b.currentBid - a.currentBid)
               return (
-                <div
-                  key={tm.managerId}
-                  className="rounded-lg bg-gray-50 dark:bg-gray-900 p-4 text-sm"
-                >
+                <div key={tm.managerId} className="rounded-lg bg-white/40 dark:bg-white/5 p-4 text-sm">
                   <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                     <span className="flex min-w-0 items-center gap-2 font-medium text-gray-900 dark:text-gray-100">
                       <TeamAvatar
@@ -312,17 +309,17 @@ export function AuctionManagerPanel() {
         </section>
 
         {unsold.length > 0 && (
-          <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Unsold players</h2>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <section className="glass-card p-6">
+            <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">Unsold players</h2>
+            <p className="relative z-[3] mt-1 text-sm text-gray-500 dark:text-gray-400">
               Assign a leftover player directly to a team at base price — useful for clearing the
               unsold list before ending the auction.
             </p>
-            <ul className="mt-3 space-y-2">
+            <ul className="relative z-[3] mt-3 space-y-2">
               {unsold.map((p) => (
                 <li
                   key={p.playerId}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/40 dark:bg-white/5 px-3 py-2 text-sm"
                 >
                   <span className="min-w-0 break-words text-gray-900 dark:text-gray-100">
                     {p.name} <span className="text-gray-500">({p.position}) · Base {p.basePrice}</span>
@@ -333,7 +330,7 @@ export function AuctionManagerPanel() {
                       onChange={(e) =>
                         setAssignTeamByPlayer((prev) => ({ ...prev, [p.playerId]: e.target.value }))
                       }
-                      className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                      className="input-glass rounded-md px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
                     >
                       <option value="">Assign to team...</option>
                       {auction.teamManagers.map((tm) => (
@@ -345,7 +342,7 @@ export function AuctionManagerPanel() {
                     <button
                       onClick={() => handleAssign(p.playerId)}
                       disabled={busy || !assignTeamByPlayer[p.playerId]}
-                      className="rounded-md bg-gray-800 dark:bg-gray-200 px-3 py-1 text-xs font-medium text-white dark:text-gray-900 hover:opacity-90 disabled:opacity-50"
+                      className="btn-brand rounded-md px-3 py-1 text-xs font-medium"
                     >
                       Assign
                     </button>
@@ -353,7 +350,7 @@ export function AuctionManagerPanel() {
                       onClick={() => run(() => returnPlayerToQueue(auctionId, p.playerId))}
                       disabled={busy}
                       title="Marked unsold by mistake? Put them back in the queue."
-                      className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                      className="rounded-md border border-gray-300/80 dark:border-gray-700/80 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
                     >
                       Return to queue
                     </button>

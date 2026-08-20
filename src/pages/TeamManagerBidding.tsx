@@ -167,11 +167,11 @@ export function TeamManagerBidding() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <section className="lg:col-span-2 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
+          <section className="glass-card lg:col-span-2 p-6">
             {!currentPlayer ? (
-              <p className="text-sm text-gray-500">Waiting for the next player...</p>
+              <p className="relative z-[3] text-sm text-gray-500">Waiting for the next player...</p>
             ) : (
-              <div className="space-y-4">
+              <div className="relative z-[3] space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-4">
                     <Avatar
@@ -210,7 +210,7 @@ export function TeamManagerBidding() {
                   )}
                 </div>
 
-                <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-4">
+                <div className="rounded-lg bg-white/40 dark:bg-white/5 p-4">
                   <p className="text-sm text-gray-500">Current bid</p>
                   <p className="text-3xl font-bold text-red-600 dark:text-red-400">
                     {currentPlayer.currentBid || currentPlayer.basePrice}
@@ -238,7 +238,7 @@ export function TeamManagerBidding() {
                         onClick={() => handleBid(amount)}
                         disabled={disabled}
                         title={`Bid ${amount}`}
-                        className="rounded-lg border border-gray-300 dark:border-gray-700 px-2 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 transition-transform duration-100 hover:bg-gray-50 active:scale-[0.96] dark:hover:bg-gray-800 disabled:opacity-50 disabled:active:scale-100"
+                        className="input-glass rounded-lg px-2 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 transition-transform duration-100 hover:bg-white/90 active:scale-[0.96] dark:hover:bg-gray-800/80 disabled:opacity-50 disabled:active:scale-100"
                       >
                         +{step}
                       </button>
@@ -258,9 +258,9 @@ export function TeamManagerBidding() {
             )}
           </section>
 
-          <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Bid history</h2>
-            <ul className="mt-3 space-y-1 text-sm max-h-64 overflow-y-auto">
+          <section className="glass-card p-6">
+            <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">Bid history</h2>
+            <ul className="relative z-[3] mt-3 space-y-1 text-sm max-h-64 overflow-y-auto">
               {sortedBids.map((b, i) => (
                 <li key={i} className="flex justify-between gap-2 text-gray-600 dark:text-gray-400">
                   <span className="truncate">{b.managerName}</span>
@@ -271,15 +271,15 @@ export function TeamManagerBidding() {
             </ul>
           </section>
 
-          <section className="lg:col-span-3 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+          <section className="glass-card lg:col-span-3 p-6">
+            <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">
               My squad <span className="text-sm font-normal text-gray-500">({squadSize} / {myTeam.maxPlayers})</span>
             </h2>
-            <ul className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="relative z-[3] mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
               {mySquad.map((p) => (
                 <li
                   key={p.playerId}
-                  className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2"
+                  className="flex items-center justify-between gap-2 rounded-lg bg-white/40 dark:bg-white/5 px-3 py-2"
                 >
                   <span className="min-w-0 truncate text-gray-900 dark:text-gray-100">
                     {p.name}
@@ -294,22 +294,22 @@ export function TeamManagerBidding() {
             </ul>
           </section>
 
-          <section className="lg:col-span-3 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+          <section className="glass-card lg:col-span-3 p-6">
+            <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">
               Promote a viewer to Player
             </h2>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="relative z-[3] mt-1 text-sm text-gray-500 dark:text-gray-400">
               Spotted someone in the crowd who should be up for auction? Promote their account so
               the Auction Manager can add them to a roster.
             </p>
             {pendingPlayerRequests.length > 0 && (
-              <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-800 rounded-lg border border-amber-300 dark:border-amber-700 text-sm">
+              <ul className="relative z-[3] mt-2 space-y-2 text-sm">
                 {pendingPlayerRequests.map((v) => (
                   <li
                     key={v.uid}
-                    className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                    className="glass-card flex flex-col gap-2 border-amber-300/70! px-3 py-2 dark:border-amber-700/60! sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
+                    <span className="relative z-[3] flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                       <Avatar
                         name={v.displayName}
                         encryptedPhoto={v.encryptedPhoto}
@@ -318,7 +318,7 @@ export function TeamManagerBidding() {
                       />
                       <span className="min-w-0 break-words">
                         {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
-                        <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                        <span className="ml-2 rounded-full bg-amber-100/90 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
                           Requested
                         </span>
                       </span>
@@ -326,7 +326,7 @@ export function TeamManagerBidding() {
                     <button
                       onClick={() => handleApproveRequest(v.uid)}
                       disabled={promoting}
-                      className="self-start rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 sm:self-auto"
+                      className="relative z-[3] self-start rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-white/60 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-white/5 sm:self-auto"
                     >
                       Approve
                     </button>
@@ -334,7 +334,7 @@ export function TeamManagerBidding() {
                 ))}
               </ul>
             )}
-            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="relative z-[3] mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
               <input
                 value={viewerSearch}
                 onChange={(e) => {
@@ -342,18 +342,18 @@ export function TeamManagerBidding() {
                   setSelectedViewerId('')
                 }}
                 placeholder="Search viewers by name, email, phone..."
-                className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 sm:col-span-2"
+                className="input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100 sm:col-span-2"
               />
               <button
                 onClick={handlePromoteViewer}
                 disabled={promoting || !selectedViewerId}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                className="btn-brand rounded-lg px-4 py-2 text-sm font-medium"
               >
                 Promote to Player
               </button>
             </div>
             {viewerSearch && !selectedViewerId && (
-              <ul className="mt-2 max-h-40 divide-y divide-gray-200 dark:divide-gray-800 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 text-sm">
+              <ul className="relative z-[3] mt-2 max-h-40 divide-y divide-gray-200/70 dark:divide-gray-800/70 overflow-y-auto rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm text-sm">
                 {viewerCandidates.map((v) => (
                   <li key={v.uid}>
                     <button
