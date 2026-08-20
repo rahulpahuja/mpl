@@ -593,14 +593,14 @@ export function AuctionSetup() {
                 <button
                   onClick={handleSaveAuctionName}
                   disabled={savingAuctionName || !auctionNameDraft.trim()}
-                  className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                  className="btn-brand rounded-lg px-3 py-1.5 text-sm font-medium"
                 >
                   {savingAuctionName ? 'Saving...' : 'Save'}
                 </button>
                 <button
                   onClick={() => setEditingAuctionName(false)}
                   disabled={savingAuctionName}
-                  className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                  className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -941,7 +941,7 @@ export function AuctionSetup() {
           </div>
 
           {auction.players.length > 0 && (
-            <div className="mt-6 flex flex-wrap items-center gap-2">
+            <div className="relative z-[3] mt-6 flex flex-wrap items-center gap-2">
               <input
                 type="number"
                 min={0}
@@ -953,7 +953,7 @@ export function AuctionSetup() {
               <button
                 onClick={handleApplyBasePriceToAll}
                 disabled={applyingBulkBasePrice || openPlayerCount === 0}
-                className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
               >
                 {applyingBulkBasePrice
                   ? 'Applying...'
@@ -964,17 +964,14 @@ export function AuctionSetup() {
           )}
 
           {auction.players.length === 0 ? (
-            <p className="mt-3 text-sm text-gray-500 sm:hidden">No players added yet.</p>
+            <p className="relative z-[3] mt-3 text-sm text-gray-500 sm:hidden">No players added yet.</p>
           ) : (
-            <ul className="mt-3 space-y-2 sm:hidden">
+            <ul className="relative z-[3] mt-3 space-y-2 sm:hidden">
               {auction.players.map((p) => {
                 const jerseyNumber = users.find((u) => u.uid === p.playerId)?.jerseyNumber
                 return (
-                  <li
-                    key={p.playerId}
-                    className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 p-3"
-                  >
-                    <div className="flex items-center justify-between gap-2">
+                  <li key={p.playerId} className="glass-card p-3">
+                    <div className="relative z-[3] flex items-center justify-between gap-2">
                       <span className="flex min-w-0 flex-1 items-center gap-2">
                         <Avatar
                           name={p.name}
@@ -1002,7 +999,7 @@ export function AuctionSetup() {
                     </div>
 
                     {editingNameId === p.playerId ? (
-                      <div className="mt-1.5 flex items-center gap-3">
+                      <div className="relative z-[3] mt-1.5 flex items-center gap-3">
                         <button
                           onClick={() => setEditingNameId(null)}
                           disabled={savingNameId === p.playerId}
@@ -1013,7 +1010,7 @@ export function AuctionSetup() {
                         <button
                           onClick={() => handleSaveName(p.playerId)}
                           disabled={savingNameId === p.playerId || !editName.trim()}
-                          className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                          className="text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50"
                         >
                           {savingNameId === p.playerId ? 'Saving...' : 'Save'}
                         </button>
@@ -1021,13 +1018,13 @@ export function AuctionSetup() {
                     ) : (
                       <button
                         onClick={() => startEditName(p.playerId, p.name)}
-                        className="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                        className="relative z-[3] mt-1.5 text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline"
                       >
                         Edit name
                       </button>
                     )}
 
-                    <dl className="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                    <dl className="relative z-[3] mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
                       <div className="flex justify-between gap-2">
                         <dt>Jersey #</dt>
                         <dd>{jerseyNumber ?? '—'}</dd>
@@ -1056,7 +1053,7 @@ export function AuctionSetup() {
                     </dl>
 
                     {p.status === 'open' && (
-                      <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-gray-200 dark:border-gray-800 pt-2">
+                      <div className="relative z-[3] mt-2 flex flex-wrap items-center gap-3 border-t border-gray-200/70 dark:border-gray-800/70 pt-2">
                         {editingBasePriceId === p.playerId ? (
                           <>
                             <button
@@ -1069,7 +1066,7 @@ export function AuctionSetup() {
                             <button
                               onClick={() => handleSaveBasePrice(p.playerId)}
                               disabled={savingBasePriceId === p.playerId}
-                              className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                              className="text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50"
                             >
                               {savingBasePriceId === p.playerId ? 'Saving...' : 'Save'}
                             </button>
@@ -1109,9 +1106,9 @@ export function AuctionSetup() {
             </ul>
           )}
 
-          <div className="mt-3 hidden overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 sm:block">
+          <div className="glass-card relative z-[3] mt-3 hidden overflow-x-auto sm:block">
             <table className="w-full min-w-[480px] text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
+              <thead className="bg-white/40 dark:bg-white/5 text-left text-gray-500 dark:text-gray-400">
                 <tr>
                   <th className="px-3 py-2 font-medium"></th>
                   <th className="px-3 py-2 font-medium">Name</th>
@@ -1159,7 +1156,7 @@ export function AuctionSetup() {
                           <button
                             onClick={() => handleSaveName(p.playerId)}
                             disabled={savingNameId === p.playerId || !editName.trim()}
-                            className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                            className="text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50"
                           >
                             {savingNameId === p.playerId ? 'Saving...' : 'Save'}
                           </button>
@@ -1214,7 +1211,7 @@ export function AuctionSetup() {
                               <button
                                 onClick={() => handleSaveBasePrice(p.playerId)}
                                 disabled={savingBasePriceId === p.playerId}
-                                className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                                className="text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50"
                               >
                                 {savingBasePriceId === p.playerId ? 'Saving...' : 'Save'}
                               </button>
@@ -1358,9 +1355,9 @@ export function AuctionSetup() {
         )}
 
         <section className="glass-card p-5">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Team managers</h2>
+          <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">Team managers</h2>
 
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="relative z-[3] mt-1 text-sm text-gray-500 dark:text-gray-400">
             Add an existing team to this auction. Teams are created once from the Admin Dashboard
             and can be reused across multiple auctions. Purse and max players are a common default
             for every team you add — set them once below.
@@ -1372,10 +1369,10 @@ export function AuctionSetup() {
               setSelectedTeamId('')
             }}
             placeholder="Search teams by name or manager..."
-            className="mt-3 w-full rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+            className="input-glass relative z-[3] mt-3 w-full rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
           />
           {teamSearch && !selectedTeamId && (
-            <ul className="mt-2 max-h-40 divide-y divide-gray-200 dark:divide-gray-800 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 text-sm">
+            <ul className="relative z-[3] mt-2 max-h-40 divide-y divide-gray-200/70 dark:divide-gray-800/70 overflow-y-auto rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm text-sm">
               {availableTeams.map((t) => (
                 <li key={t.teamId}>
                   <button
@@ -1403,7 +1400,7 @@ export function AuctionSetup() {
               )}
             </ul>
           )}
-          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="relative z-[3] mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
             <input
               type="number"
               value={purse}
@@ -1422,18 +1419,18 @@ export function AuctionSetup() {
             <button
               onClick={handleAddTeam}
               disabled={!selectedTeamId}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              className="btn-brand rounded-lg px-4 py-2 text-sm font-medium"
             >
               Add to auction
             </button>
           </div>
           {auction.teamManagers.length > 0 && (
-            <div className="mt-2 space-y-2">
+            <div className="relative z-[3] mt-2 space-y-2">
               <div>
                 <button
                   onClick={handleApplyCommonPurse}
                   disabled={applyingPurse}
-                  className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                  className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
                 >
                   {applyingPurse ? 'Applying...' : `Apply ${purse || 0} purse to all ${auction.teamManagers.length} teams already added`}
                 </button>
@@ -1443,7 +1440,7 @@ export function AuctionSetup() {
                 <button
                   onClick={handleApplyMaxPlayers}
                   disabled={applyingMaxPlayers}
-                  className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                  className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
                 >
                   {applyingMaxPlayers
                     ? 'Applying...'
@@ -1454,11 +1451,11 @@ export function AuctionSetup() {
             </div>
           )}
           {!teamSearch && availableTeams.length === 0 && (
-            <p className="mt-2 text-xs text-gray-500">No existing teams available to add.</p>
+            <p className="relative z-[3] mt-2 text-xs text-gray-500">No existing teams available to add.</p>
           )}
 
           {managersWithoutTeam.length > 0 && (
-            <div className="mt-6 border-t border-gray-200 dark:border-gray-800 pt-4">
+            <div className="relative z-[3] mt-6 border-t border-gray-200/70 dark:border-gray-800/70 pt-4">
               <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
                 Captains without a team yet
               </h3>
@@ -1496,7 +1493,7 @@ export function AuctionSetup() {
                       <button
                         onClick={() => handleCreateTeamFor(m.uid, m.displayName)}
                         disabled={creatingTeamFor === m.uid}
-                        className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                        className="btn-brand rounded-lg px-3 py-1.5 text-sm font-medium"
                       >
                         {creatingTeamFor === m.uid ? 'Creating...' : 'Create team & add'}
                       </button>
@@ -1507,7 +1504,7 @@ export function AuctionSetup() {
             </div>
           )}
 
-          <ul className="mt-4 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+          <ul className="relative z-[3] mt-4 divide-y divide-gray-200/70 dark:divide-gray-800/70 text-sm">
             {auction.teamManagers.map((tm) => {
               // Prefer the live Team doc over the snapshot taken at add-time —
               // a logo/jersey color set on the Teams page afterwards would
