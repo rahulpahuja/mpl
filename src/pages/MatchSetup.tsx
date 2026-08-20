@@ -255,7 +255,9 @@ export function MatchSetup() {
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{match.name}</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {match.dayNight === 'day' ? 'Day match' : 'Night match'} · {match.oversLimit} overs
+            {match.dayNight === 'day' ? 'Day match' : 'Night match'} · {match.oversLimit} overs ·{' '}
+            {match.ballType === 'tennis' ? 'Tennis ball' : 'Leather ball'} ·{' '}
+            {match.groundType === 'box' ? 'Box cricket' : match.groundType === 'gully' ? 'Gully' : 'Ground'}
             {match.tournamentName ? ` · ${match.tournamentName}` : ' · Friendly'}
           </p>
         </div>

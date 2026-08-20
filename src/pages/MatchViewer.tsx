@@ -83,7 +83,9 @@ export function MatchViewer() {
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {match.format === 'tournament' && match.tournamentName ? `${match.tournamentName} · ` : ''}
-              {match.oversLimit} overs · {match.dayNight === 'day' ? 'Day' : 'Night'} · Status: {match.status}
+              {match.oversLimit} overs · {match.dayNight === 'day' ? 'Day' : 'Night'} ·{' '}
+              {match.ballType === 'tennis' ? 'Tennis ball' : 'Leather ball'} ·{' '}
+              {match.groundType === 'box' ? 'Box cricket' : match.groundType === 'gully' ? 'Gully' : 'Ground'} · Status: {match.status}
             </p>
           </div>
           <Link
