@@ -72,10 +72,10 @@ export function LocationAutocomplete({
         }}
         onFocus={() => suggestions.length > 0 && setOpen(true)}
         placeholder="Start typing a city..."
-        className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+        className="input-glass w-full rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
       />
       {open && (loading || suggestions.length > 0) && (
-        <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
+        <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-lg">
           {loading && <li className="px-3 py-2 text-sm text-gray-500">Searching...</li>}
           {!loading &&
             suggestions.map((s) => (
@@ -83,7 +83,7 @@ export function LocationAutocomplete({
                 <button
                   type="button"
                   onClick={() => handleSelect(s.label)}
-                  className="block w-full truncate px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="block w-full truncate px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/10"
                 >
                   {s.label}
                 </button>

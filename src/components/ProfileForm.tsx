@@ -126,12 +126,12 @@ export function ProfileForm({
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           maxLength={80}
-          className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
         />
       </div>
       <div>
         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone number</label>
-        <div className="mt-1 flex overflow-hidden rounded-lg border border-gray-300 dark:border-gray-700 focus-within:ring-2 focus-within:ring-red-500">
+        <div className="mt-1 input-glass flex overflow-hidden rounded-lg focus-within:ring-2 focus-within:ring-orange-400/60">
           <span className="flex items-center bg-gray-100 dark:bg-gray-700 px-3 text-sm text-gray-500 dark:text-gray-400">
             {COUNTRY_CODE}
           </span>
@@ -140,7 +140,7 @@ export function ProfileForm({
             onChange={(e) => handlePhoneChange(e.target.value)}
             inputMode="numeric"
             maxLength={10}
-            className="w-full bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none"
+            className="w-full bg-transparent px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none"
           />
         </div>
       </div>
@@ -148,7 +148,7 @@ export function ProfileForm({
         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
           WhatsApp number
         </label>
-        <div className="mt-1 flex overflow-hidden rounded-lg border border-gray-300 dark:border-gray-700 focus-within:ring-2 focus-within:ring-red-500">
+        <div className="mt-1 input-glass flex overflow-hidden rounded-lg focus-within:ring-2 focus-within:ring-orange-400/60">
           <span className="flex items-center bg-gray-100 dark:bg-gray-700 px-3 text-sm text-gray-500 dark:text-gray-400">
             {COUNTRY_CODE}
           </span>
@@ -158,7 +158,7 @@ export function ProfileForm({
             disabled={sameAsPhone}
             inputMode="numeric"
             maxLength={10}
-            className="w-full bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none disabled:opacity-60"
+            className="w-full bg-transparent px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none disabled:opacity-60"
           />
         </div>
         <label className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
@@ -187,7 +187,7 @@ export function ProfileForm({
           inputMode="numeric"
           maxLength={2}
           placeholder="e.g. 7"
-          className="mt-1 w-24 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="mt-1 w-24 input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
         />
       </div>
       <div>
@@ -197,7 +197,7 @@ export function ProfileForm({
         <select
           value={playingRole}
           onChange={(e) => setPlayingRole(e.target.value as PlayingRole | '')}
-          className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
         >
           <option value="">Not set</option>
           {PLAYING_ROLE_OPTIONS.map((r) => (
@@ -214,7 +214,7 @@ export function ProfileForm({
         <select
           value={battingType}
           onChange={(e) => setBattingType(e.target.value as BattingType | '')}
-          className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
         >
           <option value="">Not set</option>
           {BATTING_TYPE_OPTIONS.map((b) => (
@@ -231,7 +231,7 @@ export function ProfileForm({
         <select
           value={bowlingType}
           onChange={(e) => setBowlingType(e.target.value as BowlingType | '')}
-          className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
         >
           <option value="">Not set</option>
           {BOWLING_TYPE_OPTIONS.map((b) => (
@@ -248,7 +248,7 @@ export function ProfileForm({
         <select
           value={battingHandedness}
           onChange={(e) => setBattingHandedness(e.target.value as Handedness | '')}
-          className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
         >
           <option value="">Not set</option>
           <option value="right">Right-handed</option>
@@ -262,7 +262,7 @@ export function ProfileForm({
         <select
           value={bowlingHandedness}
           onChange={(e) => setBowlingHandedness(e.target.value as Handedness | '')}
-          className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
         >
           <option value="">Not set</option>
           <option value="right">Right-arm</option>
@@ -274,7 +274,7 @@ export function ProfileForm({
       <button
         type="submit"
         disabled={saving}
-        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+        className="btn-brand rounded-lg px-4 py-2 text-sm font-medium"
       >
         {saving ? 'Saving...' : submitLabel}
       </button>
