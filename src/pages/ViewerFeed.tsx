@@ -60,15 +60,15 @@ export function ViewerFeed() {
           </div>
           <Link
             to={`/results/${auction.auctionId}`}
-            className="rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5"
           >
             Full results
           </Link>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <section className="lg:col-span-2 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
-            <h2 className="flex items-center gap-2 text-lg font-medium text-gray-900 dark:text-gray-100">
+          <section className="glass-card lg:col-span-2 p-6">
+            <h2 className="relative z-[3] flex items-center gap-2 text-lg font-medium text-gray-900 dark:text-gray-100">
               Live scoreboard
               {currentPlayer && (
                 <span className="relative flex h-2 w-2" title="On the block now">
@@ -78,9 +78,9 @@ export function ViewerFeed() {
               )}
             </h2>
             {!currentPlayer ? (
-              <p className="mt-3 text-sm text-gray-500">Waiting for the next player...</p>
+              <p className="relative z-[3] mt-3 text-sm text-gray-500">Waiting for the next player...</p>
             ) : (
-              <div className="mt-4 space-y-4">
+              <div className="relative z-[3] mt-4 space-y-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:items-start sm:gap-4 sm:text-left">
                     <Avatar
@@ -121,7 +121,7 @@ export function ViewerFeed() {
                     </span>
                   )}
                 </div>
-                <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-4">
+                <div className="rounded-lg bg-white/40 dark:bg-white/5 p-4">
                   <p className="text-sm text-gray-500">Current bid</p>
                   <p className="text-3xl font-bold text-red-600 dark:text-red-400">
                     {currentPlayer.currentBid || currentPlayer.basePrice}
@@ -146,13 +146,13 @@ export function ViewerFeed() {
             )}
           </section>
 
-          <section className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-6">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Team standings</h2>
-            <ul className="mt-3 space-y-2 text-sm">
+          <section className="glass-card p-6">
+            <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">Team standings</h2>
+            <ul className="relative z-[3] mt-3 space-y-2 text-sm">
               {standings.map((tm) => (
                 <li
                   key={tm.managerId}
-                  className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2"
+                  className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg bg-white/40 dark:bg-white/5 px-3 py-2"
                 >
                   <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                     <TeamAvatar

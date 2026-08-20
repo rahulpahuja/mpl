@@ -74,11 +74,8 @@ export function Results() {
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Team strength</h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {sortedTeams.map((team) => (
-              <div
-                key={team.teamId}
-                className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-4"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
+              <div key={team.teamId} className="glass-card p-4">
+                <div className="relative z-[3] flex flex-wrap items-center justify-between gap-2">
                   <h3 className="flex min-w-0 items-center gap-2 font-semibold text-gray-900 dark:text-gray-100">
                     <TeamAvatar
                       teamName={team.teamName}
@@ -90,10 +87,10 @@ export function Results() {
                   </h3>
                   <span className="shrink-0 text-sm text-gray-500">Balance {team.balance}</span>
                 </div>
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="relative z-[3] mt-1 text-xs text-gray-500">
                   Spent {team.spent} of {team.initialPurse}
                 </p>
-                <ul className="mt-3 space-y-1 text-sm">
+                <ul className="relative z-[3] mt-3 space-y-1 text-sm">
                   {team.players.map((p) => (
                     <li key={p.playerId} className="flex justify-between gap-2 text-gray-600 dark:text-gray-400">
                       <span className="min-w-0 truncate flex items-center gap-1.5">
@@ -128,24 +125,21 @@ export function Results() {
             <>
               <ul className="mt-4 space-y-2 sm:hidden">
                 {sold.map((p) => (
-                  <li
-                    key={p.playerId}
-                    className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-3"
-                  >
-                    <div className="flex items-start justify-between gap-2">
+                  <li key={p.playerId} className="glass-card p-3">
+                    <div className="relative z-[3] flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="truncate font-medium text-gray-900 dark:text-gray-100">{p.name}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">{p.position}</p>
                       </div>
                       <p className="shrink-0 font-mono text-gray-900 dark:text-gray-100">{p.currentBid}</p>
                     </div>
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    <p className="relative z-[3] mt-1 text-xs text-gray-500 dark:text-gray-400">
                       Sold to {p.currentBidderName}
                     </p>
                     {p.wasUnsoldAssigned && (
                       <span
                         title="Went unsold in the auction, later force-assigned to this team"
-                        className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400"
+                        className="relative z-[3] mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400"
                       >
                         <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                         Unsold → reassigned
@@ -155,9 +149,9 @@ export function Results() {
                 ))}
               </ul>
 
-              <div className="mt-4 hidden overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm sm:block">
+              <div className="glass-card relative z-[3] mt-4 hidden overflow-x-auto sm:block">
                 <table className="w-full min-w-[480px] text-sm">
-                  <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
+                  <thead className="bg-white/40 dark:bg-white/5 text-left text-gray-500 dark:text-gray-400">
                     <tr>
                       <th className="px-4 py-2 font-medium">Player</th>
                       <th className="px-4 py-2 font-medium">Position</th>
@@ -206,18 +200,18 @@ export function Results() {
                 {unsold.map((p) => (
                   <li
                     key={p.playerId}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm"
+                    className="glass-card flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm"
                   >
-                    <span className="min-w-0 break-words text-gray-900 dark:text-gray-100">
+                    <span className="relative z-[3] min-w-0 break-words text-gray-900 dark:text-gray-100">
                       {p.name} <span className="text-gray-500">({p.position}) · Base {p.basePrice}</span>
                     </span>
-                    <div className="flex items-center gap-2">
+                    <div className="relative z-[3] flex items-center gap-2">
                       <select
                         value={assignTeamByPlayer[p.playerId] ?? ''}
                         onChange={(e) =>
                           setAssignTeamByPlayer((prev) => ({ ...prev, [p.playerId]: e.target.value }))
                         }
-                        className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                        className="input-glass rounded-md px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
                       >
                         <option value="">Assign to team...</option>
                         {auction.teamManagers.map((tm) => (
@@ -229,7 +223,7 @@ export function Results() {
                       <button
                         onClick={() => handleAssign(p.playerId)}
                         disabled={assigning || !assignTeamByPlayer[p.playerId]}
-                        className="rounded-md bg-gray-800 dark:bg-gray-200 px-3 py-1 text-xs font-medium text-white dark:text-gray-900 hover:opacity-90 disabled:opacity-50"
+                        className="btn-brand rounded-md px-3 py-1 text-xs font-medium"
                       >
                         Assign
                       </button>
