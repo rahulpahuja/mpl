@@ -15,7 +15,7 @@ import { db } from './firebase'
 import * as matchRules from './matchRules'
 import { applyMatchToPlayerStats } from './playerStats'
 import { recomputeStandings } from './tournaments'
-import type { BallOutcome, DayNight, Match, MatchFormat, MatchTeamSide, TossDecision } from '../types'
+import type { BallOutcome, BallType, DayNight, GroundType, Match, MatchFormat, MatchTeamSide, TossDecision } from '../types'
 import type { ScoreBallInput } from './matchRules'
 
 function matchRef(matchId: string) {
@@ -36,6 +36,8 @@ export async function createMatch(input: {
   tournamentId?: string | null
   tournamentName?: string | null
   dayNight: DayNight
+  ballType: BallType
+  groundType: GroundType
   oversLimit: number
   venueId?: string | null
   venueName?: string | null
@@ -55,6 +57,8 @@ export async function createMatch(input: {
     tournamentId: input.tournamentId ?? null,
     tournamentName: input.tournamentName ?? null,
     dayNight: input.dayNight,
+    ballType: input.ballType,
+    groundType: input.groundType,
     oversLimit: input.oversLimit,
     venueId: input.venueId ?? null,
     venueName: input.venueName ?? null,
