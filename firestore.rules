@@ -185,5 +185,45 @@ service cloud.firestore {
         allow write: if isAuctionManagerOf(get(/databases/$(database)/documents/auctions/$(auctionId)).data);
       }
     }
+
+    match /matches/{matchId} {
+      // Public, same reasoning as auctions — a live scoreboard needs to be
+      // watchable without an account.
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn() && (role() == 'admin' || role() == 'auctionManager') &&
+        request.auth.uid in request.resource.data.scorerIds;
+      // Any signed-in user the creator has added to scorerIds can operate the
+      // live counter — deliberately not restricted to admin/auctionManager,
+      // per the "anyone can be a scorer" requirement (see requirements.md).
+      allow update: if isAdmin() ||
+        (isSignedIn() && role() == 'auctionManager') ||
+        (isSignedIn() && request.auth.uid in resource.data.scorerIds);
+      allow delete: if isAdmin() || (isSignedIn() && request.auth.uid == resource.data.createdBy);
+
+      match /balls/{ballId} {
+        allow get: if true;
+        allow list: if true;
+        allow write: if isAdmin() ||
+          (isSignedIn() &&
+            request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.scorerIds);
+      }
+    }
+
+    match /tournaments/{tournamentId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
+      allow update: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
+      allow delete: if isAdmin();
+    }
+
+    // Career numbers, aggregated automatically off completed matches (see
+    // lib/playerStats.ts) — nobody writes these by hand.
+    match /playerStats/{playerId} {
+      allow get: if true;
+      allow list: if true;
+      allow write: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
+    }
   }
 }

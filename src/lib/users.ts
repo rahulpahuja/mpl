@@ -1,6 +1,7 @@
-import { arrayUnion, doc, serverTimestamp, updateDoc, writeBatch } from 'firebase/firestore'
+import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc, writeBatch } from 'firebase/firestore'
 import { db } from './firebase'
 import { syncPlayerNameAcrossAllAuctions } from './auctions'
+import { deleteFilenFile } from './filen'
 import type {
   BattingType,
   BowlingType,
@@ -52,20 +53,45 @@ export async function updateOwnProfile(uid: string, profile: ProfileFields) {
   await syncPlayerNameAcrossAllAuctions(uid, profile.displayName)
 }
 
+// Every re-upload/removal replaces the single filenPhotoId pointer in
+// Firestore, but the *previous* file was otherwise never deleted from Filen
+// storage — it just sat there orphaned forever, so "replacing" a photo was
+// actually leaking storage on every change. Best-effort: the Firestore
+// update is the source of truth and always happens; if the old file's
+// deletion fails (network blip, already gone), that's logged, not thrown,
+// since it must never block the user from changing their photo.
+async function deleteOldFilenPhotoIfDifferent(previousId: string | null | undefined, newId: string | null) {
+  if (!previousId || previousId === newId) return
+  try {
+    await deleteFilenFile(previousId)
+  } catch (err) {
+    console.error('Failed to delete superseded Filen photo', previousId, err)
+  }
+}
+
+async function currentFilenPhotoId(uid: string): Promise<string | null> {
+  const snap = await getDoc(doc(db, 'users', uid))
+  return snap.exists() ? ((snap.data().filenPhotoId as string | null | undefined) ?? null) : null
+}
+
 // `filenPhotoId` is the id returned by uploadToFilen (lib/filen.ts) after the
 // file lands in Filen storage — callers upload first, then pass the
 // resulting id here. Clears avatarId and the legacy encryptedPhoto field
 // since only one photo source is ever active at a time (Avatar.tsx would
 // otherwise have to pick a display priority).
 export async function updateOwnProfilePhoto(uid: string, filenPhotoId: string | null) {
+  const previousId = await currentFilenPhotoId(uid)
   await updateDoc(doc(db, 'users', uid), { filenPhotoId, avatarId: null, encryptedPhoto: null })
+  await deleteOldFilenPhotoIfDifferent(previousId, filenPhotoId)
 }
 
 // Sets a preset avatar (see lib/avatars.ts) and clears any uploaded photo —
 // the inverse of updateOwnProfilePhoto, for users who'd rather pick one of
 // these than upload their own image.
 export async function updateOwnAvatar(uid: string, avatarId: string) {
+  const previousId = await currentFilenPhotoId(uid)
   await updateDoc(doc(db, 'users', uid), { avatarId, filenPhotoId: null, encryptedPhoto: null })
+  await deleteOldFilenPhotoIfDifferent(previousId, null)
 }
 
 // An Admin/Auction Manager proposing a replacement profile photo for someone
@@ -98,20 +124,26 @@ export async function requestProfilePhotoChange(
 // request resolved so the requester's outcome listener (see
 // PhotoRequestOutcomeToast) picks it up in real time.
 export async function approvePhotoRequest(uid: string, request: PendingPhotoRequest) {
+  const previousId = await currentFilenPhotoId(uid)
   await updateDoc(doc(db, 'users', uid), {
     filenPhotoId: request.filenPhotoId,
     avatarId: null,
     encryptedPhoto: null,
     pendingPhotoRequest: { ...request, status: 'approved', resolvedAt: serverTimestamp() },
   })
+  await deleteOldFilenPhotoIfDifferent(previousId, request.filenPhotoId)
 }
 
 // The target rejecting a pending request: leaves their live photo untouched,
-// only marks the request resolved.
+// only marks the request resolved. The proposed photo was already uploaded
+// to Filen by the requester purely for this preview — since it's rejected
+// and never becomes anyone's live photo, delete it rather than leaving it
+// orphaned in storage.
 export async function rejectPhotoRequest(uid: string, request: PendingPhotoRequest) {
   await updateDoc(doc(db, 'users', uid), {
     pendingPhotoRequest: { ...request, status: 'rejected', resolvedAt: serverTimestamp() },
   })
+  await deleteOldFilenPhotoIfDifferent(request.filenPhotoId, null)
 }
 
 // The original requester dismissing a resolved (approved/rejected) outcome

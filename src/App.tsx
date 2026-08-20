@@ -44,6 +44,18 @@ const Docs = lazyWithRetry(() => import('./pages/Docs').then((m) => ({ default: 
 const FilenTest = lazyWithRetry(() =>
   import('./pages/FilenTest').then((m) => ({ default: m.FilenTest })),
 )
+const AdminMatches = lazyWithRetry(() =>
+  import('./pages/AdminMatches').then((m) => ({ default: m.AdminMatches })),
+)
+const AdminTournaments = lazyWithRetry(() =>
+  import('./pages/AdminTournaments').then((m) => ({ default: m.AdminTournaments })),
+)
+const MatchSetup = lazyWithRetry(() => import('./pages/MatchSetup').then((m) => ({ default: m.MatchSetup })))
+const MatchScorer = lazyWithRetry(() => import('./pages/MatchScorer').then((m) => ({ default: m.MatchScorer })))
+const MatchViewer = lazyWithRetry(() => import('./pages/MatchViewer').then((m) => ({ default: m.MatchViewer })))
+const MatchScorecard = lazyWithRetry(() =>
+  import('./pages/MatchScorecard').then((m) => ({ default: m.MatchScorecard })),
+)
 
 export default function App() {
   useTimeBasedTheme()
@@ -62,6 +74,9 @@ export default function App() {
             <Route path="/bootstrap-admin" element={<BootstrapAdmin />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/docs/:sectionId?" element={<Docs />} />
+            <Route path="/watch/:matchId" element={<MatchViewer />} />
+            <Route path="/matches/:matchId" element={<MatchScorecard />} />
+            <Route path="/score/:matchId" element={<MatchScorer />} />
 
             <Route
               path="/admin"
@@ -108,6 +123,30 @@ export default function App() {
               element={
                 <ProtectedRoute roles={['admin']}>
                   <FilenTest />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/matches"
+              element={
+                <ProtectedRoute roles={['admin', 'auctionManager']}>
+                  <AdminMatches />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/tournaments"
+              element={
+                <ProtectedRoute roles={['admin', 'auctionManager']}>
+                  <AdminTournaments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/matches/:matchId/setup"
+              element={
+                <ProtectedRoute roles={['admin', 'auctionManager']}>
+                  <MatchSetup />
                 </ProtectedRoute>
               }
             />

@@ -157,3 +157,82 @@ export function playBidBlip() {
   osc.start(now)
   osc.stop(now + 0.1)
 }
+
+// A short bright chime for a four — a single quick, cheerful bell note.
+export function playBoundaryFour() {
+  if (!isSoundEnabled()) return
+  const c = getContext()
+  if (!c) return
+  if (c.state === 'suspended') void c.resume()
+  const now = c.currentTime
+  ;[988, 1319].forEach((freq, i) => {
+    const osc = c.createOscillator()
+    osc.type = 'triangle'
+    osc.frequency.value = freq
+    const g = c.createGain()
+    const start = now + i * 0.05
+    g.gain.setValueAtTime(0, start)
+    g.gain.linearRampToValueAtTime(0.14, start + 0.015)
+    g.gain.exponentialRampToValueAtTime(0.001, start + 0.35)
+    osc.connect(g).connect(c.destination)
+    osc.start(start)
+    osc.stop(start + 0.4)
+  })
+}
+
+// A bigger, two-octave chime plus a bit of crowd texture for a six —
+// noticeably richer than the four's single chime.
+export function playBoundarySix() {
+  if (!isSoundEnabled()) return
+  const c = getContext()
+  if (!c) return
+  if (c.state === 'suspended') void c.resume()
+  const now = c.currentTime
+  ;[659, 988, 1319, 1568].forEach((freq, i) => {
+    const osc = c.createOscillator()
+    osc.type = 'triangle'
+    osc.frequency.value = freq
+    const g = c.createGain()
+    const start = now + i * 0.06
+    g.gain.setValueAtTime(0, start)
+    g.gain.linearRampToValueAtTime(0.16, start + 0.02)
+    g.gain.exponentialRampToValueAtTime(0.001, start + 0.5)
+    osc.connect(g).connect(c.destination)
+    osc.start(start)
+    osc.stop(start + 0.55)
+  })
+  crowdCheer(c, now + 0.1)
+}
+
+// A sharp stump-rattle crack for a wicket — filtered noise transient plus a
+// quick descending thud, distinct from the auction hammer's lower thump.
+export function playWicketSound() {
+  if (!isSoundEnabled()) return
+  const c = getContext()
+  if (!c) return
+  if (c.state === 'suspended') void c.resume()
+  const now = c.currentTime
+
+  const crack = c.createBufferSource()
+  crack.buffer = noiseBuffer(c, 0.12)
+  const crackFilter = c.createBiquadFilter()
+  crackFilter.type = 'bandpass'
+  crackFilter.frequency.value = 3200
+  crackFilter.Q.value = 1.1
+  const crackGain = c.createGain()
+  crackGain.gain.setValueAtTime(0.5, now)
+  crackGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12)
+  crack.connect(crackFilter).connect(crackGain).connect(c.destination)
+  crack.start(now)
+
+  const thud = c.createOscillator()
+  thud.type = 'square'
+  thud.frequency.setValueAtTime(180, now)
+  thud.frequency.exponentialRampToValueAtTime(45, now + 0.2)
+  const thudGain = c.createGain()
+  thudGain.gain.setValueAtTime(0.35, now)
+  thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25)
+  thud.connect(thudGain).connect(c.destination)
+  thud.start(now)
+  thud.stop(now + 0.26)
+}

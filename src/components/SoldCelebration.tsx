@@ -3,6 +3,7 @@ import { Avatar } from './Avatar'
 import { TeamAvatar } from './TeamAvatar'
 import type { JustSoldPlayer } from '../hooks/useJustSoldPlayer'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
+import { runConfettiBurst } from '../lib/confettiEngine'
 import { playSoldFanfare } from '../lib/sound'
 
 const AUTO_DISMISS_MS = 3800
@@ -32,77 +33,9 @@ export function SoldCelebration({ sold, onDone }: { sold: JustSoldPlayer | null;
     if (!sold || reducedMotion) return
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    const isSmallScreen = window.innerWidth < 640
-    const particleCount = isSmallScreen ? 60 : 130
     const accentColor = sold.team?.jerseyColor
     const palette = accentColor ? [accentColor, ...IPL_CONFETTI_COLORS] : IPL_CONFETTI_COLORS
-
-    let width = (canvas.width = window.innerWidth)
-    let height = (canvas.height = window.innerHeight)
-    const onResize = () => {
-      width = canvas.width = window.innerWidth
-      height = canvas.height = window.innerHeight
-    }
-    window.addEventListener('resize', onResize)
-
-    const particles = Array.from({ length: particleCount }, () => ({
-      x: width / 2 + (Math.random() - 0.5) * width * 0.4,
-      y: height * 0.32 + (Math.random() - 0.5) * 40,
-      vx: (Math.random() - 0.5) * 9,
-      vy: -Math.random() * 11 - 4,
-      size: 5 + Math.random() * 6,
-      rotation: Math.random() * Math.PI * 2,
-      spin: (Math.random() - 0.5) * 0.35,
-      color: palette[Math.floor(Math.random() * palette.length)],
-      shape: Math.random() > 0.5 ? 'rect' : 'circle',
-    }))
-
-    const gravity = 0.32
-    const drag = 0.992
-    const frameBudgetMs = 4200
-    let raf = 0
-    let elapsed = 0
-    let lastTime = performance.now()
-
-    const step = (now: number) => {
-      const dt = now - lastTime
-      lastTime = now
-      elapsed += dt
-      ctx.clearRect(0, 0, width, height)
-      for (const p of particles) {
-        p.vx *= drag
-        p.vy = p.vy * drag + gravity
-        p.x += p.vx
-        p.y += p.vy
-        p.rotation += p.spin
-        ctx.save()
-        ctx.translate(p.x, p.y)
-        ctx.rotate(p.rotation)
-        ctx.fillStyle = p.color
-        if (p.shape === 'rect') {
-          ctx.fillRect(-p.size / 2, -p.size / 3, p.size, p.size * 0.66)
-        } else {
-          ctx.beginPath()
-          ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2)
-          ctx.fill()
-        }
-        ctx.restore()
-      }
-      if (elapsed < frameBudgetMs) {
-        raf = requestAnimationFrame(step)
-      }
-    }
-
-    raf = requestAnimationFrame(step)
-
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('resize', onResize)
-      ctx.clearRect(0, 0, width, height)
-    }
+    return runConfettiBurst(canvas, { palette })
   }, [sold, reducedMotion])
 
   if (!sold) return null

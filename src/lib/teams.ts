@@ -1,7 +1,7 @@
-import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
+import { arrayRemove, arrayUnion, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
 import { db } from './firebase'
 import { syncTeamAcrossAllAuctions } from './auctions'
-import type { Team } from '../types'
+import type { RosterPlayer, Team } from '../types'
 
 export async function createTeam(
   teamName: string,
@@ -63,4 +63,28 @@ async function syncBrandingIfChanged(
     logoImage: team.logoImage ?? null,
     jerseyColor: team.jerseyColor ?? null,
   })
+}
+
+// Persistent squad management — the pool a match's Playing XI is picked
+// from, independent of any auction (see RosterPlayer's doc comment).
+export async function addToRoster(teamId: string, player: RosterPlayer) {
+  const snap = await getDoc(doc(db, 'teams', teamId))
+  if (!snap.exists()) throw new Error('Team not found')
+  const team = snap.data() as Team
+  if ((team.roster ?? []).some((p) => p.playerId === player.playerId)) {
+    throw new Error(`${player.name} is already on this team's roster`)
+  }
+  await updateDoc(doc(db, 'teams', teamId), { roster: arrayUnion(player) })
+}
+
+export async function removeFromRoster(teamId: string, player: RosterPlayer) {
+  await updateDoc(doc(db, 'teams', teamId), { roster: arrayRemove(player) })
+}
+
+export async function updateRosterEntry(teamId: string, playerId: string, updates: Partial<RosterPlayer>) {
+  const snap = await getDoc(doc(db, 'teams', teamId))
+  if (!snap.exists()) throw new Error('Team not found')
+  const team = snap.data() as Team
+  const roster = (team.roster ?? []).map((p) => (p.playerId === playerId ? { ...p, ...updates } : p))
+  await updateDoc(doc(db, 'teams', teamId), { roster })
 }
