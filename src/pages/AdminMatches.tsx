@@ -110,7 +110,7 @@ export function AdminMatches() {
   }
 
   const inputClass =
-    'w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100'
+    'w-full rounded-lg border border-gray-300/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 backdrop-blur-sm transition-shadow focus:outline-none focus:ring-2 focus:ring-orange-400/60 focus:border-orange-400/60'
 
   return (
     <Layout>
@@ -122,7 +122,7 @@ export function AdminMatches() {
             Host a team-vs-team match — pick two teams, set the format, then run the live scorer.
           </p>
 
-          <div className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-gray-200 dark:border-gray-800 p-4 sm:grid-cols-2">
+          <div className="glass-card mt-4 grid grid-cols-1 gap-3 p-5 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label className="text-xs text-gray-500 dark:text-gray-400">Match name (optional)</label>
               <input
@@ -257,7 +257,7 @@ export function AdminMatches() {
               <button
                 onClick={handleCreate}
                 disabled={!canCreate || creating}
-                className="w-full rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 sm:w-auto"
+                className="w-full rounded-lg bg-gradient-to-r from-blue-700 to-orange-500 px-4 py-2.5 text-sm font-medium text-white shadow-[0_4px_14px_-4px_rgba(255,140,26,0.5),inset_0_1px_0_rgba(255,255,255,0.3)] transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto"
               >
                 {creating ? 'Creating...' : 'Create match'}
               </button>
@@ -268,22 +268,28 @@ export function AdminMatches() {
         <section>
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">All matches</h2>
           {loading && <p className="mt-2 text-sm text-gray-500">Loading...</p>}
-          <ul className="mt-3 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+          <ul className="mt-3 space-y-2.5 text-sm">
             {matches.map((m) => {
               const link = matchLink(m)
               return (
-                <li key={m.matchId} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
+                <li
+                  key={m.matchId}
+                  className="glass-card glass-card-hoverable flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="relative z-[3] flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                     <span className="flex items-center gap-1.5">
                       <TeamAvatar teamName={m.teamA.teamName} logoId={m.teamA.logoId} logoImage={m.teamA.logoImage} jerseyColor={m.teamA.jerseyColor} />
                       <TeamAvatar teamName={m.teamB.teamName} logoId={m.teamB.logoId} logoImage={m.teamB.logoImage} jerseyColor={m.teamB.jerseyColor} />
                     </span>
                     <span className="min-w-0 truncate">{m.name}</span>
-                    <span className="shrink-0 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
+                    <span className="shrink-0 rounded-full bg-gray-100/80 dark:bg-gray-800/80 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
                       {STATUS_LABELS[m.status]}
                     </span>
                   </div>
-                  <Link to={link.to} className="shrink-0 text-red-600 dark:text-red-400 hover:underline">
+                  <Link
+                    to={link.to}
+                    className="relative z-[3] shrink-0 font-medium text-orange-600 dark:text-orange-400 hover:underline"
+                  >
                     {link.label}
                   </Link>
                 </li>
