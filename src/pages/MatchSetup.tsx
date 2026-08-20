@@ -61,8 +61,8 @@ function SideXIEditor({
   const selectedPlayers = roster.filter((p) => selected.has(p.playerId))
 
   return (
-    <section className="rounded-lg border border-gray-200 dark:border-gray-800 p-4">
-      <div className="flex items-center gap-2">
+    <section className="glass-card p-4">
+      <div className="relative z-[3] flex items-center gap-2">
         <TeamAvatar teamName={team.teamName} logoId={team.logoId} logoImage={team.logoImage} jerseyColor={team.jerseyColor} />
         <h2 className="min-w-0 truncate text-base font-medium text-gray-900 dark:text-gray-100">{team.teamName}</h2>
         {alreadySaved && (
@@ -71,20 +71,20 @@ function SideXIEditor({
           </span>
         )}
       </div>
-      <p className="mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+      <p className="relative z-[3] mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
         {selected.size} / {REQUIRED_XI} selected
       </p>
 
       {roster.length === 0 ? (
-        <p className="mt-3 text-sm text-gray-500">
+        <p className="relative z-[3] mt-3 text-sm text-gray-500">
           This team has no roster yet — add players from the{' '}
-          <Link to="/admin/teams" className="text-red-600 dark:text-red-400 hover:underline">
+          <Link to="/admin/teams" className="font-medium text-orange-600 dark:text-orange-400 hover:underline">
             Teams page
           </Link>{' '}
           first.
         </p>
       ) : (
-        <ul className="mt-3 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+        <ul className="relative z-[3] mt-3 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
           {roster.map((p) => {
             const isSelected = selected.has(p.playerId)
             return (
@@ -93,10 +93,10 @@ function SideXIEditor({
                   type="button"
                   disabled={locked || (!isSelected && selected.size >= REQUIRED_XI)}
                   onClick={() => toggle(p.playerId)}
-                  className={`flex w-full min-w-0 items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm disabled:opacity-50 ${
+                  className={`flex w-full min-w-0 items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition-colors disabled:opacity-50 ${
                     isSelected
-                      ? 'border-red-600 bg-red-50 dark:bg-red-950/30'
-                      : 'border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900'
+                      ? 'border-orange-400/70 bg-orange-50/80 dark:border-orange-500/50 dark:bg-orange-950/30'
+                      : 'border-gray-200/80 dark:border-gray-800/80 hover:bg-white/60 dark:hover:bg-white/5'
                   }`}
                 >
                   <Avatar name={p.name} avatarId={p.avatarId} photoURL={p.photoURL} encryptedPhoto={p.encryptedPhoto} />
@@ -114,14 +114,14 @@ function SideXIEditor({
       )}
 
       {selected.size === REQUIRED_XI && (
-        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className="relative z-[3] mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div>
             <label className="text-xs text-gray-500 dark:text-gray-400">Captain</label>
             <select
               value={captainId}
               onChange={(e) => setCaptainId(e.target.value)}
               disabled={locked}
-              className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50"
+              className="input-glass mt-1 w-full rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50"
             >
               <option value="">Select captain...</option>
               {selectedPlayers.map((p) => (
@@ -137,7 +137,7 @@ function SideXIEditor({
               value={wicketKeeperId}
               onChange={(e) => setWicketKeeperId(e.target.value)}
               disabled={locked}
-              className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50"
+              className="input-glass mt-1 w-full rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50"
             >
               <option value="">Select wicketkeeper...</option>
               {selectedPlayers.map((p) => (
@@ -150,12 +150,12 @@ function SideXIEditor({
         </div>
       )}
 
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="relative z-[3] mt-2 text-sm text-red-600">{error}</p>}
       {!locked && (
         <button
           onClick={handleSave}
           disabled={saving || selected.size !== REQUIRED_XI}
-          className="mt-3 w-full rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 sm:w-auto"
+          className="btn-brand relative z-[3] mt-3 w-full rounded-lg px-4 py-2.5 text-sm font-medium sm:w-auto"
         >
           {saving ? 'Saving...' : 'Save Playing XI'}
         </button>
@@ -185,9 +185,9 @@ function TossSection({ match }: { match: Match }) {
   }
 
   return (
-    <section className="rounded-lg border border-gray-200 dark:border-gray-800 p-4">
-      <h2 className="text-base font-medium text-gray-900 dark:text-gray-100">Toss</h2>
-      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
+    <section className="glass-card p-4">
+      <h2 className="relative z-[3] text-base font-medium text-gray-900 dark:text-gray-100">Toss</h2>
+      <div className="relative z-[3] mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
         <div>
           <label className="text-xs text-gray-500 dark:text-gray-400">Won the toss</label>
           <div className="mt-1 flex flex-wrap gap-3 text-sm text-gray-700 dark:text-gray-200">
@@ -215,12 +215,12 @@ function TossSection({ match }: { match: Match }) {
         <button
           onClick={handleRecordToss}
           disabled={saving}
-          className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+          className="btn-brand rounded-lg px-4 py-2.5 text-sm font-medium"
         >
           {saving ? 'Starting...' : 'Record toss & start match'}
         </button>
       </div>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="relative z-[3] mt-2 text-sm text-red-600">{error}</p>}
     </section>
   )
 }
@@ -263,9 +263,12 @@ export function MatchSetup() {
         </div>
 
         {(match.status === 'live' || match.status === 'inningsBreak' || match.status === 'completed') && (
-          <p className="rounded-lg bg-gray-50 dark:bg-gray-900 p-3 text-sm text-gray-600 dark:text-gray-400">
+          <p className="rounded-lg bg-white/40 dark:bg-white/5 backdrop-blur-sm p-3 text-sm text-gray-600 dark:text-gray-400">
             This match is already underway.{' '}
-            <Link to={match.status === 'completed' ? `/matches/${match.matchId}` : `/score/${match.matchId}`} className="text-red-600 dark:text-red-400 hover:underline">
+            <Link
+              to={match.status === 'completed' ? `/matches/${match.matchId}` : `/score/${match.matchId}`}
+              className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
+            >
               {match.status === 'completed' ? 'View scorecard' : 'Go to live scorer'}
             </Link>
           </p>

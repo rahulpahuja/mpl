@@ -54,7 +54,7 @@ function PickPlayer({
   saving: boolean
 }) {
   return (
-    <div className="space-y-2 rounded-lg border border-dashed border-red-300 bg-red-50/60 p-4 dark:border-red-900 dark:bg-red-950/30">
+    <div className="space-y-2 rounded-lg border border-dashed border-red-300/80 bg-red-50/50 backdrop-blur-sm p-4 dark:border-red-900/70 dark:bg-red-950/30">
       <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{label}</p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {candidates.map((p) => (
@@ -63,7 +63,7 @@ function PickPlayer({
             type="button"
             disabled={saving}
             onClick={() => onPick(p)}
-            className="min-h-11 rounded-lg border border-gray-300 bg-white px-3 py-2 text-left text-sm text-gray-900 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+            className="input-glass min-h-11 rounded-lg px-3 py-2 text-left text-sm text-gray-900 hover:bg-white/90 disabled:opacity-50 dark:text-gray-100 dark:hover:bg-gray-800/80"
           >
             {p.name}
           </button>
@@ -286,7 +286,7 @@ export function MatchScorer() {
                 setBusy(false)
               }
             }}
-            className="min-h-11 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            className="btn-brand min-h-11 rounded-lg px-4 py-2.5 text-sm font-medium"
           >
             Start second innings
           </button>
@@ -353,8 +353,8 @@ export function MatchScorer() {
           </p>
         </div>
 
-        <div className="rounded-lg border border-gray-200/80 bg-white/70 p-4 backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/60">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="glass-card p-4">
+          <div className="relative z-[3] flex flex-wrap items-center justify-between gap-2">
             <span className="flex min-w-0 items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
               <TeamAvatar teamName={battingSide.teamName} logoId={battingSide.logoId} logoImage={battingSide.logoImage} jerseyColor={battingSide.jerseyColor} />
               <span className="truncate">{battingSide.teamName}</span>
@@ -363,22 +363,22 @@ export function MatchScorer() {
               {innings.totalRuns}/{innings.wickets}
             </span>
           </div>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="relative z-[3] mt-1 text-sm text-gray-500 dark:text-gray-400">
             {formatOvers(innings.legalBallsBowled)} / {match.oversLimit} overs · RR {runrate}
             {innings.target != null && <> · Target {innings.target}{requiredRunRate ? ` · RRR ${requiredRunRate}` : ''}</>}
           </p>
           {innings.isFreeHit && (
-            <span className="mt-2 inline-block rounded-full bg-amber-500 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+            <span className="relative z-[3] mt-2 inline-block rounded-full bg-amber-500 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
               Free hit
             </span>
           )}
 
-          <div className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+          <div className="relative z-[3] mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
             {[innings.strikerId, innings.nonStrikerId].filter(Boolean).map((id) => {
               const b = innings.battingStats[id as string]
               const isStriker = id === innings.strikerId
               return (
-                <div key={id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-800">
+                <div key={id} className="flex items-center justify-between rounded-lg bg-white/40 dark:bg-white/5 px-3 py-2">
                   <span className="min-w-0 truncate text-gray-900 dark:text-gray-100">
                     {isStriker && '• '}
                     {b?.name}
@@ -391,7 +391,7 @@ export function MatchScorer() {
             })}
           </div>
           {innings.currentBowlerId && (
-            <div className="mt-2 flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm dark:bg-gray-800">
+            <div className="relative z-[3] mt-2 flex items-center justify-between rounded-lg bg-white/40 dark:bg-white/5 px-3 py-2 text-sm">
               <span className="min-w-0 truncate text-gray-900 dark:text-gray-100">
                 {nameFor(bowlingRoster, innings.currentBowlerId)}
               </span>
@@ -399,7 +399,7 @@ export function MatchScorer() {
             </div>
           )}
 
-          <div className="mt-3 flex flex-wrap gap-1.5">
+          <div className="relative z-[3] mt-3 flex flex-wrap gap-1.5">
             {innings.currentOverBalls.map((b, i) => (
               <span
                 key={i}
@@ -463,10 +463,10 @@ export function MatchScorer() {
                   type="button"
                   disabled={busy}
                   onClick={() => setExtraType((cur) => (cur === t ? null : t))}
-                  className={`min-h-11 rounded-lg border px-3 py-2 text-sm font-medium disabled:opacity-50 ${
+                  className={`min-h-11 rounded-lg border px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50 ${
                     extraType === t
                       ? 'border-amber-500 bg-amber-500 text-white'
-                      : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800'
+                      : 'border-gray-300/80 dark:border-gray-700/80 text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/5'
                   }`}
                 >
                   {t === 'wide' ? 'Wide' : t === 'noBall' ? 'No ball' : t === 'bye' ? 'Bye' : 'Leg bye'}
@@ -483,7 +483,7 @@ export function MatchScorer() {
                     type="button"
                     disabled={busy}
                     onClick={() => submitBall({ runs: n, extraType, isWicket: false, scoredBy: user!.uid })}
-                    className="min-h-14 rounded-lg border border-gray-300 bg-white text-lg font-bold text-gray-900 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+                    className="input-glass min-h-14 rounded-lg text-lg font-bold text-gray-900 hover:bg-white/90 disabled:opacity-50 dark:text-gray-100 dark:hover:bg-gray-800/80"
                   >
                     {n}
                   </button>
@@ -514,7 +514,7 @@ export function MatchScorer() {
                     setBusy(false)
                   }
                 }}
-                className="min-h-11 flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800 sm:flex-none"
+                className="min-h-11 flex-1 rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-white/60 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-white/5 sm:flex-none"
               >
                 Undo last ball
               </button>
@@ -522,7 +522,10 @@ export function MatchScorer() {
           </div>
         )}
 
-        <Link to={`/matches/${match.matchId}`} className="inline-block text-sm text-red-600 hover:underline dark:text-red-400">
+        <Link
+          to={`/matches/${match.matchId}`}
+          className="inline-block text-sm font-medium text-orange-600 dark:text-orange-400 hover:underline"
+        >
           View full scorecard →
         </Link>
 
