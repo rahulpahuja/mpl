@@ -21,15 +21,15 @@ function InningsScorecard({ match, innings }: { match: Match; innings: InningsSt
     innings.extras.wides + innings.extras.noBalls + innings.extras.byes + innings.extras.legByes + innings.extras.penalty
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
+    <div className="glass-card space-y-6 p-4 sm:p-6">
+      <div className="relative z-[3] flex items-center gap-2">
         <TeamAvatar teamName={battingSide.teamName} logoId={battingSide.logoId} logoImage={battingSide.logoImage} jerseyColor={battingSide.jerseyColor} />
         <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
           {battingSide.teamName} — {innings.totalRuns}/{innings.wickets} ({formatOvers(innings.legalBallsBowled)} ov)
         </h2>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="relative z-[3] overflow-x-auto">
         <table className="w-full min-w-[520px] text-left text-sm">
           <thead>
             <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:text-gray-400">
@@ -65,7 +65,7 @@ function InningsScorecard({ match, innings }: { match: Match; innings: InningsSt
         </table>
       </div>
 
-      <div className="text-sm text-gray-600 dark:text-gray-400">
+      <div className="relative z-[3] text-sm text-gray-600 dark:text-gray-400">
         <p>
           Extras: {extrasTotal} (wd {innings.extras.wides}, nb {innings.extras.noBalls}, b {innings.extras.byes}, lb{' '}
           {innings.extras.legByes}
@@ -77,7 +77,7 @@ function InningsScorecard({ match, innings }: { match: Match; innings: InningsSt
       </div>
 
       {innings.fallOfWickets.length > 0 && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="relative z-[3] text-sm text-gray-500 dark:text-gray-400">
           <span className="font-medium text-gray-700 dark:text-gray-300">Fall of wickets: </span>
           {innings.fallOfWickets.map((fw, i) => (
             <span key={i}>
@@ -88,11 +88,11 @@ function InningsScorecard({ match, innings }: { match: Match; innings: InningsSt
         </p>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="relative z-[3] flex items-center gap-2">
         <TeamAvatar teamName={bowlingSide.teamName} logoId={bowlingSide.logoId} logoImage={bowlingSide.logoImage} jerseyColor={bowlingSide.jerseyColor} />
         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">{bowlingSide.teamName} bowling</h3>
       </div>
-      <div className="overflow-x-auto">
+      <div className="relative z-[3] overflow-x-auto">
         <table className="w-full min-w-[520px] text-left text-sm">
           <thead>
             <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:text-gray-400">
@@ -132,7 +132,7 @@ function InningsScorecard({ match, innings }: { match: Match; innings: InningsSt
         </table>
       </div>
       {bowlers.some((b) => bowlingAverage(b.runsConceded, b.wickets) != null) && (
-        <p className="text-xs text-gray-400">
+        <p className="relative z-[3] text-xs text-gray-400">
           Best figures this innings:{' '}
           {[...bowlers].sort((a, b) => b.wickets - a.wickets || a.runsConceded - b.runsConceded)[0]?.name}
         </p>
@@ -184,7 +184,7 @@ export function MatchScorecard() {
           {match.status !== 'completed' && match.status !== 'setup' && (
             <Link
               to={`/watch/${match.matchId}`}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+              className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/5"
             >
               Live view
             </Link>
@@ -192,21 +192,21 @@ export function MatchScorecard() {
         </div>
 
         {match.result && (
-          <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-center dark:border-amber-700 dark:bg-amber-900/30">
+          <div className="rounded-lg border border-amber-300/80 bg-amber-50/70 dark:border-amber-700/70 dark:bg-amber-900/30 backdrop-blur-sm p-4 text-center">
             <p className="text-lg font-semibold text-amber-800 dark:text-amber-300">{match.result}</p>
           </div>
         )}
 
         {match.innings1 && match.innings2 && (
-          <div className="flex gap-2 border-b border-gray-200 dark:border-gray-800">
+          <div className="edge-fade-x flex w-fit gap-1 overflow-x-auto rounded-full border border-white/60 dark:border-white/10 bg-white/50 dark:bg-gray-900/40 p-1 backdrop-blur-md">
             {[1, 2].map((n) => (
               <button
                 key={n}
                 onClick={() => setTab(n as 1 | 2)}
-                className={`border-b-2 px-3 py-2 text-sm font-medium ${
+                className={`shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                   tab === n
-                    ? 'border-red-600 text-red-600 dark:text-red-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                    ? 'tab-brand'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 Innings {n}

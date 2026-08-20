@@ -90,24 +90,22 @@ export function MatchViewer() {
           </div>
           <Link
             to={`/matches/${match.matchId}`}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+            className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/5"
           >
             Full scorecard
           </Link>
         </div>
 
         {match.status === 'completed' && match.result && (
-          <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-center dark:border-amber-700 dark:bg-amber-900/30">
+          <div className="rounded-lg border border-amber-300/80 bg-amber-50/70 dark:border-amber-700/70 dark:bg-amber-900/30 backdrop-blur-sm p-4 text-center">
             <p className="text-lg font-semibold text-amber-800 dark:text-amber-300">{match.result}</p>
           </div>
         )}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {[match.teamA, match.teamB].map((side) => (
-            <div
-              key={side.teamId}
-              className="flex items-center gap-3 rounded-lg border border-gray-200/80 bg-white/70 p-4 backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/60"
-            >
+            <div key={side.teamId} className="glass-card flex items-center gap-3 p-4">
+            <div className="relative z-[3] flex items-center gap-3">
               <TeamAvatar teamName={side.teamName} logoId={side.logoId} logoImage={side.logoImage} jerseyColor={side.jerseyColor} size={12} />
               <div className="min-w-0">
                 <p className="truncate font-medium text-gray-900 dark:text-gray-100">
@@ -131,6 +129,7 @@ export function MatchViewer() {
                 })()}
               </div>
             </div>
+            </div>
           ))}
         </div>
 
@@ -138,8 +137,8 @@ export function MatchViewer() {
           <p className="text-sm text-gray-500">Match hasn't started yet.</p>
         ) : (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <section className="space-y-4 rounded-lg border border-gray-200/80 bg-white/70 p-6 backdrop-blur-sm lg:col-span-2 dark:border-gray-800/80 dark:bg-gray-900/60">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+            <section className="glass-card space-y-4 p-6 lg:col-span-2">
+              <div className="relative z-[3] flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                   {battingSide?.teamName} batting
                 </h2>
@@ -147,12 +146,12 @@ export function MatchViewer() {
               </div>
 
               {innings.isFreeHit && (
-                <span className="inline-block rounded-full bg-fuchsia-100 px-3 py-1 text-xs font-semibold text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-300">
+                <span className="relative z-[3] inline-block rounded-full bg-fuchsia-100 px-3 py-1 text-xs font-semibold text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-300">
                   FREE HIT
                 </span>
               )}
 
-              <div className="space-y-1.5 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+              <div className="relative z-[3] space-y-1.5 rounded-lg bg-white/40 dark:bg-white/5 p-3">
                 {battingSide && (
                   <>
                     <BattingLine innings={innings} playerId={innings.strikerId} />
@@ -162,7 +161,7 @@ export function MatchViewer() {
               </div>
 
               {bowler && (
-                <div className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 p-3 text-sm dark:bg-gray-900">
+                <div className="relative z-[3] flex items-center justify-between gap-2 rounded-lg bg-white/40 dark:bg-white/5 p-3 text-sm">
                   <span className="min-w-0 truncate text-gray-900 dark:text-gray-100">{bowler.name}</span>
                   <span className="shrink-0 font-mono text-gray-600 dark:text-gray-400">
                     {formatOvers(bowler.legalBalls)}-{bowler.maidens}-{bowler.runsConceded}-{bowler.wickets} · Econ{' '}
@@ -171,7 +170,7 @@ export function MatchViewer() {
                 </div>
               )}
 
-              <div>
+              <div className="relative z-[3]">
                 <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">This over</h3>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {innings.currentOverBalls.map((b, i) => (
@@ -195,7 +194,7 @@ export function MatchViewer() {
               </div>
 
               {innings.inningsNumber === 2 && innings.target != null && (
-                <div className="rounded-lg bg-red-50 p-3 text-sm dark:bg-red-900/20">
+                <div className="relative z-[3] rounded-lg bg-red-50/70 dark:bg-red-900/20 backdrop-blur-sm p-3 text-sm">
                   <p className="text-red-700 dark:text-red-300">
                     Need {Math.max(innings.target - innings.totalRuns, 0)} runs from{' '}
                     {Math.max(match.oversLimit * 6 - innings.legalBallsBowled, 0)} balls
@@ -204,9 +203,9 @@ export function MatchViewer() {
               )}
             </section>
 
-            <section className="rounded-lg border border-gray-200/80 bg-white/70 p-6 backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/60">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Extras</h2>
-              <ul className="mt-3 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+            <section className="glass-card p-6">
+              <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">Extras</h2>
+              <ul className="relative z-[3] mt-3 space-y-1 text-sm text-gray-600 dark:text-gray-400">
                 <li>Wides: {innings.extras.wides}</li>
                 <li>No balls: {innings.extras.noBalls}</li>
                 <li>Byes: {innings.extras.byes}</li>
@@ -215,7 +214,7 @@ export function MatchViewer() {
               </ul>
 
               {bowlingSide && (
-                <div className="mt-4 flex items-center gap-2">
+                <div className="relative z-[3] mt-4 flex items-center gap-2">
                   <TeamAvatar
                     teamName={bowlingSide.teamName}
                     logoId={bowlingSide.logoId}
