@@ -2,14 +2,15 @@ import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { TeamAvatar } from '../components/TeamAvatar'
+import { BallCelebration } from '../components/BallCelebration'
 import { useAuthStore } from '../store/authStore'
 import { useMatch } from '../hooks/useMatch'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
+import { useJustScored } from '../hooks/useJustScored'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { formatOvers } from '../lib/matchRules'
 import { pickBatsman, pickBowler, recordBall, startSecondInnings, undoLastBall } from '../lib/matches'
 import type { ScoreBallInput } from '../lib/matchRules'
-import { playBoundaryFour, playBoundarySix, playWicketSound } from '../lib/sound'
 import type { ExtraType, InningsState, Match, RosterPlayer, WicketType } from '../types'
 
 const WICKET_LABELS: Record<WicketType, string> = {
@@ -222,6 +223,7 @@ export function MatchScorer() {
   const { teams } = useTeamsRegistry()
   const user = useAuthStore((s) => s.user)
   usePageTitle(match ? `${match.name} · Score` : 'Score match')
+  const { event: justScored, clear: clearJustScored } = useJustScored(match)
 
   const [extraType, setExtraType] = useState<ExtraType | null>(null)
   const [showWicketModal, setShowWicketModal] = useState(false)
@@ -322,9 +324,6 @@ export function MatchScorer() {
     setError(null)
     try {
       await recordBall(matchId, input)
-      if (input.isWicket) playWicketSound()
-      else if (input.runs === 6) playBoundarySix()
-      else if (input.runs === 4) playBoundaryFour()
       setExtraType(null)
       setShowWicketModal(false)
     } catch (err) {
@@ -342,6 +341,7 @@ export function MatchScorer() {
 
   return (
     <Layout>
+      <BallCelebration event={justScored} onDone={clearJustScored} />
       <div className="space-y-4">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-gray-100">{match.name}</h1>

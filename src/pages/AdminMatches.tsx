@@ -10,7 +10,10 @@ import { useTournamentsList } from '../hooks/useTournamentsList'
 import { useVenuesRegistry } from '../hooks/useVenuesRegistry'
 import { useAuthStore } from '../store/authStore'
 import { createMatch } from '../lib/matches'
-import type { DayNight, Match, MatchFormat } from '../types'
+import type { BallType, DayNight, GroundType, Match, MatchFormat } from '../types'
+
+const BALL_TYPE_LABELS: Record<BallType, string> = { tennis: 'Tennis ball', leather: 'Leather ball' }
+const GROUND_TYPE_LABELS: Record<GroundType, string> = { ground: 'Ground', box: 'Box cricket', gully: 'Gully' }
 
 const STATUS_LABELS: Record<Match['status'], string> = {
   setup: 'Setting up',
@@ -49,6 +52,8 @@ export function AdminMatches() {
   const [format, setFormat] = useState<MatchFormat>('friendly')
   const [tournamentId, setTournamentId] = useState('')
   const [dayNight, setDayNight] = useState<DayNight>('day')
+  const [ballType, setBallType] = useState<BallType>('tennis')
+  const [groundType, setGroundType] = useState<GroundType>('ground')
   const [oversLimit, setOversLimit] = useState('20')
   const [venueId, setVenueId] = useState('')
   const [creating, setCreating] = useState(false)
@@ -75,6 +80,8 @@ export function AdminMatches() {
         tournamentId: tournament?.tournamentId ?? null,
         tournamentName: tournament?.name ?? null,
         dayNight,
+        ballType,
+        groundType,
         oversLimit: overs,
         venueId: venue?.venueId ?? null,
         venueName: venue?.name ?? null,
@@ -200,6 +207,26 @@ export function AdminMatches() {
                   Night
                 </label>
               </div>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 dark:text-gray-400">Ball type</label>
+              <select value={ballType} onChange={(e) => setBallType(e.target.value as BallType)} className={`mt-1 ${inputClass}`}>
+                {(Object.keys(BALL_TYPE_LABELS) as BallType[]).map((v) => (
+                  <option key={v} value={v}>
+                    {BALL_TYPE_LABELS[v]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 dark:text-gray-400">Ground type</label>
+              <select value={groundType} onChange={(e) => setGroundType(e.target.value as GroundType)} className={`mt-1 ${inputClass}`}>
+                {(Object.keys(GROUND_TYPE_LABELS) as GroundType[]).map((v) => (
+                  <option key={v} value={v}>
+                    {GROUND_TYPE_LABELS[v]}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="text-xs text-gray-500 dark:text-gray-400">Overs per innings</label>

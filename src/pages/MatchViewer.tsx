@@ -1,7 +1,9 @@
 import { Link, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { TeamAvatar } from '../components/TeamAvatar'
+import { BallCelebration } from '../components/BallCelebration'
 import { useMatch } from '../hooks/useMatch'
+import { useJustScored } from '../hooks/useJustScored'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { formatOvers } from '../lib/matchRules'
 import { economyRate, strikeRate } from '../lib/matchFormat'
@@ -47,6 +49,7 @@ export function MatchViewer() {
   const { matchId } = useParams<{ matchId: string }>()
   const { match, loading } = useMatch(matchId)
   usePageTitle(match ? `${match.teamA.teamName} vs ${match.teamB.teamName} · Live` : 'Live match')
+  const { event: justScored, clear: clearJustScored } = useJustScored(match)
 
   if (loading) {
     return (
@@ -71,6 +74,7 @@ export function MatchViewer() {
 
   return (
     <Layout>
+      <BallCelebration event={justScored} onDone={clearJustScored} />
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
