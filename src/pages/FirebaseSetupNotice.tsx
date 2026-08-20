@@ -1,7 +1,7 @@
 export function FirebaseSetupNotice({ missing }: { missing: string[] }) {
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-lg rounded-xl border border-gray-200/80 bg-white/80 backdrop-blur-md p-8 shadow-xl ring-1 ring-black/5">
+      <div className="glass-card relative z-[3] w-full max-w-lg p-8">
         <h1 className="text-xl font-semibold text-gray-900">Firebase isn't configured yet</h1>
         <p className="mt-2 text-sm text-gray-600">
           Copy <code className="rounded bg-gray-100 px-1 py-0.5">.env.example</code> to{' '}

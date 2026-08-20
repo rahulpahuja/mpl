@@ -71,28 +71,28 @@ export function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm rounded-xl border border-gray-200/80 dark:border-gray-800/80 bg-white/80 dark:bg-gray-900/70 backdrop-blur-md p-8 shadow-xl shadow-red-950/5 dark:shadow-black/40 ring-1 ring-black/5">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Sign in</h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      <div className="glass-card w-full max-w-sm p-8">
+        <h1 className="relative z-[3] text-2xl font-semibold text-gray-900 dark:text-gray-100">Sign in</h1>
+        <p className="relative z-[3] mt-1 text-sm text-gray-500 dark:text-gray-400">
           Sign in with Google to get an account. An Admin then assigns you as a Captain or
           Auction Manager — you don't need an account at all just to watch as a Viewer.
         </p>
         <button
           onClick={handleSignIn}
           disabled={loading}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+          className="input-glass relative z-[3] mt-6 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-white/90 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-gray-800/80"
         >
           {loading ? 'Signing in...' : 'Continue with Google'}
         </button>
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-        <div className="mt-6 border-t border-gray-200 dark:border-gray-800 pt-4 text-center">
-          <a href="/join" className="text-sm text-red-600 dark:text-red-400 hover:underline">
+        {error && <p className="relative z-[3] mt-3 text-sm text-red-600">{error}</p>}
+        <div className="relative z-[3] mt-6 border-t border-gray-200/70 dark:border-gray-800/70 pt-4 text-center">
+          <a href="/join" className="text-sm font-medium text-orange-600 dark:text-orange-400 hover:underline">
             Join an auction as a viewer instead
           </a>
         </div>
 
         {usingEmulators && (
-          <div className="mt-6 rounded-lg border border-dashed border-amber-400 dark:border-amber-600 p-4">
+          <div className="relative z-[3] mt-6 rounded-lg border border-dashed border-amber-400/80 dark:border-amber-600/70 bg-amber-50/40 dark:bg-amber-950/20 backdrop-blur-sm p-4">
             <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
               Quick test sign-in (one click per role)
             </p>
@@ -102,7 +102,7 @@ export function Login() {
                   key={q.email}
                   onClick={() => handleQuickSignIn(q.name, q.email)}
                   disabled={quickLoadingEmail !== null}
-                  className="rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-gray-800 px-2 py-1.5 text-xs font-medium text-amber-800 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                  className="rounded-lg border border-amber-300/80 dark:border-amber-700/70 bg-white/60 dark:bg-gray-800/60 px-2 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-50/80 disabled:opacity-50 dark:text-amber-300 dark:hover:bg-gray-700/60"
                 >
                   {quickLoadingEmail === q.email ? 'Signing in...' : q.label}
                 </button>
@@ -117,14 +117,14 @@ export function Login() {
                 value={testName}
                 onChange={(e) => setTestName(e.target.value)}
                 placeholder="Display name"
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                className="input-glass w-full rounded-lg px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
               />
               <input
                 value={testEmail}
                 onChange={(e) => setTestEmail(e.target.value)}
                 placeholder="test@example.com"
                 type="email"
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                className="input-glass w-full rounded-lg px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
               />
               <button
                 onClick={handleTestSignIn}

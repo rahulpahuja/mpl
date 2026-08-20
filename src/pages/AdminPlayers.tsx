@@ -81,22 +81,22 @@ export function AdminPlayers() {
           </p>
 
           {pendingPlayerRequests.length > 0 && (
-            <ul className="mt-3 divide-y divide-gray-200 dark:divide-gray-800 rounded-lg border border-amber-300 dark:border-amber-700 text-sm">
+            <ul className="mt-3 space-y-2 text-sm">
               {pendingPlayerRequests.map((v) => (
                 <li
                   key={v.uid}
-                  className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                  className="glass-card flex flex-col gap-2 border-amber-300/70! px-3 py-2 dark:border-amber-700/60! sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <span className="min-w-0 break-words text-gray-900 dark:text-gray-100">
+                  <span className="relative z-[3] min-w-0 break-words text-gray-900 dark:text-gray-100">
                     {v.displayName} <span className="text-gray-500">— {v.phone || v.email}</span>
-                    <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                    <span className="ml-2 rounded-full bg-amber-100/90 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
                       Requested
                     </span>
                   </span>
                   <button
                     onClick={() => handleApproveRequest(v.uid)}
                     disabled={promoting}
-                    className="self-start rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 sm:self-auto"
+                    className="relative z-[3] self-start rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-white/60 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-white/5 sm:self-auto"
                   >
                     Approve
                   </button>
@@ -113,18 +113,18 @@ export function AdminPlayers() {
                 setSelectedViewerId('')
               }}
               placeholder="Search viewers by name, email, phone..."
-              className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 sm:col-span-2"
+              className="input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100 sm:col-span-2"
             />
             <button
               onClick={handlePromoteViewer}
               disabled={promoting || !selectedViewerId}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              className="btn-brand rounded-lg px-4 py-2 text-sm font-medium"
             >
               Promote to Player
             </button>
           </div>
           {viewerSearch && !selectedViewerId && (
-            <ul className="mt-2 max-h-40 divide-y divide-gray-200 dark:divide-gray-800 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 text-sm">
+            <ul className="mt-2 max-h-40 divide-y divide-gray-200/70 dark:divide-gray-800/70 overflow-y-auto rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm text-sm">
               {viewerCandidates.map((v) => (
                 <li key={v.uid}>
                   <button
@@ -154,7 +154,7 @@ export function AdminPlayers() {
             value={playerSearch}
             onChange={(e) => setPlayerSearch(e.target.value)}
             placeholder="Search players by name, email, or phone..."
-            className="mt-6 w-full max-w-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="input-glass mt-6 w-full max-w-sm rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
           />
           {players.length === 0 ? (
             <p className="mt-4 text-sm text-gray-500">
@@ -164,11 +164,8 @@ export function AdminPlayers() {
             <>
               <ul className="mt-4 space-y-2 sm:hidden">
                 {players.map((p) => (
-                  <li
-                    key={p.uid}
-                    className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-3"
-                  >
-                    <div className="flex items-center gap-2">
+                  <li key={p.uid} className="glass-card p-3">
+                    <div className="relative z-[3] flex items-center gap-2">
                       <Avatar
                         name={p.displayName}
                         filenPhotoId={p.filenPhotoId}
@@ -193,7 +190,7 @@ export function AdminPlayers() {
                         />
                       </div>
                     </div>
-                    <dl className="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                    <dl className="relative z-[3] mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
                       <div className="flex justify-between gap-2">
                         <dt>Phone</dt>
                         <dd className="text-right">{p.phone || '—'}</dd>
@@ -223,9 +220,9 @@ export function AdminPlayers() {
                 ))}
               </ul>
 
-              <div className="mt-4 hidden overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm sm:block">
+              <div className="glass-card relative z-[3] mt-4 hidden overflow-x-auto sm:block">
                 <table className="w-full min-w-[560px] text-sm">
-                  <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
+                  <thead className="bg-white/40 dark:bg-white/5 text-left text-gray-500 dark:text-gray-400">
                     <tr>
                       <th className="px-4 py-2 font-medium">Name</th>
                       <th className="px-4 py-2 font-medium">Jersey #</th>

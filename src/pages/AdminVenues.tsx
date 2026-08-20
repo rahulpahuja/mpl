@@ -168,45 +168,45 @@ export function AdminVenues() {
   function renderVenue(v: Venue) {
     const isEditing = editingVenueId === v.venueId
     return (
-      <li key={v.venueId} className="space-y-2 py-3">
+      <li key={v.venueId} className="glass-card space-y-2 p-4">
         {isEditing ? (
           <>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="relative z-[3] grid grid-cols-1 gap-2 sm:grid-cols-3">
               <input
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                className="input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
               />
               <div className="sm:col-span-2">
                 <LocationAutocomplete value={editLocation} onChange={setEditLocation} />
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="relative z-[3] flex gap-2">
               <button
                 onClick={() => handleSaveEdit(v.venueId)}
                 disabled={savingEdit || !editName.trim() || !editLocation.trim()}
-                className="rounded-md bg-gray-800 dark:bg-gray-200 px-3 py-1 text-xs font-medium text-white dark:text-gray-900 hover:opacity-90 disabled:opacity-50"
+                className="btn-brand rounded-md px-3 py-1 text-xs font-medium"
               >
                 {savingEdit ? 'Saving...' : 'Save'}
               </button>
               <button
                 onClick={() => setEditingVenueId(null)}
                 disabled={savingEdit}
-                className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="rounded-md border border-gray-300/80 dark:border-gray-700/80 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5"
               >
                 Cancel
               </button>
             </div>
           </>
         ) : (
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative z-[3] flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0 break-words">
               <span className={`font-medium ${v.retired ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'}`}>
                 {v.name}
               </span>
               <span className="ml-2 text-gray-500">{v.location}</span>
               {v.retired && (
-                <span className="ml-2 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-300">
+                <span className="ml-2 rounded-full bg-gray-200/80 dark:bg-gray-700/80 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-300">
                   Retired
                 </span>
               )}
@@ -216,7 +216,7 @@ export function AdminVenues() {
               {v.retired ? (
                 <button
                   onClick={() => unretireVenue(v.venueId)}
-                  className="text-red-600 dark:text-red-400 hover:underline"
+                  className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                 >
                   Unretire
                 </button>
@@ -224,13 +224,13 @@ export function AdminVenues() {
                 <>
                   <button
                     onClick={() => startEdit(v)}
-                    className="text-red-600 dark:text-red-400 hover:underline"
+                    className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleRetire(v.venueId, v.name)}
-                    className="text-red-600 dark:text-red-400 hover:underline"
+                    className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                   >
                     Retire
                   </button>
@@ -238,14 +238,16 @@ export function AdminVenues() {
               )}
               <button
                 onClick={() => handleDelete(v.venueId, v.name)}
-                className="text-red-600 dark:text-red-400 hover:underline"
+                className="font-medium text-red-600 dark:text-red-400 hover:underline"
               >
                 Delete
               </button>
             </span>
           </div>
         )}
-        <VenueGallery venue={v} />
+        <div className="relative z-[3]">
+          <VenueGallery venue={v} />
+        </div>
       </li>
     )
   }
@@ -260,12 +262,12 @@ export function AdminVenues() {
             Add a venue with its location and a photo gallery — up to {MAX_VENUE_IMAGES} photos each.
           </p>
 
-          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
+          <div className="glass-card mt-3 grid grid-cols-1 gap-2 p-4 sm:grid-cols-4">
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Venue name"
-              className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+              className="input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             />
             <div className="sm:col-span-2">
               <LocationAutocomplete value={location} onChange={setLocation} />
@@ -273,13 +275,13 @@ export function AdminVenues() {
             <button
               onClick={handleCreateVenue}
               disabled={creating || !name.trim() || !location.trim()}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 h-fit"
+              className="btn-brand rounded-lg px-4 py-2 text-sm font-medium h-fit"
             >
               Add venue
             </button>
           </div>
 
-          <ul className="mt-4 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+          <ul className="mt-4 space-y-2.5 text-sm">
             {activeVenues.map(renderVenue)}
             {activeVenues.length === 0 && <li className="py-2 text-gray-500">No venues added yet.</li>}
           </ul>
@@ -289,7 +291,7 @@ export function AdminVenues() {
               <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Retired venues ({retiredVenues.length})
               </h2>
-              <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+              <ul className="mt-2 space-y-2.5 text-sm">
                 {retiredVenues.map(renderVenue)}
               </ul>
             </div>

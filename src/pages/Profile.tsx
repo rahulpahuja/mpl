@@ -41,7 +41,8 @@ export function Profile() {
 
   return (
     <Layout>
-      <div className="mx-auto max-w-md space-y-4 rounded-xl border border-gray-200/80 dark:border-gray-800/80 bg-white/80 dark:bg-gray-900/70 backdrop-blur-md p-8 shadow-xl shadow-red-950/5 dark:shadow-black/40 ring-1 ring-black/5 lg:max-w-3xl">
+      <div className="glass-card mx-auto max-w-md p-8 lg:max-w-3xl">
+      <div className="relative z-[3] space-y-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Your profile</h1>
@@ -86,7 +87,7 @@ export function Profile() {
               type="checkbox"
               checked={shortcutsEnabled}
               onChange={(e) => setShortcutsEnabled(e.target.checked)}
-              className="rounded border-gray-300 dark:border-gray-700 text-red-600 focus:ring-red-500"
+              className="rounded border-gray-300 dark:border-gray-700 text-orange-600 focus:ring-orange-500"
             />
             Enable keyboard shortcuts
           </label>
@@ -96,6 +97,7 @@ export function Profile() {
             anywhere to see the full list.
           </p>
         </div>
+      </div>
       </div>
     </Layout>
   )

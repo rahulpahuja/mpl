@@ -109,8 +109,7 @@ export function AdminMatches() {
     }
   }
 
-  const inputClass =
-    'w-full rounded-lg border border-gray-300/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 backdrop-blur-sm transition-shadow focus:outline-none focus:ring-2 focus:ring-orange-400/60 focus:border-orange-400/60'
+  const inputClass = 'input-glass w-full rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100'
 
   return (
     <Layout>
@@ -257,7 +256,7 @@ export function AdminMatches() {
               <button
                 onClick={handleCreate}
                 disabled={!canCreate || creating}
-                className="w-full rounded-lg bg-gradient-to-r from-blue-700 to-orange-500 px-4 py-2.5 text-sm font-medium text-white shadow-[0_4px_14px_-4px_rgba(255,140,26,0.5),inset_0_1px_0_rgba(255,255,255,0.3)] transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto"
+                className="btn-brand w-full rounded-lg px-4 py-2.5 text-sm font-medium sm:w-auto"
               >
                 {creating ? 'Creating...' : 'Create match'}
               </button>

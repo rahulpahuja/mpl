@@ -79,7 +79,7 @@ function TeamRosterPanel({ team, allUsers }: { team: Team; allUsers: AppUser[] }
   }
 
   return (
-    <div className="mt-2 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-900/50">
+    <div className="mt-2 space-y-2 rounded-lg border border-white/50 dark:border-white/10 bg-white/30 dark:bg-black/20 backdrop-blur-sm p-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
           Roster ({roster.length}) — the pool matches pick a Playing XI from
@@ -87,7 +87,7 @@ function TeamRosterPanel({ team, allUsers }: { team: Team; allUsers: AppUser[] }
         <button
           type="button"
           onClick={() => setPickerOpen(true)}
-          className="shrink-0 rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+          className="shrink-0 rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/5"
         >
           Add player
         </button>
@@ -98,7 +98,7 @@ function TeamRosterPanel({ team, allUsers }: { team: Team; allUsers: AppUser[] }
           {roster.map((p) => (
             <li
               key={p.playerId}
-              className="flex items-center justify-between gap-2 rounded-lg bg-white px-2.5 py-1.5 text-sm dark:bg-gray-800"
+              className="flex items-center justify-between gap-2 rounded-lg bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm px-2.5 py-1.5 text-sm"
             >
               <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                 <Avatar name={p.name} avatarId={p.avatarId} photoURL={p.photoURL} encryptedPhoto={p.encryptedPhoto} />
@@ -127,13 +127,13 @@ function TeamRosterPanel({ team, allUsers }: { team: Team; allUsers: AppUser[] }
           value={manualName}
           onChange={(e) => setManualName(e.target.value)}
           placeholder="Add an unregistered player by name..."
-          className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+          className="input-glass flex-1 rounded-lg px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100"
         />
         <button
           type="button"
           onClick={handleAddManual}
           disabled={!manualName.trim()}
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+          className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-white/60 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-white/5"
         >
           Add unregistered player
         </button>
@@ -196,10 +196,10 @@ function ManagerPicker({
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder="Search manager by name, email, phone, or ID..."
-        className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+        className="input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
       />
       {search && (
-        <ul className="mt-2 max-h-40 divide-y divide-gray-200 dark:divide-gray-800 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 text-sm">
+        <ul className="mt-2 max-h-40 divide-y divide-gray-200/70 dark:divide-gray-800/70 overflow-y-auto rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm text-sm">
           {candidates.map((m) => (
             <li key={m.uid}>
               <button
@@ -336,12 +336,13 @@ export function AdminTeams() {
             time from the list below.
           </p>
 
-          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
+          <div className="glass-card mt-3 p-5">
+          <div className="relative z-[3] grid grid-cols-1 gap-2 sm:grid-cols-4">
             <input
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
               placeholder="Team name"
-              className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+              className="input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             />
             <div className="sm:col-span-2">
               <ManagerPicker
@@ -360,12 +361,12 @@ export function AdminTeams() {
             <button
               onClick={handleCreateTeam}
               disabled={creatingTeam || !teamName.trim() || !selectedManagerId}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 h-fit"
+              className="btn-brand rounded-lg px-4 py-2 text-sm font-medium h-fit"
             >
               Create team
             </button>
           </div>
-          <div className="mt-2 flex flex-wrap items-end gap-4">
+          <div className="relative z-[3] mt-2 flex flex-wrap items-end gap-4">
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Team logo (optional):</p>
               <div className="mt-1.5">
@@ -394,7 +395,7 @@ export function AdminTeams() {
                     setTeamJerseyColorError(null)
                   }}
                   disabled={creatingTeam}
-                  className="block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 disabled:opacity-50"
+                  className="block h-9 w-14 cursor-pointer rounded border border-gray-300/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm disabled:opacity-50"
                 />
                 <input
                   type="text"
@@ -406,7 +407,7 @@ export function AdminTeams() {
                   placeholder="or type e.g. Maroon"
                   minLength={3}
                   disabled={creatingTeam}
-                  className="h-9 w-36 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50"
+                  className="h-9 w-36 rounded-lg border border-gray-300/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm px-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50"
                 />
               </div>
               {teamJerseyColorError && (
@@ -414,20 +415,21 @@ export function AdminTeams() {
               )}
             </div>
           </div>
+          </div>
 
-          <ul className="mt-4 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+          <ul className="mt-4 space-y-2.5 text-sm">
             {teams.map((t) => {
               const manager = users.find((u) => u.uid === t.managerId)
               const isEditing = editingTeamId === t.teamId
 
               if (isEditing) {
                 return (
-                  <li key={t.teamId} className="space-y-2 py-3">
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <li key={t.teamId} className="glass-card space-y-2 p-4">
+                    <div className="relative z-[3] grid grid-cols-1 gap-2 sm:grid-cols-3">
                       <input
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                        className="input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                       />
                       <div className="sm:col-span-2">
                         <ManagerPicker
@@ -441,7 +443,7 @@ export function AdminTeams() {
                         />
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-end gap-4">
+                    <div className="relative z-[3] flex flex-wrap items-end gap-4">
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Team logo:</p>
                         <div className="mt-1.5">
@@ -472,7 +474,7 @@ export function AdminTeams() {
                               setEditJerseyColorError(null)
                             }}
                             disabled={savingEdit}
-                            className="block h-9 w-14 cursor-pointer rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 disabled:opacity-50"
+                            className="input-glass block h-9 w-14 cursor-pointer rounded disabled:opacity-50"
                           />
                           <input
                             type="text"
@@ -484,7 +486,7 @@ export function AdminTeams() {
                             placeholder="or type e.g. Maroon"
                             minLength={3}
                             disabled={savingEdit}
-                            className="h-9 w-36 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50"
+                            className="input-glass h-9 w-36 rounded-lg px-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50"
                           />
                         </div>
                         {editJerseyColorError && (
@@ -492,7 +494,7 @@ export function AdminTeams() {
                         )}
                       </div>
                     </div>
-                    <div>
+                    <div className="relative z-[3]">
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         Upload a custom logo image (overrides the preset above):
                       </p>
@@ -508,18 +510,18 @@ export function AdminTeams() {
                         />
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="relative z-[3] flex gap-2">
                       <button
                         onClick={() => handleSaveEdit(t.teamId)}
                         disabled={savingEdit || !editName.trim()}
-                        className="rounded-md bg-gray-800 dark:bg-gray-200 px-3 py-1 text-xs font-medium text-white dark:text-gray-900 hover:opacity-90 disabled:opacity-50"
+                        className="btn-brand rounded-md px-3 py-1 text-xs font-medium"
                       >
                         {savingEdit ? 'Saving...' : 'Save'}
                       </button>
                       <button
                         onClick={() => setEditingTeamId(null)}
                         disabled={savingEdit}
-                        className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                        className="rounded-md border border-gray-300/80 dark:border-gray-700/80 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5"
                       >
                         Cancel
                       </button>
@@ -530,8 +532,8 @@ export function AdminTeams() {
 
               const rosterOpen = expandedRosterTeamId === t.teamId
               return (
-                <li key={t.teamId} className="py-2">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <li key={t.teamId} className="glass-card glass-card-hoverable p-4">
+                  <div className="relative z-[3] flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                       <TeamAvatar
                         teamName={t.teamName}
@@ -546,7 +548,7 @@ export function AdminTeams() {
                       <WhatsAppButton phone={manager?.whatsapp || manager?.phone} />
                       <button
                         onClick={() => setExpandedRosterTeamId(rosterOpen ? null : t.teamId)}
-                        className="shrink-0 text-red-600 dark:text-red-400 hover:underline"
+                        className="shrink-0 font-medium text-orange-600 dark:text-orange-400 hover:underline"
                       >
                         {rosterOpen ? 'Hide roster' : `Roster (${t.roster?.length ?? 0})`}
                       </button>
@@ -554,13 +556,17 @@ export function AdminTeams() {
                         onClick={() =>
                           startEdit(t.teamId, t.teamName, t.managerId, t.logoId, t.logoImage, t.jerseyColor)
                         }
-                        className="shrink-0 text-red-600 dark:text-red-400 hover:underline"
+                        className="shrink-0 font-medium text-orange-600 dark:text-orange-400 hover:underline"
                       >
                         Edit
                       </button>
                     </span>
                   </div>
-                  {rosterOpen && <TeamRosterPanel team={t} allUsers={users} />}
+                  {rosterOpen && (
+                    <div className="relative z-[3]">
+                      <TeamRosterPanel team={t} allUsers={users} />
+                    </div>
+                  )}
                 </li>
               )
             })}

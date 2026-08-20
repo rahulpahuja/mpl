@@ -78,7 +78,7 @@ function AddTeamRow({ tournamentId, teams, existingTeamIds }: { tournamentId: st
       <select
         value={teamId}
         onChange={(e) => setTeamId(e.target.value)}
-        className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+        className="input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
       >
         <option value="">Add a team...</option>
         {available.map((t) => (
@@ -90,7 +90,7 @@ function AddTeamRow({ tournamentId, teams, existingTeamIds }: { tournamentId: st
       <button
         onClick={handleAdd}
         disabled={!teamId || adding}
-        className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+        className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 bg-white/50 dark:bg-gray-800/40 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-white/80 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-gray-800/70 backdrop-blur-sm"
       >
         {adding ? 'Adding...' : 'Add'}
       </button>
@@ -142,13 +142,13 @@ export function AdminTournaments() {
             tie-breaks). A match can also just stand alone as a friendly without any of this.
           </p>
 
-          <div className="mt-4 rounded-lg border border-gray-200 p-4 dark:border-gray-800">
+          <div className="glass-card mt-4 p-5">
             <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300">Create a tournament</h2>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Tournament name"
-              className="mt-2 w-full max-w-sm rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+              className="input-glass mt-2 w-full max-w-sm rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             />
             <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Teams:</p>
             <div className="mt-1.5 flex flex-wrap gap-2">
@@ -159,10 +159,10 @@ export function AdminTournaments() {
                     key={t.teamId}
                     type="button"
                     onClick={() => toggleTeam(t.teamId)}
-                    className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm ${
+                    className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
                       checked
-                        ? 'border-red-600 bg-red-600 text-white'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800'
+                        ? 'chip-brand'
+                        : 'border-gray-300/80 dark:border-gray-700/80 text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/5'
                     }`}
                   >
                     <TeamAvatar teamName={t.teamName} logoId={t.logoId} logoImage={t.logoImage} jerseyColor={t.jerseyColor} size={6} />
@@ -175,7 +175,7 @@ export function AdminTournaments() {
             <button
               onClick={handleCreate}
               disabled={creating || !name.trim() || selectedTeamIds.size === 0}
-              className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              className="btn-brand mt-3 rounded-lg px-4 py-2 text-sm font-medium"
             >
               {creating ? 'Creating...' : 'Create tournament'}
             </button>
@@ -186,7 +186,7 @@ export function AdminTournaments() {
             {tournaments.map((t) => {
               const expanded = expandedId === t.tournamentId
               return (
-                <div key={t.tournamentId} className="rounded-lg border border-gray-200 p-4 dark:border-gray-800">
+                <div key={t.tournamentId} className="glass-card p-4">
                   <button
                     type="button"
                     onClick={() => setExpandedId(expanded ? null : t.tournamentId)}

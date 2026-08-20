@@ -46,7 +46,8 @@ export function BootstrapAdmin() {
 
   return (
     <Layout>
-      <div className="mx-auto max-w-lg space-y-4 rounded-xl border border-gray-200/80 dark:border-gray-800/80 bg-white/80 dark:bg-gray-900/70 backdrop-blur-md p-8 shadow-xl shadow-red-950/5 dark:shadow-black/40 ring-1 ring-black/5">
+      <div className="glass-card mx-auto max-w-lg p-8">
+      <div className="relative z-[3] space-y-4">
         <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
           Set up the first Admin
         </h1>
@@ -68,13 +69,14 @@ export function BootstrapAdmin() {
             <button
               onClick={handleClaim}
               disabled={claiming}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              className="btn-brand rounded-lg px-4 py-2 text-sm font-medium"
             >
               {claiming ? 'Claiming...' : 'Claim admin access'}
             </button>
             {error && <p className="text-sm text-red-600">{error}</p>}
           </>
         )}
+      </div>
       </div>
     </Layout>
   )

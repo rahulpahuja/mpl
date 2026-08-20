@@ -44,11 +44,8 @@ function UserTable({
     <>
       <ul className="mt-2 space-y-2 sm:hidden">
         {users.map((u) => (
-          <li
-            key={u.uid}
-            className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-3"
-          >
-            <div className="flex items-center gap-2">
+          <li key={u.uid} className="glass-card p-3">
+            <div className="relative z-[3] flex items-center gap-2">
               <Avatar
                 name={u.displayName}
                 filenPhotoId={u.filenPhotoId}
@@ -73,7 +70,7 @@ function UserTable({
                 <select
                   value={u.role}
                   onChange={(e) => updateUserRole(u.uid, e.target.value as UserRole)}
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                  className="w-full rounded-md input-glass px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
                 >
                   <option value="admin">Admin</option>
                   <option value="auctionManager">Auction Manager</option>
@@ -91,7 +88,7 @@ function UserTable({
                     assignUserToAuction(u.uid, e.target.value, u.assignedAuctions, u.role)
                   e.target.value = ''
                 }}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                className="w-full rounded-md input-glass px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
               >
                 <option value="">Assign to auction...</option>
                 {auctions.map((a) => (
@@ -110,9 +107,9 @@ function UserTable({
         ))}
       </ul>
 
-      <div className="mt-2 hidden overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm sm:block">
+      <div className="glass-card relative z-[3] mt-2 hidden overflow-x-auto sm:block">
         <table className="w-full min-w-[720px] text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
+          <thead className="bg-white/40 dark:bg-white/5 text-left text-gray-500 dark:text-gray-400">
             <tr>
               <th className="px-4 py-2 font-medium">Name</th>
               <th className="px-4 py-2 font-medium">Email</th>
@@ -150,7 +147,7 @@ function UserTable({
                     <select
                       value={u.role}
                       onChange={(e) => updateUserRole(u.uid, e.target.value as UserRole)}
-                      className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                      className="rounded-md input-glass px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
                     >
                       <option value="admin">Admin</option>
                       <option value="auctionManager">Auction Manager</option>
@@ -170,7 +167,7 @@ function UserTable({
                         assignUserToAuction(u.uid, e.target.value, u.assignedAuctions, u.role)
                       e.target.value = ''
                     }}
-                    className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                    className="rounded-md input-glass px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
                   >
                     <option value="">Select auction...</option>
                     {auctions.map((a) => (
@@ -248,18 +245,18 @@ export function AdminUsers() {
                 pick here is applied automatically the moment they sign in with that Google
                 account.
               </p>
-              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
+              <div className="glass-card mt-3 grid grid-cols-1 gap-2 p-4 sm:grid-cols-4">
                 <input
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="name@gmail.com"
                   type="email"
-                  className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 sm:col-span-2"
+                  className="rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100 sm:col-span-2"
                 />
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as UserRole)}
-                  className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                  className="rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                 >
                   <option value="admin">Admin</option>
                   <option value="auctionManager">Auction Manager</option>
@@ -270,22 +267,25 @@ export function AdminUsers() {
                 <button
                   onClick={handleInvite}
                   disabled={inviting || !inviteEmail.trim()}
-                  className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                  className="btn-brand rounded-lg px-4 py-2 text-sm font-medium"
                 >
                   Add user
                 </button>
               </div>
 
               {invites.length > 0 && (
-                <ul className="mt-3 divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+                <ul className="mt-3 space-y-2 text-sm">
                   {invites.map((inv) => (
-                    <li key={inv.email} className="flex items-center justify-between gap-2 py-1.5">
-                      <span className="min-w-0 break-words text-gray-600 dark:text-gray-400">
+                    <li
+                      key={inv.email}
+                      className="glass-card flex items-center justify-between gap-2 px-3 py-2"
+                    >
+                      <span className="relative z-[3] min-w-0 break-words text-gray-600 dark:text-gray-400">
                         {inv.email} <span className="text-gray-400">— pending as {inv.role}</span>
                       </span>
                       <button
                         onClick={() => deleteInvite(inv.email)}
-                        className="shrink-0 text-xs text-red-600 dark:text-red-400 hover:underline"
+                        className="relative z-[3] shrink-0 text-xs text-red-600 dark:text-red-400 hover:underline"
                       >
                         Cancel
                       </button>
@@ -300,7 +300,7 @@ export function AdminUsers() {
             value={userSearch}
             onChange={(e) => setUserSearch(e.target.value)}
             placeholder="Search by name, email, or phone..."
-            className="mt-4 w-full max-w-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="mt-4 w-full max-w-sm rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
           />
           {filteredUsers.length === 0 && (
             <p className="mt-4 text-sm text-gray-500">No users match "{userSearch}".</p>

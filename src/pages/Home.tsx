@@ -80,7 +80,7 @@ export function Home() {
     <Layout>
       <div className="space-y-4">
         {adminClaimed === false && (
-          <div className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-800 dark:text-red-300">
+          <div className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50/80 dark:bg-red-950/40 backdrop-blur-sm px-4 py-3 text-sm text-red-800 dark:text-red-300">
             No admin has been set up for this app yet.{' '}
             <Link to="/bootstrap-admin" className="font-medium underline">
               Claim admin access
@@ -92,23 +92,23 @@ export function Home() {
         </h1>
 
         {user.role === 'auctionManager' && (
-          <div className="flex gap-2">
+          <div className="glass-card flex flex-wrap gap-2 p-4">
             <input
               value={newAuctionName}
               onChange={(e) => setNewAuctionName(e.target.value)}
               placeholder="New auction name"
-              className="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="input-glass relative z-[3] flex-1 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             />
             <button
               onClick={handleCreateAuction}
               disabled={creating || !newAuctionName.trim()}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              className="btn-brand relative z-[3] rounded-lg px-4 py-2 text-sm font-medium"
             >
               Create auction
             </button>
             <Link
               to="/admin/teams"
-              className="rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="relative z-[3] rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/5"
             >
               Manage teams
             </Link>
@@ -116,20 +116,20 @@ export function Home() {
         )}
 
         {user.role === 'viewer' && (
-          <div className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm px-4 py-3">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="glass-card px-4 py-3">
+            <p className="relative z-[3] text-sm text-gray-600 dark:text-gray-400">
               Want to be up for auction? Request to become a Player and an Admin, Auction Manager,
               or Captain can approve it.
             </p>
             {user.playerRequested ? (
-              <p className="mt-2 text-sm font-medium text-amber-600 dark:text-amber-400">
+              <p className="relative z-[3] mt-2 text-sm font-medium text-amber-600 dark:text-amber-400">
                 Request pending approval...
               </p>
             ) : (
               <button
                 onClick={handleRequestPlayer}
                 disabled={requestingPlayer}
-                className="mt-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                className="btn-brand relative z-[3] mt-2 rounded-lg px-4 py-2 text-sm font-medium"
               >
                 Request to become a Player
               </button>
@@ -158,10 +158,12 @@ export function Home() {
                       <li key={a.auctionId}>
                         <Link
                           to={`/viewer/${a.auctionId}`}
-                          className="flex items-center justify-between gap-3 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800"
+                          className="glass-card glass-card-hoverable flex items-center justify-between gap-3 px-4 py-3"
                         >
-                          <span className="truncate font-medium text-gray-900 dark:text-gray-100">{a.name}</span>
-                          <span className="shrink-0 rounded-full bg-green-100 dark:bg-green-900/40 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                          <span className="relative z-[3] truncate font-medium text-gray-900 dark:text-gray-100">
+                            {a.name}
+                          </span>
+                          <span className="relative z-[3] shrink-0 rounded-full bg-green-100/90 dark:bg-green-900/40 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
                             live
                           </span>
                         </Link>
@@ -181,7 +183,7 @@ export function Home() {
             .map((a) => (
               <div
                 key={a!.auctionId}
-                className="flex flex-wrap items-center gap-3 rounded-lg border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/40 px-4 py-3 text-sm text-green-800 dark:text-green-300"
+                className="flex flex-wrap items-center gap-3 rounded-lg border border-green-200 dark:border-green-900 bg-green-50/80 dark:bg-green-950/40 backdrop-blur-sm px-4 py-3 text-sm text-green-800 dark:text-green-300"
               >
                 <span className="min-w-0 flex-1 break-words">
                   <span className="font-medium">{a!.name}</span> is live now — time to take part.
@@ -214,9 +216,9 @@ export function Home() {
             return (
               <li
                 key={auctionId}
-                className="flex flex-col gap-2 rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm px-4 py-3 sm:flex-row sm:items-center sm:gap-3"
+                className="glass-card flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:gap-3"
               >
-                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <div className="relative z-[3] flex min-w-0 flex-wrap items-center gap-2">
                   <span className="truncate font-medium text-gray-900 dark:text-gray-100">
                     {auction?.name ?? auctionId}
                   </span>
@@ -229,31 +231,31 @@ export function Home() {
                   )}
                   <span className="shrink-0 font-mono text-xs text-gray-400">{auctionId}</span>
                 </div>
-                <span className="flex flex-wrap gap-x-4 gap-y-1 sm:ml-auto">
+                <span className="relative z-[3] flex flex-wrap gap-x-4 gap-y-1 sm:ml-auto">
                   {user.role === 'auctionManager' && (
                     <>
                       <Link
                         to={`/admin/auctions/${auctionId}/setup`}
-                        className="text-red-600 dark:text-red-400 hover:underline"
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                       >
                         Setup
                       </Link>
                       <Link
                         to={`/manage/${auctionId}`}
-                        className="text-red-600 dark:text-red-400 hover:underline"
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                       >
                         Manage
                       </Link>
                       <Link
                         to={`/viewer/${auctionId}`}
-                        className="text-red-600 dark:text-red-400 hover:underline"
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                       >
                         View
                       </Link>
                       <button
                         onClick={() => handleDeleteAuction(auctionId, auction?.name ?? auctionId)}
                         disabled={deletingId === auctionId}
-                        className="text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                        className="font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
                       >
                         {deletingId === auctionId ? 'Deleting...' : 'Delete'}
                       </button>
@@ -262,7 +264,7 @@ export function Home() {
                   {user.role === 'manager' && (
                     <Link
                       to={`/bid/${auctionId}`}
-                      className="text-red-600 dark:text-red-400 hover:underline"
+                      className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                     >
                       Bid
                     </Link>
@@ -270,7 +272,7 @@ export function Home() {
                   {user.role === 'player' && (
                     <Link
                       to={`/viewer/${auctionId}`}
-                      className="text-red-600 dark:text-red-400 hover:underline"
+                      className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                     >
                       Watch
                     </Link>

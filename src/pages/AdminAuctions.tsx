@@ -50,17 +50,17 @@ export function AdminAuctions() {
         <AdminNav />
         <section>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Auctions</h1>
-          <div className="mt-4 flex gap-2">
+          <div className="glass-card mt-4 flex gap-2 p-4">
             <input
               value={newAuctionName}
               onChange={(e) => setNewAuctionName(e.target.value)}
               placeholder="New auction name"
-              className="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="input-glass relative z-[3] flex-1 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             />
             <button
               onClick={handleCreate}
               disabled={creating || !newAuctionName.trim()}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              className="btn-brand relative z-[3] rounded-lg px-4 py-2 text-sm font-medium"
             >
               Create auction
             </button>
@@ -74,11 +74,8 @@ export function AdminAuctions() {
             <>
               <ul className="mt-6 space-y-2 sm:hidden">
                 {auctions.map((a) => (
-                  <li
-                    key={a.auctionId}
-                    className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm p-3"
-                  >
-                    <div className="flex items-start justify-between gap-2">
+                  <li key={a.auctionId} className="glass-card p-3">
+                    <div className="relative z-[3] flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="truncate font-medium text-gray-900 dark:text-gray-100">{a.name}</p>
                         <p className="font-mono text-xs text-gray-500">{a.auctionId}</p>
@@ -89,38 +86,38 @@ export function AdminAuctions() {
                         {a.status}
                       </span>
                     </div>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <p className="relative z-[3] mt-2 text-xs text-gray-500 dark:text-gray-400">
                       {a.players.length} players · {a.teamManagers.length} teams
                     </p>
-                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                    <div className="relative z-[3] mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm">
                       <Link
                         to={`/admin/auctions/${a.auctionId}/setup`}
-                        className="text-red-600 dark:text-red-400 hover:underline"
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                       >
                         Setup
                       </Link>
                       <Link
                         to={`/manage/${a.auctionId}`}
-                        className="text-red-600 dark:text-red-400 hover:underline"
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                       >
                         Manage
                       </Link>
                       <Link
                         to={`/results/${a.auctionId}`}
-                        className="text-red-600 dark:text-red-400 hover:underline"
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                       >
                         Results
                       </Link>
                       <Link
                         to={`/viewer/${a.auctionId}`}
-                        className="text-red-600 dark:text-red-400 hover:underline"
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                       >
                         View
                       </Link>
                       <button
                         onClick={() => handleDelete(a.auctionId, a.name)}
                         disabled={deletingId === a.auctionId}
-                        className="text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                        className="font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
                       >
                         {deletingId === a.auctionId ? 'Deleting...' : 'Delete'}
                       </button>
@@ -129,9 +126,9 @@ export function AdminAuctions() {
                 ))}
               </ul>
 
-              <div className="mt-6 hidden overflow-x-auto rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm sm:block">
+              <div className="glass-card relative z-[3] mt-6 hidden overflow-x-auto sm:block">
                 <table className="w-full min-w-[640px] text-sm">
-                  <thead className="bg-gray-50 dark:bg-gray-900 text-left text-gray-500 dark:text-gray-400">
+                  <thead className="bg-white/40 dark:bg-white/5 text-left text-gray-500 dark:text-gray-400">
                     <tr>
                       <th className="px-4 py-2 font-medium">ID</th>
                       <th className="px-4 py-2 font-medium">Name</th>
@@ -164,25 +161,25 @@ export function AdminAuctions() {
                         <td className="px-4 py-2 text-right space-x-3">
                           <Link
                             to={`/admin/auctions/${a.auctionId}/setup`}
-                            className="text-red-600 dark:text-red-400 hover:underline"
+                            className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                           >
                             Setup
                           </Link>
                           <Link
                             to={`/manage/${a.auctionId}`}
-                            className="text-red-600 dark:text-red-400 hover:underline"
+                            className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                           >
                             Manage
                           </Link>
                           <Link
                             to={`/results/${a.auctionId}`}
-                            className="text-red-600 dark:text-red-400 hover:underline"
+                            className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                           >
                             Results
                           </Link>
                           <Link
                             to={`/viewer/${a.auctionId}`}
-                            className="text-red-600 dark:text-red-400 hover:underline"
+                            className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
                           >
                             View
                           </Link>
