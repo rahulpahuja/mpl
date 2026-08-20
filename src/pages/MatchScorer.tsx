@@ -346,7 +346,9 @@ export function MatchScorer() {
         <div>
           <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-gray-100">{match.name}</h1>
           <p className="text-xs text-gray-500 sm:text-sm dark:text-gray-400">
-            {match.dayNight === 'day' ? 'Day match' : 'Night match'} · {match.oversLimit} overs
+            {match.dayNight === 'day' ? 'Day match' : 'Night match'} · {match.oversLimit} overs ·{' '}
+            {match.ballType === 'tennis' ? 'Tennis ball' : 'Leather ball'} ·{' '}
+            {match.groundType === 'box' ? 'Box cricket' : match.groundType === 'gully' ? 'Gully' : 'Ground'}
             {match.tournamentName ? ` · ${match.tournamentName}` : ''}
           </p>
         </div>
