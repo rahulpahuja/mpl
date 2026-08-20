@@ -175,7 +175,9 @@ export function MatchScorecard() {
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {match.format === 'tournament' && match.tournamentName ? `${match.tournamentName} · ` : 'Friendly · '}
-              {match.oversLimit} overs · {match.dayNight === 'day' ? 'Day' : 'Night'}
+              {match.oversLimit} overs · {match.dayNight === 'day' ? 'Day' : 'Night'} ·{' '}
+              {match.ballType === 'tennis' ? 'Tennis ball' : 'Leather ball'} ·{' '}
+              {match.groundType === 'box' ? 'Box cricket' : match.groundType === 'gully' ? 'Gully' : 'Ground'}
               {match.venueName ? ` · ${match.venueName}` : ''}
             </p>
           </div>
