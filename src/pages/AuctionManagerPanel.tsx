@@ -101,7 +101,7 @@ export function AuctionManagerPanel() {
           <div className="flex flex-wrap gap-2">
             <Link
               to={`/results/${auction.auctionId}`}
-              className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5"
+              className="rounded-lg btn-glass border px-4 py-2 text-sm font-medium"
             >
               View results
             </Link>
@@ -152,7 +152,7 @@ export function AuctionManagerPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-white/40 dark:bg-white/5 p-4">
+                <div className="rounded-lg surface-inset p-4">
                   <p className="text-sm text-gray-500">Current bid</p>
                   <p className="text-3xl font-bold text-red-600 dark:text-red-400">
                     {currentPlayer.currentBid || currentPlayer.basePrice}
@@ -187,7 +187,7 @@ export function AuctionManagerPanel() {
                       <button
                         onClick={() => run(() => stopTimer(auctionId))}
                         disabled={busy}
-                        className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
+                        className="rounded-lg btn-glass border px-3 py-1.5 text-sm font-medium disabled:opacity-50"
                       >
                         Stop
                       </button>
@@ -206,7 +206,7 @@ export function AuctionManagerPanel() {
                   <button
                     onClick={() => run(() => markUnsold(auctionId, currentPlayer.playerId))}
                     disabled={busy}
-                    className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
+                    className="rounded-lg btn-glass border px-4 py-2 text-sm font-medium disabled:opacity-50"
                   >
                     Mark unsold
                   </button>
@@ -234,7 +234,7 @@ export function AuctionManagerPanel() {
               {queue.map((p) => (
                 <li
                   key={p.playerId}
-                  className="flex items-center justify-between gap-2 rounded-lg bg-white/40 dark:bg-white/5 px-3 py-2 text-sm"
+                  className="flex items-center justify-between gap-2 rounded-lg surface-inset px-3 py-2 text-sm"
                 >
                   <span className="truncate text-gray-900 dark:text-gray-100">{p.name}</span>
                   <button
@@ -259,7 +259,7 @@ export function AuctionManagerPanel() {
                 .filter((p) => p.currentBidder === tm.managerId && p.status === 'sold')
                 .sort((a, b) => b.currentBid - a.currentBid)
               return (
-                <div key={tm.managerId} className="rounded-lg bg-white/40 dark:bg-white/5 p-4 text-sm">
+                <div key={tm.managerId} className="rounded-lg surface-inset p-4 text-sm">
                   <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                     <span className="flex min-w-0 items-center gap-2 font-medium text-gray-900 dark:text-gray-100">
                       <TeamAvatar
@@ -319,7 +319,7 @@ export function AuctionManagerPanel() {
               {unsold.map((p) => (
                 <li
                   key={p.playerId}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/40 dark:bg-white/5 px-3 py-2 text-sm"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg surface-inset px-3 py-2 text-sm"
                 >
                   <span className="min-w-0 break-words text-gray-900 dark:text-gray-100">
                     {p.name} <span className="text-gray-500">({p.position}) · Base {p.basePrice}</span>
@@ -350,7 +350,7 @@ export function AuctionManagerPanel() {
                       onClick={() => run(() => returnPlayerToQueue(auctionId, p.playerId))}
                       disabled={busy}
                       title="Marked unsold by mistake? Put them back in the queue."
-                      className="rounded-md border border-gray-300/80 dark:border-gray-700/80 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
+                      className="rounded-md btn-glass border px-3 py-1 text-xs font-medium disabled:opacity-50"
                     >
                       Return to queue
                     </button>

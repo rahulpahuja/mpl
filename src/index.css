@@ -445,6 +445,41 @@ body {
   border-color: rgba(251, 146, 60, 0.6);
 }
 
+/* Secondary "glass" button/chip — a bordered, transparent control that
+   picks up a faint fill on hover. Named once here instead of repeating
+   `border-gray-300/80 dark:border-gray-700/80 text-gray-700
+   dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5` as a
+   Tailwind string on every secondary action across the app. */
+.btn-glass {
+  border: 1px solid rgba(209, 213, 219, 0.8);
+  color: rgb(55 65 81);
+}
+
+:root.dark .btn-glass {
+  border-color: rgba(55, 65, 81, 0.8);
+  color: rgb(229 231 235);
+}
+
+.btn-glass:hover {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+:root.dark .btn-glass:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Recessed "well" background for a strip of content nested inside a
+   .glass-card (a stat row, a mini scoreboard block) — one shared
+   translucent fill instead of restating `bg-white/40 dark:bg-white/5`
+   on every nested block. */
+.surface-inset {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+:root.dark .surface-inset {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
 /* Fades the two edges of a horizontally-scrollable strip (the admin tab
    bar) instead of hard-cutting it, and hides its scrollbar. */
 .edge-fade-x {

@@ -90,7 +90,7 @@ function AddTeamRow({ tournamentId, teams, existingTeamIds }: { tournamentId: st
       <button
         onClick={handleAdd}
         disabled={!teamId || adding}
-        className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 bg-white/50 dark:bg-gray-800/40 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-white/80 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-gray-800/70 backdrop-blur-sm"
+        className="rounded-lg btn-glass border bg-white/50 dark:bg-gray-800/40 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-white/80 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-gray-800/70 backdrop-blur-sm"
       >
         {adding ? 'Adding...' : 'Add'}
       </button>
@@ -162,7 +162,7 @@ export function AdminTournaments() {
                     className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
                       checked
                         ? 'chip-brand'
-                        : 'border-gray-300/80 dark:border-gray-700/80 text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/5'
+                        : 'border-gray-300/80 dark:border-gray-700/80 '
                     }`}
                   >
                     <TeamAvatar teamName={t.teamName} logoId={t.logoId} logoImage={t.logoImage} jerseyColor={t.jerseyColor} size={6} />

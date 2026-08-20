@@ -210,7 +210,7 @@ export function TeamManagerBidding() {
                   )}
                 </div>
 
-                <div className="rounded-lg bg-white/40 dark:bg-white/5 p-4">
+                <div className="rounded-lg surface-inset p-4">
                   <p className="text-sm text-gray-500">Current bid</p>
                   <p className="text-3xl font-bold text-red-600 dark:text-red-400">
                     {currentPlayer.currentBid || currentPlayer.basePrice}
@@ -279,7 +279,7 @@ export function TeamManagerBidding() {
               {mySquad.map((p) => (
                 <li
                   key={p.playerId}
-                  className="flex items-center justify-between gap-2 rounded-lg bg-white/40 dark:bg-white/5 px-3 py-2"
+                  className="flex items-center justify-between gap-2 rounded-lg surface-inset px-3 py-2"
                 >
                   <span className="min-w-0 truncate text-gray-900 dark:text-gray-100">
                     {p.name}
@@ -326,7 +326,7 @@ export function TeamManagerBidding() {
                     <button
                       onClick={() => handleApproveRequest(v.uid)}
                       disabled={promoting}
-                      className="relative z-[3] self-start rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-white/60 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-white/5 sm:self-auto"
+                      className="relative z-[3] self-start rounded-lg btn-glass border px-3 py-1 text-xs font-medium text-gray-700 hover:bg-white/60 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-white/5 sm:self-auto"
                     >
                       Approve
                     </button>

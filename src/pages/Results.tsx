@@ -151,7 +151,7 @@ export function Results() {
 
               <div className="glass-card relative z-[3] mt-4 hidden overflow-x-auto sm:block">
                 <table className="w-full min-w-[480px] text-sm">
-                  <thead className="bg-white/40 dark:bg-white/5 text-left text-gray-500 dark:text-gray-400">
+                  <thead className="surface-inset text-left text-gray-500 dark:text-gray-400">
                     <tr>
                       <th className="px-4 py-2 font-medium">Player</th>
                       <th className="px-4 py-2 font-medium">Position</th>

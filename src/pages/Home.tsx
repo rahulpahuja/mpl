@@ -108,7 +108,7 @@ export function Home() {
             </button>
             <Link
               to="/admin/teams"
-              className="relative z-[3] rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/5"
+              className="relative z-[3] rounded-lg btn-glass border px-4 py-2 text-sm font-medium"
             >
               Manage teams
             </Link>

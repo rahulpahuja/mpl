@@ -51,7 +51,7 @@ function ServiceStatus() {
   }, [])
 
   return (
-    <div className="rounded-lg bg-white/40 dark:bg-white/5 p-4 text-sm">
+    <div className="rounded-lg surface-inset p-4 text-sm">
       <div className="flex items-center justify-between">
         <h2 className="font-medium text-gray-700 dark:text-gray-300">Service status</h2>
         <button

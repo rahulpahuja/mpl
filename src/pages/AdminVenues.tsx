@@ -192,7 +192,7 @@ export function AdminVenues() {
               <button
                 onClick={() => setEditingVenueId(null)}
                 disabled={savingEdit}
-                className="rounded-md border border-gray-300/80 dark:border-gray-700/80 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5"
+                className="rounded-md btn-glass border px-3 py-1 text-xs font-medium"
               >
                 Cancel
               </button>

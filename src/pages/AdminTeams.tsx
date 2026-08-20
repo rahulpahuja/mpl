@@ -87,7 +87,7 @@ function TeamRosterPanel({ team, allUsers }: { team: Team; allUsers: AppUser[] }
         <button
           type="button"
           onClick={() => setPickerOpen(true)}
-          className="shrink-0 rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/5"
+          className="shrink-0 rounded-lg btn-glass border px-2.5 py-1 text-xs font-medium"
         >
           Add player
         </button>
@@ -133,7 +133,7 @@ function TeamRosterPanel({ team, allUsers }: { team: Team; allUsers: AppUser[] }
           type="button"
           onClick={handleAddManual}
           disabled={!manualName.trim()}
-          className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-white/60 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-white/5"
+          className="rounded-lg btn-glass border px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-white/60 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-white/5"
         >
           Add unregistered player
         </button>
@@ -395,7 +395,7 @@ export function AdminTeams() {
                     setTeamJerseyColorError(null)
                   }}
                   disabled={creatingTeam}
-                  className="block h-9 w-14 cursor-pointer rounded border border-gray-300/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm disabled:opacity-50"
+                  className="block h-9 w-14 cursor-pointer rounded btn-glass border bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm disabled:opacity-50"
                 />
                 <input
                   type="text"
@@ -407,7 +407,7 @@ export function AdminTeams() {
                   placeholder="or type e.g. Maroon"
                   minLength={3}
                   disabled={creatingTeam}
-                  className="h-9 w-36 rounded-lg border border-gray-300/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm px-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50"
+                  className="h-9 w-36 rounded-lg btn-glass border bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm px-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50"
                 />
               </div>
               {teamJerseyColorError && (
@@ -521,7 +521,7 @@ export function AdminTeams() {
                       <button
                         onClick={() => setEditingTeamId(null)}
                         disabled={savingEdit}
-                        className="rounded-md border border-gray-300/80 dark:border-gray-700/80 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5"
+                        className="rounded-md btn-glass border px-3 py-1 text-xs font-medium"
                       >
                         Cancel
                       </button>

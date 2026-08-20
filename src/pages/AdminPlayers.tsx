@@ -96,7 +96,7 @@ export function AdminPlayers() {
                   <button
                     onClick={() => handleApproveRequest(v.uid)}
                     disabled={promoting}
-                    className="relative z-[3] self-start rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-white/60 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-white/5 sm:self-auto"
+                    className="relative z-[3] self-start rounded-lg btn-glass border px-3 py-1 text-xs font-medium text-gray-700 hover:bg-white/60 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-white/5 sm:self-auto"
                   >
                     Approve
                   </button>
@@ -222,7 +222,7 @@ export function AdminPlayers() {
 
               <div className="glass-card relative z-[3] mt-4 hidden overflow-x-auto sm:block">
                 <table className="w-full min-w-[560px] text-sm">
-                  <thead className="bg-white/40 dark:bg-white/5 text-left text-gray-500 dark:text-gray-400">
+                  <thead className="surface-inset text-left text-gray-500 dark:text-gray-400">
                     <tr>
                       <th className="px-4 py-2 font-medium">Name</th>
                       <th className="px-4 py-2 font-medium">Jersey #</th>

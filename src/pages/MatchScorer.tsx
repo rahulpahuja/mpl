@@ -378,7 +378,7 @@ export function MatchScorer() {
               const b = innings.battingStats[id as string]
               const isStriker = id === innings.strikerId
               return (
-                <div key={id} className="flex items-center justify-between rounded-lg bg-white/40 dark:bg-white/5 px-3 py-2">
+                <div key={id} className="flex items-center justify-between rounded-lg surface-inset px-3 py-2">
                   <span className="min-w-0 truncate text-gray-900 dark:text-gray-100">
                     {isStriker && '• '}
                     {b?.name}
@@ -391,7 +391,7 @@ export function MatchScorer() {
             })}
           </div>
           {innings.currentBowlerId && (
-            <div className="relative z-[3] mt-2 flex items-center justify-between rounded-lg bg-white/40 dark:bg-white/5 px-3 py-2 text-sm">
+            <div className="relative z-[3] mt-2 flex items-center justify-between rounded-lg surface-inset px-3 py-2 text-sm">
               <span className="min-w-0 truncate text-gray-900 dark:text-gray-100">
                 {nameFor(bowlingRoster, innings.currentBowlerId)}
               </span>
@@ -466,7 +466,7 @@ export function MatchScorer() {
                   className={`min-h-11 rounded-lg border px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50 ${
                     extraType === t
                       ? 'border-amber-500 bg-amber-500 text-white'
-                      : 'border-gray-300/80 dark:border-gray-700/80 text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/5'
+                      : 'border-gray-300/80 dark:border-gray-700/80 '
                   }`}
                 >
                   {t === 'wide' ? 'Wide' : t === 'noBall' ? 'No ball' : t === 'bye' ? 'Bye' : 'Leg bye'}
@@ -514,7 +514,7 @@ export function MatchScorer() {
                     setBusy(false)
                   }
                 }}
-                className="min-h-11 flex-1 rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-white/60 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-white/5 sm:flex-none"
+                className="min-h-11 flex-1 rounded-lg btn-glass border px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-white/60 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-white/5 sm:flex-none"
               >
                 Undo last ball
               </button>

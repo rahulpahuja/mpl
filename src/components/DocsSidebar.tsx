@@ -15,7 +15,7 @@ export function DocsSidebar({ sections }: { sections: HelpSection[] }) {
             `relative z-[3] block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
               isActive
                 ? 'tab-brand'
-                : 'text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5'
+                : ''
             }`
           }
         >

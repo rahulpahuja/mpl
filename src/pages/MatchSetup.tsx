@@ -263,7 +263,7 @@ export function MatchSetup() {
         </div>
 
         {(match.status === 'live' || match.status === 'inningsBreak' || match.status === 'completed') && (
-          <p className="rounded-lg bg-white/40 dark:bg-white/5 backdrop-blur-sm p-3 text-sm text-gray-600 dark:text-gray-400">
+          <p className="rounded-lg surface-inset backdrop-blur-sm p-3 text-sm text-gray-600 dark:text-gray-400">
             This match is already underway.{' '}
             <Link
               to={match.status === 'completed' ? `/matches/${match.matchId}` : `/score/${match.matchId}`}

@@ -600,7 +600,7 @@ export function AuctionSetup() {
                 <button
                   onClick={() => setEditingAuctionName(false)}
                   disabled={savingAuctionName}
-                  className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
+                  className="rounded-lg btn-glass border px-3 py-1.5 text-sm font-medium disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -786,7 +786,7 @@ export function AuctionSetup() {
             <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Player roster</h2>
             <button
               onClick={() => setShowImportDialog(true)}
-              className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5"
+              className="rounded-lg btn-glass border px-3 py-1.5 text-sm font-medium"
             >
               Import players
             </button>
@@ -835,7 +835,7 @@ export function AuctionSetup() {
             <button
               onClick={handleImportCsv}
               disabled={importingCsv || !csvText.trim()}
-              className="mt-2 rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
+              className="mt-2 rounded-lg btn-glass border px-4 py-2 text-sm font-medium disabled:opacity-50"
             >
               {importingCsv ? 'Importing...' : 'Import'}
             </button>
@@ -877,7 +877,7 @@ export function AuctionSetup() {
                       <button
                         onClick={() => handleApproveRequest(v.uid)}
                         disabled={promoting}
-                        className="relative z-[3] self-start rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50 sm:self-auto"
+                        className="relative z-[3] self-start rounded-lg btn-glass border px-3 py-1 text-xs font-medium disabled:opacity-50 sm:self-auto"
                       >
                         Approve
                       </button>
@@ -953,7 +953,7 @@ export function AuctionSetup() {
               <button
                 onClick={handleApplyBasePriceToAll}
                 disabled={applyingBulkBasePrice || openPlayerCount === 0}
-                className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
+                className="rounded-lg btn-glass border px-3 py-1.5 text-xs font-medium disabled:opacity-50"
               >
                 {applyingBulkBasePrice
                   ? 'Applying...'
@@ -1108,7 +1108,7 @@ export function AuctionSetup() {
 
           <div className="glass-card relative z-[3] mt-3 hidden overflow-x-auto sm:block">
             <table className="w-full min-w-[480px] text-sm">
-              <thead className="bg-white/40 dark:bg-white/5 text-left text-gray-500 dark:text-gray-400">
+              <thead className="surface-inset text-left text-gray-500 dark:text-gray-400">
                 <tr>
                   <th className="px-3 py-2 font-medium"></th>
                   <th className="px-3 py-2 font-medium">Name</th>
@@ -1430,7 +1430,7 @@ export function AuctionSetup() {
                 <button
                   onClick={handleApplyCommonPurse}
                   disabled={applyingPurse}
-                  className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
+                  className="rounded-lg btn-glass border px-3 py-1.5 text-xs font-medium disabled:opacity-50"
                 >
                   {applyingPurse ? 'Applying...' : `Apply ${purse || 0} purse to all ${auction.teamManagers.length} teams already added`}
                 </button>
@@ -1440,7 +1440,7 @@ export function AuctionSetup() {
                 <button
                   onClick={handleApplyMaxPlayers}
                   disabled={applyingMaxPlayers}
-                  className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5 disabled:opacity-50"
+                  className="rounded-lg btn-glass border px-3 py-1.5 text-xs font-medium disabled:opacity-50"
                 >
                   {applyingMaxPlayers
                     ? 'Applying...'

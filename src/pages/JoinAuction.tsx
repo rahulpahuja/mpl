@@ -35,7 +35,7 @@ export function JoinAuction() {
                 <li key={a.auctionId}>
                   <button
                     onClick={() => navigate(`/viewer/${a.auctionId}`)}
-                    className="flex w-full items-center justify-between gap-2 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/40 dark:bg-white/5 backdrop-blur-sm px-4 py-2.5 text-left hover:bg-white/70 dark:hover:bg-white/10"
+                    className="flex w-full items-center justify-between gap-2 rounded-lg border border-gray-200/80 dark:border-gray-700/80 surface-inset backdrop-blur-sm px-4 py-2.5 text-left hover:bg-white/70 dark:hover:bg-white/10"
                   >
                     <span className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
                       {a.name}

@@ -60,7 +60,7 @@ export function ViewerFeed() {
           </div>
           <Link
             to={`/results/${auction.auctionId}`}
-            className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5"
+            className="rounded-lg btn-glass border px-4 py-2 text-sm font-medium"
           >
             Full results
           </Link>
@@ -121,7 +121,7 @@ export function ViewerFeed() {
                     </span>
                   )}
                 </div>
-                <div className="rounded-lg bg-white/40 dark:bg-white/5 p-4">
+                <div className="rounded-lg surface-inset p-4">
                   <p className="text-sm text-gray-500">Current bid</p>
                   <p className="text-3xl font-bold text-red-600 dark:text-red-400">
                     {currentPlayer.currentBid || currentPlayer.basePrice}
@@ -152,7 +152,7 @@ export function ViewerFeed() {
               {standings.map((tm) => (
                 <li
                   key={tm.managerId}
-                  className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg bg-white/40 dark:bg-white/5 px-3 py-2"
+                  className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg surface-inset px-3 py-2"
                 >
                   <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                     <TeamAvatar

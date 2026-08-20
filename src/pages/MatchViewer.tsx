@@ -90,7 +90,7 @@ export function MatchViewer() {
           </div>
           <Link
             to={`/matches/${match.matchId}`}
-            className="rounded-lg border border-gray-300/80 dark:border-gray-700/80 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/5"
+            className="rounded-lg btn-glass border px-4 py-2 text-sm font-medium"
           >
             Full scorecard
           </Link>
@@ -151,7 +151,7 @@ export function MatchViewer() {
                 </span>
               )}
 
-              <div className="relative z-[3] space-y-1.5 rounded-lg bg-white/40 dark:bg-white/5 p-3">
+              <div className="relative z-[3] space-y-1.5 rounded-lg surface-inset p-3">
                 {battingSide && (
                   <>
                     <BattingLine innings={innings} playerId={innings.strikerId} />
@@ -161,7 +161,7 @@ export function MatchViewer() {
               </div>
 
               {bowler && (
-                <div className="relative z-[3] flex items-center justify-between gap-2 rounded-lg bg-white/40 dark:bg-white/5 p-3 text-sm">
+                <div className="relative z-[3] flex items-center justify-between gap-2 rounded-lg surface-inset p-3 text-sm">
                   <span className="min-w-0 truncate text-gray-900 dark:text-gray-100">{bowler.name}</span>
                   <span className="shrink-0 font-mono text-gray-600 dark:text-gray-400">
                     {formatOvers(bowler.legalBalls)}-{bowler.maidens}-{bowler.runsConceded}-{bowler.wickets} · Econ{' '}
