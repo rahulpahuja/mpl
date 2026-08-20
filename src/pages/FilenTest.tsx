@@ -51,13 +51,13 @@ function ServiceStatus() {
   }, [])
 
   return (
-    <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-4 text-sm">
+    <div className="rounded-lg bg-white/40 dark:bg-white/5 p-4 text-sm">
       <div className="flex items-center justify-between">
         <h2 className="font-medium text-gray-700 dark:text-gray-300">Service status</h2>
         <button
           onClick={check}
           disabled={checking}
-          className="text-xs text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+          className="text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50"
         >
           {checking ? 'Checking...' : 'Recheck'}
         </button>
@@ -88,7 +88,7 @@ export function FilenTest() {
 
   return (
     <Layout>
-      <div className="mx-auto max-w-xl space-y-6 rounded-xl border border-gray-200/80 dark:border-gray-800/80 bg-white/80 dark:bg-gray-900/70 backdrop-blur-md p-8 shadow-xl">
+      <div className="glass-card relative z-[3] mx-auto max-w-xl space-y-6 p-8">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Filen storage test</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
