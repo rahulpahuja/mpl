@@ -1,16 +1,161 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Layout } from '../components/Layout'
 import { AdminNav } from '../components/AdminNav'
 import { Avatar } from '../components/Avatar'
 import { AvatarPicker } from '../components/AvatarPicker'
+import { PlayerPicker } from '../components/PlayerPicker'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { TeamLogoUpload } from '../components/TeamLogoUpload'
 import { WhatsAppButton } from '../components/WhatsAppButton'
 import { useUsers } from '../hooks/useUsers'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { createTeam, updateTeam } from '../lib/teams'
-import type { AppUser } from '../types'
+import { addToRoster, createTeam, removeFromRoster, updateTeam } from '../lib/teams'
+import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
+import type { AppUser, RosterPlayer, Team } from '../types'
+
+// Roster editor for one team — a search-and-add picker (registered users
+// with role 'player', reusing PlayerPicker) plus a manual "add unregistered
+// name" row, since a squad often includes people without an account. This is
+// the pool src/pages/MatchSetup.tsx picks a Playing XI from.
+function TeamRosterPanel({ team, allUsers }: { team: Team; allUsers: AppUser[] }) {
+  const roster = team.roster ?? []
+  const rosterIds = new Set(roster.map((p) => p.playerId))
+  const [search, setSearch] = useState('')
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [manualName, setManualName] = useState('')
+  const [addingIds, setAddingIds] = useState<Set<string>>(new Set())
+  const addingIdsRef = useRef<Set<string>>(new Set())
+  const [error, setError] = useState<string | null>(null)
+
+  const candidates = allUsers.filter((u) => u.role === 'player' && !rosterIds.has(u.uid))
+
+  async function handleAddRegistered(user: AppUser) {
+    if (addingIdsRef.current.has(user.uid)) return
+    addingIdsRef.current.add(user.uid)
+    setAddingIds(new Set(addingIdsRef.current))
+    setError(null)
+    try {
+      const player: RosterPlayer = {
+        playerId: user.uid,
+        name: user.displayName,
+        isRegisteredUser: true,
+        playingRole: user.playingRole ?? null,
+        battingHandedness: user.battingHandedness ?? null,
+        bowlingHandedness: user.bowlingHandedness ?? null,
+        battingType: user.battingType ?? null,
+        bowlingType: user.bowlingType ?? null,
+        avatarId: user.avatarId ?? null,
+        photoURL: user.photoURL ?? null,
+        encryptedPhoto: user.encryptedPhoto ?? null,
+      }
+      await addToRoster(team.teamId, player)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add player')
+    } finally {
+      addingIdsRef.current.delete(user.uid)
+      setAddingIds(new Set(addingIdsRef.current))
+    }
+  }
+
+  async function handleAddManual() {
+    const name = manualName.trim()
+    if (!name) return
+    setError(null)
+    try {
+      const player: RosterPlayer = {
+        playerId: crypto.randomUUID(),
+        name,
+        isRegisteredUser: false,
+        avatarId: null,
+        photoURL: null,
+        encryptedPhoto: null,
+      }
+      await addToRoster(team.teamId, player)
+      setManualName('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add player')
+    }
+  }
+
+  return (
+    <div className="mt-2 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-900/50">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+          Roster ({roster.length}) — the pool matches pick a Playing XI from
+        </p>
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          className="shrink-0 rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+        >
+          Add player
+        </button>
+      </div>
+
+      {roster.length > 0 && (
+        <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+          {roster.map((p) => (
+            <li
+              key={p.playerId}
+              className="flex items-center justify-between gap-2 rounded-lg bg-white px-2.5 py-1.5 text-sm dark:bg-gray-800"
+            >
+              <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
+                <Avatar name={p.name} avatarId={p.avatarId} photoURL={p.photoURL} encryptedPhoto={p.encryptedPhoto} />
+                <span className="min-w-0 truncate">
+                  {p.name}
+                  {p.playingRole && (
+                    <span className="ml-1.5 text-xs text-gray-500">{PLAYING_ROLE_LABELS[p.playingRole]}</span>
+                  )}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => removeFromRoster(team.teamId, p)}
+                className="shrink-0 text-xs text-gray-400 hover:text-red-600"
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {roster.length === 0 && <p className="text-sm text-gray-400">No players on this roster yet.</p>}
+
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <input
+          value={manualName}
+          onChange={(e) => setManualName(e.target.value)}
+          placeholder="Add an unregistered player by name..."
+          className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+        />
+        <button
+          type="button"
+          onClick={handleAddManual}
+          disabled={!manualName.trim()}
+          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+        >
+          Add unregistered player
+        </button>
+      </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <PlayerPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        title={`Add to ${team.teamName}'s roster`}
+        description="Search registered users with the Player role."
+        candidates={candidates}
+        search={search}
+        onSearchChange={setSearch}
+        mode="add"
+        onAdd={handleAddRegistered}
+        addingIds={addingIds}
+      />
+    </div>
+  )
+}
 
 const DEFAULT_JERSEY_COLOR = '#dc2626'
 const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i
@@ -382,32 +527,39 @@ export function AdminTeams() {
                 )
               }
 
+              const rosterOpen = expandedRosterTeamId === t.teamId
               return (
-                <li
-                  key={t.teamId}
-                  className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
-                    <TeamAvatar
-                      teamName={t.teamName}
-                      logoId={t.logoId}
-                      logoImage={t.logoImage}
-                      jerseyColor={t.jerseyColor}
-                    />
-                    <span className="truncate">{t.teamName}</span>
-                  </span>
-                  <span className="flex flex-wrap items-center gap-3 text-gray-500">
-                    <span className="truncate">Manager: {t.managerName}</span>
-                    <WhatsAppButton phone={manager?.whatsapp || manager?.phone} />
-                    <button
-                      onClick={() =>
-                        startEdit(t.teamId, t.teamName, t.managerId, t.logoId, t.logoImage, t.jerseyColor)
-                      }
-                      className="shrink-0 text-red-600 dark:text-red-400 hover:underline"
-                    >
-                      Edit
-                    </button>
-                  </span>
+                <li key={t.teamId} className="py-2">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
+                      <TeamAvatar
+                        teamName={t.teamName}
+                        logoId={t.logoId}
+                        logoImage={t.logoImage}
+                        jerseyColor={t.jerseyColor}
+                      />
+                      <span className="truncate">{t.teamName}</span>
+                    </span>
+                    <span className="flex flex-wrap items-center gap-3 text-gray-500">
+                      <span className="truncate">Manager: {t.managerName}</span>
+                      <WhatsAppButton phone={manager?.whatsapp || manager?.phone} />
+                      <button
+                        onClick={() => setExpandedRosterTeamId(rosterOpen ? null : t.teamId)}
+                        className="shrink-0 text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        {rosterOpen ? 'Hide roster' : `Roster (${t.roster?.length ?? 0})`}
+                      </button>
+                      <button
+                        onClick={() =>
+                          startEdit(t.teamId, t.teamName, t.managerId, t.logoId, t.logoImage, t.jerseyColor)
+                        }
+                        className="shrink-0 text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </span>
+                  </div>
+                  {rosterOpen && <TeamRosterPanel team={t} allUsers={users} />}
                 </li>
               )
             })}
