@@ -262,12 +262,21 @@ export function Home() {
                     </>
                   )}
                   {user.role === 'manager' && (
-                    <Link
-                      to={`/bid/${auctionId}`}
-                      className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
-                    >
-                      Bid
-                    </Link>
+                    auction?.status === 'completed' ? (
+                      <Link
+                        to={`/results/${auctionId}`}
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
+                      >
+                        Results
+                      </Link>
+                    ) : (
+                      <Link
+                        to={`/bid/${auctionId}`}
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
+                      >
+                        Bid
+                      </Link>
+                    )
                   )}
                   {user.role === 'player' && (
                     <Link

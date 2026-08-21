@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { AdminNav } from '../components/AdminNav'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
-import { createAuction, deleteAuction } from '../lib/auctions'
+import { createAuction, deleteAuction, duplicateAuction } from '../lib/auctions'
 
 const statusStyles: Record<string, string> = {
   draft: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
@@ -16,10 +16,12 @@ const statusStyles: Record<string, string> = {
 export function AdminAuctions() {
   usePageTitle('Admin · Auctions')
   const user = useAuthStore((s) => s.user)
+  const navigate = useNavigate()
   const { auctions, loading } = useAuctionsList()
   const [newAuctionName, setNewAuctionName] = useState('')
   const [creating, setCreating] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
 
   async function handleCreate() {
     if (!newAuctionName.trim() || !user) return
@@ -41,6 +43,21 @@ export function AdminAuctions() {
       await deleteAuction(auctionId)
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  async function handleDuplicate(auctionId: string, name: string) {
+    if (!confirm(`Duplicate "${name}"? This recreates the same players, teams, and settings as a new draft auction.`)) {
+      return
+    }
+    setDuplicatingId(auctionId)
+    try {
+      const newAuctionId = await duplicateAuction(auctionId)
+      navigate(`/admin/auctions/${newAuctionId}/setup`)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to duplicate auction')
+    } finally {
+      setDuplicatingId(null)
     }
   }
 
@@ -115,6 +132,13 @@ export function AdminAuctions() {
                         View
                       </Link>
                       <button
+                        onClick={() => handleDuplicate(a.auctionId, a.name)}
+                        disabled={duplicatingId === a.auctionId}
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50"
+                      >
+                        {duplicatingId === a.auctionId ? 'Duplicating...' : 'Duplicate'}
+                      </button>
+                      <button
                         onClick={() => handleDelete(a.auctionId, a.name)}
                         disabled={deletingId === a.auctionId}
                         className="font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
@@ -183,6 +207,13 @@ export function AdminAuctions() {
                           >
                             View
                           </Link>
+                          <button
+                            onClick={() => handleDuplicate(a.auctionId, a.name)}
+                            disabled={duplicatingId === a.auctionId}
+                            className="font-medium text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50"
+                          >
+                            {duplicatingId === a.auctionId ? 'Duplicating...' : 'Duplicate'}
+                          </button>
                           <button
                             onClick={() => handleDelete(a.auctionId, a.name)}
                             disabled={deletingId === a.auctionId}

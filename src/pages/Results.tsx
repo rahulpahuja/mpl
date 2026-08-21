@@ -18,6 +18,7 @@ export function Results() {
   const user = useAuthStore((s) => s.user)
   const canAssign = user?.role === 'admin' || user?.role === 'auctionManager'
   const [assignTeamByPlayer, setAssignTeamByPlayer] = useState<Record<string, string>>({})
+  const [assignAmountByPlayer, setAssignAmountByPlayer] = useState<Record<string, string>>({})
   const [assigning, setAssigning] = useState(false)
   const [exporting, setExporting] = useState(false)
   const exportRef = useRef<HTMLDivElement>(null)
@@ -45,10 +46,13 @@ export function Results() {
   async function handleAssign(playerId: string) {
     const teamId = assignTeamByPlayer[playerId]
     if (!teamId || !auctionId) return
+    const raw = assignAmountByPlayer[playerId]
+    const amount = raw && raw.trim() !== '' ? Number(raw) : undefined
     setAssigning(true)
     try {
-      await assignUnsoldPlayer(auctionId, playerId, teamId)
+      await assignUnsoldPlayer(auctionId, playerId, teamId, amount)
       setAssignTeamByPlayer((prev) => ({ ...prev, [playerId]: '' }))
+      setAssignAmountByPlayer((prev) => ({ ...prev, [playerId]: '' }))
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to assign player')
     } finally {
@@ -282,7 +286,17 @@ export function Results() {
                     <span className="relative z-[3] min-w-0 break-words text-gray-900 dark:text-gray-100">
                       {p.name} <span className="text-gray-500">({p.position}) · Base {p.basePrice}</span>
                     </span>
-                    <div className="relative z-[3] flex items-center gap-2">
+                    <div className="relative z-[3] flex flex-wrap items-center gap-2">
+                      <input
+                        type="number"
+                        value={assignAmountByPlayer[p.playerId] ?? ''}
+                        onChange={(e) =>
+                          setAssignAmountByPlayer((prev) => ({ ...prev, [p.playerId]: e.target.value }))
+                        }
+                        placeholder={`${p.basePrice}`}
+                        title="Sell value (defaults to base price if left blank)"
+                        className="input-glass w-24 rounded-md px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                      />
                       <select
                         value={assignTeamByPlayer[p.playerId] ?? ''}
                         onChange={(e) =>

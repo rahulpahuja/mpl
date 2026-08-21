@@ -15,6 +15,8 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
 import {
   assignUnsoldPlayer,
+  breakCombo,
+  createCombo,
   markSold,
   markUnsold,
   restartAuction,
@@ -25,6 +27,22 @@ import {
   stopTimer,
   updateAuctionStatus,
 } from '../lib/auctions'
+import type { Player } from '../types'
+
+// Groups players sharing a comboId (see the Player type doc comment) into
+// one row for list rendering, in stable list order. Standalone players (no
+// comboId) come back as a singleton group.
+function groupByCombo(players: Player[]): Player[][] {
+  const seen = new Set<string>()
+  const groups: Player[][] = []
+  for (const p of players) {
+    if (seen.has(p.playerId)) continue
+    const group = p.comboId ? players.filter((q) => q.comboId === p.comboId) : [p]
+    group.forEach((q) => seen.add(q.playerId))
+    groups.push(group)
+  }
+  return groups
+}
 
 export function AuctionManagerPanel() {
   const { auctionId } = useParams<{ auctionId: string }>()
@@ -34,6 +52,8 @@ export function AuctionManagerPanel() {
   const [timerDuration, setTimerDuration] = useState('30')
   const [busy, setBusy] = useState(false)
   const [assignTeamByPlayer, setAssignTeamByPlayer] = useState<Record<string, string>>({})
+  const [assignAmountByPlayer, setAssignAmountByPlayer] = useState<Record<string, string>>({})
+  const [comboSelection, setComboSelection] = useState<Set<string>>(new Set())
 
   // Re-sync only when landing on a (possibly different) auction, not on every live update.
   useEffect(() => {
@@ -64,14 +84,39 @@ export function AuctionManagerPanel() {
 
   const queue = auction.players.filter((p) => p.status === 'open')
   const unsold = auction.players.filter((p) => p.status === 'unsold')
+  const queueGroups = groupByCombo(queue)
+  const unsoldGroups = groupByCombo(unsold)
   const sortedBids = [...(bids?.bids ?? [])].sort((a, b) => b.timestamp - a.timestamp)
   const wallets = [...auction.teamManagers].sort((a, b) => b.remainingTokens - a.remainingTokens)
+  const currentGroup = currentPlayer
+    ? currentPlayer.comboId
+      ? auction.players.filter((p) => p.comboId === currentPlayer.comboId)
+      : [currentPlayer]
+    : []
 
   async function handleAssign(playerId: string) {
     const teamId = assignTeamByPlayer[playerId]
     if (!teamId || !auctionId) return
-    await run(() => assignUnsoldPlayer(auctionId, playerId, teamId))
+    const raw = assignAmountByPlayer[playerId]
+    const amount = raw && raw.trim() !== '' ? Number(raw) : undefined
+    await run(() => assignUnsoldPlayer(auctionId, playerId, teamId, amount))
     setAssignTeamByPlayer((prev) => ({ ...prev, [playerId]: '' }))
+    setAssignAmountByPlayer((prev) => ({ ...prev, [playerId]: '' }))
+  }
+
+  function toggleComboSelection(playerId: string) {
+    setComboSelection((prev) => {
+      const next = new Set(prev)
+      if (next.has(playerId)) next.delete(playerId)
+      else next.add(playerId)
+      return next
+    })
+  }
+
+  async function handleCreateCombo() {
+    if (!auctionId || comboSelection.size < 2) return
+    await run(() => createCombo(auctionId, [...comboSelection]))
+    setComboSelection(new Set())
   }
 
   async function handleRestart() {
@@ -165,10 +210,12 @@ export function AuctionManagerPanel() {
                   <div className="space-y-1.5">
                     <div>
                       <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                        {currentPlayer.name}
+                        {currentGroup.map((p) => p.name).join(' + ')}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {currentPlayer.position} · Base price {currentPlayer.basePrice}
+                        {currentGroup.length > 1
+                          ? `Combo of ${currentGroup.length} · Base price ${currentGroup.reduce((sum, p) => sum + p.basePrice, 0)}`
+                          : `${currentPlayer.position} · Base price ${currentPlayer.basePrice}`}
                       </p>
                     </div>
                     <PlayerProfileBadges
@@ -258,24 +305,68 @@ export function AuctionManagerPanel() {
 
           <section className="glass-card p-6">
             <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">Next up</h2>
+            <p className="relative z-[3] mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Check 2 or more to auction them together as a combo — the winning bid splits equally
+              across the group when sold.
+            </p>
             <ul className="relative z-[3] mt-3 space-y-2">
-              {queue.map((p) => (
-                <li
-                  key={p.playerId}
-                  className="flex items-center justify-between gap-2 rounded-lg surface-inset px-3 py-2 text-sm"
-                >
-                  <span className="truncate text-gray-900 dark:text-gray-100">{p.name}</span>
-                  <button
-                    onClick={() => run(() => setCurrentPlayer(auctionId, p.playerId))}
-                    disabled={busy || !!currentPlayer}
-                    className="shrink-0 font-medium text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50"
+              {queueGroups.map((group) => {
+                const lead = group[0]
+                const isCombo = group.length > 1
+                return (
+                  <li
+                    key={lead.comboId ?? lead.playerId}
+                    className="flex items-center justify-between gap-2 rounded-lg surface-inset px-3 py-2 text-sm"
                   >
-                    Start
-                  </button>
-                </li>
-              ))}
-              {queue.length === 0 && <li className="text-sm text-gray-500">Queue is empty.</li>}
+                    <span className="flex min-w-0 items-center gap-2">
+                      {!isCombo && (
+                        <input
+                          type="checkbox"
+                          checked={comboSelection.has(lead.playerId)}
+                          onChange={() => toggleComboSelection(lead.playerId)}
+                          className="shrink-0"
+                        />
+                      )}
+                      <span className="truncate text-gray-900 dark:text-gray-100">
+                        {group.map((p) => p.name).join(' + ')}
+                        {isCombo && <span className="text-gray-500"> (combo)</span>}
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-3">
+                      {isCombo && lead.comboId && (
+                        <button
+                          onClick={() => run(() => breakCombo(auctionId, lead.comboId!))}
+                          disabled={busy}
+                          className="font-medium text-gray-500 hover:underline disabled:opacity-50"
+                        >
+                          Break up
+                        </button>
+                      )}
+                      <button
+                        onClick={() => run(() => setCurrentPlayer(auctionId, lead.playerId))}
+                        disabled={busy || !!currentPlayer}
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50"
+                      >
+                        Start
+                      </button>
+                    </span>
+                  </li>
+                )
+              })}
+              {queueGroups.length === 0 && <li className="text-sm text-gray-500">Queue is empty.</li>}
             </ul>
+            {comboSelection.size > 0 && (
+              <div className="relative z-[3] mt-3 flex items-center justify-between gap-2 rounded-lg surface-inset px-3 py-2 text-sm">
+                <span className="text-gray-600 dark:text-gray-400">{comboSelection.size} selected</span>
+                <button
+                  onClick={handleCreateCombo}
+                  disabled={busy || comboSelection.size < 2}
+                  className="btn-brand rounded-md px-3 py-1 text-xs font-medium disabled:opacity-50"
+                >
+                  Create combo
+                </button>
+              </div>
+            )}
           </section>
         </div>
 
@@ -316,6 +407,12 @@ export function AuctionManagerPanel() {
                       >
                         <span className="min-w-0 truncate flex items-center gap-1.5">
                           <span className="truncate">{p.name}</span>
+                          {p.comboId && (
+                            <span
+                              title="Sold as part of a combo lot — price is an equal split"
+                              className="shrink-0 inline-block h-2 w-2 rounded-full bg-blue-500"
+                            />
+                          )}
                           {p.wasUnsoldAssigned && (
                             <span
                               title="Went unsold, later assigned to this team"
@@ -367,47 +464,65 @@ export function AuctionManagerPanel() {
               unsold list before ending the auction.
             </p>
             <ul className="relative z-[3] mt-3 space-y-2">
-              {unsold.map((p) => (
-                <li
-                  key={p.playerId}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg surface-inset px-3 py-2 text-sm"
-                >
-                  <span className="min-w-0 break-words text-gray-900 dark:text-gray-100">
-                    {p.name} <span className="text-gray-500">({p.position}) · Base {p.basePrice}</span>
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={assignTeamByPlayer[p.playerId] ?? ''}
-                      onChange={(e) =>
-                        setAssignTeamByPlayer((prev) => ({ ...prev, [p.playerId]: e.target.value }))
-                      }
-                      className="input-glass rounded-md px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
-                    >
-                      <option value="">Assign to team...</option>
-                      {auction.teamManagers.map((tm) => (
-                        <option key={tm.teamId} value={tm.teamId}>
-                          {tm.name}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      onClick={() => handleAssign(p.playerId)}
-                      disabled={busy || !assignTeamByPlayer[p.playerId]}
-                      className="btn-brand rounded-md px-3 py-1 text-xs font-medium"
-                    >
-                      Assign
-                    </button>
-                    <button
-                      onClick={() => run(() => returnPlayerToQueue(auctionId, p.playerId))}
-                      disabled={busy}
-                      title="Marked unsold by mistake? Put them back in the queue."
-                      className="rounded-md btn-glass border px-3 py-1 text-xs font-medium disabled:opacity-50"
-                    >
-                      Return to queue
-                    </button>
-                  </div>
-                </li>
-              ))}
+              {unsoldGroups.map((group) => {
+                const lead = group[0]
+                const isCombo = group.length > 1
+                const totalBase = group.reduce((sum, p) => sum + p.basePrice, 0)
+                return (
+                  <li
+                    key={lead.comboId ?? lead.playerId}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg surface-inset px-3 py-2 text-sm"
+                  >
+                    <span className="min-w-0 break-words text-gray-900 dark:text-gray-100">
+                      {group.map((p) => p.name).join(' + ')}{' '}
+                      <span className="text-gray-500">
+                        {isCombo ? `(combo) · Base ${totalBase}` : `(${lead.position}) · Base ${lead.basePrice}`}
+                      </span>
+                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <input
+                        type="number"
+                        value={assignAmountByPlayer[lead.playerId] ?? ''}
+                        onChange={(e) =>
+                          setAssignAmountByPlayer((prev) => ({ ...prev, [lead.playerId]: e.target.value }))
+                        }
+                        placeholder={`${totalBase}`}
+                        title="Sell value (defaults to base price if left blank)"
+                        className="input-glass w-24 rounded-md px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                      />
+                      <select
+                        value={assignTeamByPlayer[lead.playerId] ?? ''}
+                        onChange={(e) =>
+                          setAssignTeamByPlayer((prev) => ({ ...prev, [lead.playerId]: e.target.value }))
+                        }
+                        className="input-glass rounded-md px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Assign to team...</option>
+                        {auction.teamManagers.map((tm) => (
+                          <option key={tm.teamId} value={tm.teamId}>
+                            {tm.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => handleAssign(lead.playerId)}
+                        disabled={busy || !assignTeamByPlayer[lead.playerId]}
+                        className="btn-brand rounded-md px-3 py-1 text-xs font-medium"
+                      >
+                        Assign
+                      </button>
+                      <button
+                        onClick={() => run(() => returnPlayerToQueue(auctionId, lead.playerId))}
+                        disabled={busy}
+                        title="Marked unsold by mistake? Put them back in the queue."
+                        className="rounded-md btn-glass border px-3 py-1 text-xs font-medium disabled:opacity-50"
+                      >
+                        Return to queue
+                      </button>
+                    </div>
+                  </li>
+                )
+              })}
             </ul>
           </section>
         )}

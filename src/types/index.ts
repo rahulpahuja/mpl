@@ -139,6 +139,14 @@ export interface Player {
   bowlingHandedness?: Handedness | null
   battingType?: BattingType | null
   bowlingType?: BowlingType | null
+  // Groups this player with every other player sharing the same id into a
+  // single auction lot: started, bid on, and sold together as one unit, with
+  // the winning price split equally across the group (see the combo helpers
+  // in lib/auctions.ts). Set via "Create combo" on the manage panel; not
+  // cleared on sale/unsold so history stays traceable, but only players
+  // still sharing both this id and the same live status are treated as one
+  // active group.
+  comboId?: string | null
 }
 
 export interface TeamManagerEntry {

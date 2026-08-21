@@ -13,6 +13,10 @@ export function assertValidBid(
   amount: number,
   bidIncrement: number,
   soldCountForManager: number,
+  // Number of players this bid would win at once — >1 when the current
+  // player is part of a combo lot (see lib/auctions.ts), since the whole
+  // group joins the squad together on sale.
+  groupSize = 1,
 ): void {
   if (player.status !== 'open' && player.status !== 'active') {
     throw new Error('Player is not open for bidding')
@@ -24,7 +28,7 @@ export function assertValidBid(
   if (amount > manager.remainingTokens) {
     throw new Error('Insufficient tokens for this bid')
   }
-  if (soldCountForManager >= manager.maxPlayers) {
+  if (soldCountForManager + groupSize > manager.maxPlayers) {
     throw new Error(`${manager.name} has already reached its ${manager.maxPlayers}-player limit`)
   }
 }
@@ -46,6 +50,8 @@ export function assertUnsoldAssignment(
   team: Pick<TeamManagerEntry, 'name' | 'maxPlayers' | 'remainingTokens'>,
   amount: number,
   soldCountForManager: number,
+  // Same combo-lot meaning as assertValidBid's groupSize.
+  groupSize = 1,
 ): void {
   if (player.status !== 'unsold') {
     throw new Error('Only unsold players can be assigned directly to a team')
@@ -53,7 +59,7 @@ export function assertUnsoldAssignment(
   if (amount < 0) {
     throw new Error('Assignment price cannot be negative')
   }
-  if (soldCountForManager >= team.maxPlayers) {
+  if (soldCountForManager + groupSize > team.maxPlayers) {
     throw new Error(`${team.name} has already reached its ${team.maxPlayers}-player limit`)
   }
   if (amount > team.remainingTokens) {

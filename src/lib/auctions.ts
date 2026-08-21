@@ -45,6 +45,29 @@ function generateAuctionId(): string {
   return Math.random().toString(36).slice(2, 8).toUpperCase()
 }
 
+// Players grouped into one auction lot via createCombo share a comboId (see
+// the Player type doc comment). `matchStatus: true` narrows the group to
+// players still sharing `player`'s current status — used while resolving a
+// state transition (start/sell/unsell), so a sibling that's already moved
+// on for some other reason isn't dragged along. `false` returns every
+// member regardless of status — used once a sale has already happened, to
+// look back at the whole original lot.
+function comboSiblings(players: Player[], player: Player, matchStatus: boolean): Player[] {
+  if (!player.comboId) return [player]
+  return players.filter(
+    (p) => p.comboId === player.comboId && (!matchStatus || p.status === player.status),
+  )
+}
+
+// Splits `total` into `count` integer shares that sum back to exactly
+// `total` — a naive total/count division can lose or gain tokens to
+// rounding. The first `remainder` shares absorb one extra token each.
+function splitEqually(total: number, count: number): number[] {
+  const base = Math.floor(total / count)
+  const remainder = total - base * count
+  return Array.from({ length: count }, (_, i) => base + (i < remainder ? 1 : 0))
+}
+
 export async function createAuction(name: string, createdBy: string, bidIncrement = 10): Promise<string> {
   const auctionId = generateAuctionId()
   const auction: Omit<Auction, 'createdAt' | 'startTime'> = {
@@ -316,6 +339,46 @@ export async function applyBasePriceToAllPlayers(auctionId: string, basePrice: n
   })
 }
 
+// Groups two or more still-open players into a single auction lot: they're
+// started, bid on, and sold together as one unit, with the winning price
+// split equally across every member (see markSold/splitEqually). Only valid
+// while every member is still 'open' — same "hasn't gone under the hammer
+// yet" restriction as removePlayer/updatePlayerBasePrice.
+export async function createCombo(auctionId: string, playerIds: string[]): Promise<void> {
+  if (playerIds.length < 2) throw new Error('A combo needs at least 2 players')
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) throw new Error('Auction not found')
+    const auction = snap.data() as Auction
+    for (const id of playerIds) {
+      const p = auction.players.find((pl) => pl.playerId === id)
+      if (!p) throw new Error('Player not found')
+      if (p.status !== 'open') throw new Error(`${p.name} is not open and can't be added to a combo`)
+    }
+    const comboId = crypto.randomUUID()
+    tx.update(auctionRef(auctionId), {
+      players: auction.players.map((p) => (playerIds.includes(p.playerId) ? { ...p, comboId } : p)),
+    })
+  })
+}
+
+// Ungroups a combo lot that hasn't gone under the hammer yet, back into
+// individual open players.
+export async function breakCombo(auctionId: string, comboId: string): Promise<void> {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) throw new Error('Auction not found')
+    const auction = snap.data() as Auction
+    const members = auction.players.filter((p) => p.comboId === comboId)
+    if (members.some((p) => p.status !== 'open')) {
+      throw new Error('Only a combo where every player is still open can be broken up')
+    }
+    tx.update(auctionRef(auctionId), {
+      players: auction.players.map((p) => (p.comboId === comboId ? { ...p, comboId: null } : p)),
+    })
+  })
+}
+
 export async function addTeamToAuction(
   auctionId: string,
   team: Team,
@@ -445,8 +508,14 @@ export async function setCurrentPlayer(auctionId: string, playerId: string) {
     const snap = await tx.get(auctionRef(auctionId))
     if (!snap.exists()) throw new Error('Auction not found')
     const auction = snap.data() as Auction
+    const player = auction.players.find((p) => p.playerId === playerId)
+    if (!player) throw new Error('Player not found')
+    // Combo siblings go under the hammer together — see the Player.comboId
+    // doc comment — even though bidding itself only ever targets this one
+    // playerId (see placeBid).
+    const groupIds = new Set(comboSiblings(auction.players, player, true).map((p) => p.playerId))
     const players = auction.players.map((p) =>
-      p.playerId === playerId ? { ...p, status: 'active' as const } : p,
+      groupIds.has(p.playerId) ? { ...p, status: 'active' as const } : p,
     )
     tx.update(auctionRef(auctionId), { currentPlayerId: playerId, players, timerEndsAt: null })
   })
@@ -484,7 +553,8 @@ export async function placeBid(
     const squadSize = auction.players.filter(
       (p) => p.currentBidder === managerId && p.status === 'sold',
     ).length
-    assertValidBid(player, manager, amount, auction.bidIncrement, squadSize)
+    const groupSize = comboSiblings(auction.players, player, true).length
+    assertValidBid(player, manager, amount, auction.bidIncrement, squadSize, groupSize)
 
     const players = auction.players.map((p) =>
       p.playerId === playerId
@@ -517,21 +587,31 @@ async function recordTeamPurchase(auctionId: string, playerId: string) {
   const team = auction.teamManagers.find((tm) => tm.managerId === player.currentBidder)
   if (!team) return
 
+  // player.currentBid is this member's equal-split share by the time this
+  // runs (see markSold/assignUnsoldPlayer) — sum the whole combo group's
+  // shares back up to get the full price the team's purse was decremented
+  // by. Only folds in siblings still sold to this same team, so a combo
+  // member resold individually later doesn't get double-recorded here.
+  const group = comboSiblings(auction.players, player, false).filter(
+    (p) => p.status === 'sold' && p.currentBidder === player.currentBidder,
+  )
+  const totalPrice = group.reduce((sum, p) => sum + p.currentBid, 0)
+
   const teamsSnapRef = teamRef(auctionId, team.teamId)
   const teamSnap = await getDoc(teamsSnapRef)
   if (teamSnap.exists()) {
     const teamData = teamSnap.data() as AuctionTeamStats
     await updateDoc(teamsSnapRef, {
-      spent: teamData.spent + player.currentBid,
-      balance: teamData.balance - player.currentBid,
+      spent: teamData.spent + totalPrice,
+      balance: teamData.balance - totalPrice,
       players: [
         ...teamData.players,
-        {
-          playerId: player.playerId,
-          playerName: player.name,
-          soldAt: player.currentBid,
-          ...(player.wasUnsoldAssigned ? { wasUnsoldAssigned: true } : {}),
-        },
+        ...group.map((p) => ({
+          playerId: p.playerId,
+          playerName: p.name,
+          soldAt: p.currentBid,
+          ...(p.wasUnsoldAssigned ? { wasUnsoldAssigned: true } : {}),
+        })),
       ],
     })
   }
@@ -546,8 +626,24 @@ export async function markSold(auctionId: string, playerId: string) {
     if (!player) throw new Error('Player not found')
     if (!player.currentBidder) throw new Error('No bids placed on this player')
 
+    // A combo's siblings never place their own bids (only the lead player,
+    // tracked as currentPlayerId, does — see placeBid): winning the lot
+    // means every member sells together at an equal share of that one bid.
+    const group = comboSiblings(auction.players, player, true)
+    const shares = new Map(
+      splitEqually(player.currentBid, group.length).map((share, i) => [group[i].playerId, share]),
+    )
+
     const players = auction.players.map((p) =>
-      p.playerId === playerId ? { ...p, status: 'sold' as const } : p,
+      shares.has(p.playerId)
+        ? {
+            ...p,
+            status: 'sold' as const,
+            currentBid: shares.get(p.playerId)!,
+            currentBidder: player.currentBidder,
+            currentBidderName: player.currentBidderName,
+          }
+        : p,
     )
     const teamManagers = auction.teamManagers.map((tm) =>
       tm.managerId === player.currentBidder
@@ -589,18 +685,26 @@ export async function assignUnsoldPlayer(
     const team = auction.teamManagers.find((tm) => tm.teamId === teamId)
     if (!team) throw new Error('Team not found in this auction')
 
-    const price = amount ?? player.basePrice
+    // An unsold combo (see markUnsold) still has every member sharing
+    // comboId and status — assigning any one of them assigns the whole lot,
+    // split equally, same as a live-bid win (see markSold).
+    const group = comboSiblings(auction.players, player, true)
+    if (group.some((p) => p.status !== 'unsold')) {
+      throw new Error('Only unsold players can be assigned directly to a team')
+    }
+    const price = amount ?? group.reduce((sum, p) => sum + p.basePrice, 0)
     const soldCount = auction.players.filter(
       (p) => p.currentBidder === team.managerId && p.status === 'sold',
     ).length
-    assertUnsoldAssignment(player, team, price, soldCount)
+    assertUnsoldAssignment(player, team, price, soldCount, group.length)
 
+    const shares = new Map(splitEqually(price, group.length).map((share, i) => [group[i].playerId, share]))
     const players = auction.players.map((p) =>
-      p.playerId === playerId
+      shares.has(p.playerId)
         ? {
             ...p,
             status: 'sold' as const,
-            currentBid: price,
+            currentBid: shares.get(p.playerId)!,
             currentBidder: team.managerId,
             currentBidderName: team.name,
             wasUnsoldAssigned: true,
@@ -645,10 +749,17 @@ export async function revertSale(auctionId: string, playerId: string) {
     const teamStatsRef = teamRef(auctionId, team.teamId)
     const teamStatsSnap = await tx.get(teamStatsRef)
 
-    const price = player.currentBid
+    // Only folds in siblings still sold to this same team — a combo member
+    // resold individually to a different team later (via assignUnsoldPlayer
+    // after going unsold) shouldn't be swept up in this revert.
+    const group = comboSiblings(auction.players, player, false).filter(
+      (p) => p.status === 'sold' && p.currentBidder === player.currentBidder,
+    )
+    const groupIds = new Set(group.map((p) => p.playerId))
+    const price = group.reduce((sum, p) => sum + p.currentBid, 0)
 
     const players = auction.players.map((p) =>
-      p.playerId === playerId
+      groupIds.has(p.playerId)
         ? {
             ...p,
             status: 'open' as const,
@@ -671,15 +782,18 @@ export async function revertSale(auctionId: string, playerId: string) {
       tx.update(teamStatsRef, {
         spent: teamData.spent - price,
         balance: teamData.balance + price,
-        players: teamData.players.filter((p) => p.playerId !== playerId),
+        players: teamData.players.filter((p) => !groupIds.has(p.playerId)),
       })
     }
 
-    tx.update(bidsRef(auctionId, playerId), {
-      finalBidder: null,
-      finalAmount: null,
-      awardedAt: null,
-    })
+    // set+merge (not update) since a combo sibling never got its own bids
+    // doc created — only the lead player did, via placeBid — so `playerId`
+    // here might not have an existing doc to update.
+    tx.set(
+      bidsRef(auctionId, playerId),
+      { finalBidder: null, finalAmount: null, awardedAt: null },
+      { merge: true },
+    )
   })
 }
 
@@ -688,8 +802,11 @@ export async function markUnsold(auctionId: string, playerId: string) {
     const snap = await tx.get(auctionRef(auctionId))
     if (!snap.exists()) throw new Error('Auction not found')
     const auction = snap.data() as Auction
+    const player = auction.players.find((p) => p.playerId === playerId)
+    if (!player) throw new Error('Player not found')
+    const groupIds = new Set(comboSiblings(auction.players, player, true).map((p) => p.playerId))
     const players = auction.players.map((p) =>
-      p.playerId === playerId
+      groupIds.has(p.playerId)
         ? { ...p, status: 'unsold' as const, currentBid: 0, currentBidder: null, currentBidderName: null }
         : p,
     )
@@ -712,8 +829,9 @@ export async function returnPlayerToQueue(auctionId: string, playerId: string) {
     if (player.status !== 'unsold') {
       throw new Error('Only unsold players can be returned to the queue')
     }
+    const groupIds = new Set(comboSiblings(auction.players, player, true).map((p) => p.playerId))
     const players = auction.players.map((p) =>
-      p.playerId === playerId ? { ...p, status: 'open' as const } : p,
+      groupIds.has(p.playerId) ? { ...p, status: 'open' as const } : p,
     )
     tx.update(auctionRef(auctionId), { players })
   })
@@ -801,6 +919,77 @@ export async function deleteAuction(auctionId: string) {
   }
   batch.delete(auctionRef(auctionId))
   await batch.commit()
+}
+
+// Recreates a full copy of an auction under a new id — same settings,
+// players (reset to open, no bid history, no combos), and teams (reset
+// wallets, empty rosters) — so an Auction Manager can rerun an identical
+// draft without manually re-entering everything.
+export async function duplicateAuction(auctionId: string): Promise<string> {
+  const snap = await getDoc(auctionRef(auctionId))
+  if (!snap.exists()) throw new Error('Auction not found')
+  const source = snap.data() as Auction
+
+  const newAuctionId = generateAuctionId()
+  const players: Player[] = source.players.map((p) => ({
+    ...p,
+    currentBid: 0,
+    currentBidder: null,
+    currentBidderName: null,
+    status: 'open',
+    wasUnsoldAssigned: false,
+    comboId: null,
+  }))
+  const teamManagers: TeamManagerEntry[] = source.teamManagers.map((tm) => ({
+    ...tm,
+    tokensSpent: 0,
+    remainingTokens: tm.purse,
+  }))
+
+  const batch = writeBatch(db)
+  batch.set(auctionRef(newAuctionId), {
+    auctionId: newAuctionId,
+    name: `${source.name} (copy)`,
+    status: 'draft',
+    createdAt: serverTimestamp(),
+    startTime: null,
+    createdBy: source.createdBy,
+    bidIncrement: source.bidIncrement,
+    auctionManagerIds: source.auctionManagerIds,
+    teamManagerIds: source.teamManagerIds,
+    currentPlayerId: null,
+    timerDurationSeconds: source.timerDurationSeconds,
+    timerEndsAt: null,
+    players,
+    teamManagers,
+    bgColor: source.bgColor ?? null,
+    titleColor: source.titleColor ?? null,
+    secondaryColor: source.secondaryColor ?? null,
+    backgroundImage: source.backgroundImage ?? null,
+  })
+  for (const tm of teamManagers) {
+    batch.set(teamRef(newAuctionId, tm.teamId), {
+      teamId: tm.teamId,
+      teamName: tm.name,
+      managerId: tm.managerId,
+      logoId: tm.logoId ?? null,
+      logoImage: tm.logoImage ?? null,
+      jerseyColor: tm.jerseyColor ?? null,
+      managerName: tm.managerName ?? null,
+      initialPurse: tm.purse,
+      spent: 0,
+      balance: tm.purse,
+      players: [],
+    })
+  }
+  // Same reasoning as addTeamToAuction — without this, a manager's Home page
+  // wouldn't show the new copy even though they're already registered on it.
+  const notifyUids = new Set([...source.auctionManagerIds, ...source.teamManagerIds])
+  for (const uid of notifyUids) {
+    batch.update(doc(db, 'users', uid), { assignedAuctions: arrayUnion(newAuctionId) })
+  }
+  await batch.commit()
+  return newAuctionId
 }
 
 export type { PlayerBids }
