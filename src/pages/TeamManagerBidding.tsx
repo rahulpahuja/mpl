@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { Avatar } from '../components/Avatar'
 import { PlayerProfileBadges } from '../components/PlayerProfileBadges'
@@ -166,10 +166,26 @@ export function TeamManagerBidding() {
           </div>
         </div>
 
+        {auction.status === 'completed' && (
+          <div className="glass-card relative z-[3] flex flex-wrap items-center justify-between gap-3 border-red-300/70! px-4 py-3 dark:border-red-700/60!">
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              This auction has ended — bidding is closed.
+            </p>
+            <Link
+              to={`/results/${auction.auctionId}`}
+              className="shrink-0 rounded-lg btn-glass border px-3 py-1.5 text-sm font-medium"
+            >
+              View full results
+            </Link>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <section className="glass-card lg:col-span-2 p-6">
             {!currentPlayer ? (
-              <p className="relative z-[3] text-sm text-gray-500">Waiting for the next player...</p>
+              <p className="relative z-[3] text-sm text-gray-500">
+                {auction.status === 'completed' ? 'The auction has ended.' : 'Waiting for the next player...'}
+              </p>
             ) : (
               <div className="relative z-[3] space-y-4">
                 <div className="flex items-start justify-between gap-3">
