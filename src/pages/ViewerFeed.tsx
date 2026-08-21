@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { AuctionBackground } from '../components/AuctionBackground'
+import { AuctionJoinQr } from '../components/AuctionJoinQr'
 import { Avatar } from '../components/Avatar'
 import { PlayerProfileBadges } from '../components/PlayerProfileBadges'
 import { TeamAvatar } from '../components/TeamAvatar'
@@ -11,11 +12,13 @@ import { useBidSound } from '../hooks/useBidSound'
 import { useCountdown } from '../hooks/useCountdown'
 import { useJustSoldPlayer } from '../hooks/useJustSoldPlayer'
 import { usePageTitle } from '../hooks/usePageTitle'
+import { useAuthStore } from '../store/authStore'
 
 export function ViewerFeed() {
   const { auctionId } = useParams<{ auctionId: string }>()
   const { auction, loading } = useAuction(auctionId)
   usePageTitle(auction ? `${auction.name} · Live` : 'Live auction')
+  const user = useAuthStore((s) => s.user)
   const currentPlayer = auction?.players.find((p) => p.playerId === auction.currentPlayerId) ?? null
   const bids = useBids(auctionId, auction?.currentPlayerId)
   const remaining = useCountdown(auction?.timerEndsAt ?? null)
@@ -41,10 +44,36 @@ export function ViewerFeed() {
   const sortedBids = [...(bids?.bids ?? [])].sort((a, b) => b.timestamp - a.timestamp)
   const standings = [...auction.teamManagers].sort((a, b) => b.tokensSpent - a.tokensSpent)
 
+  // What this signed-in viewer's stake in this specific auction is — a
+  // player up for bidding, a team captain/manager, or an Auction Manager.
+  // playerId equals the linked user's uid for registered players (see
+  // handleAddRegisteredPlayer in AuctionSetup), so this is a direct match.
+  const myPlayer = user ? auction.players.find((p) => p.playerId === user.uid) : null
+  const myTeam = myPlayer?.currentBidder
+    ? auction.teamManagers.find((tm) => tm.managerId === myPlayer.currentBidder)
+    : null
+  const myTeamManagerEntry = user ? auction.teamManagers.find((tm) => tm.managerId === user.uid) : null
+  const amAuctionManager = user ? auction.auctionManagerIds.includes(user.uid) : false
+
+  const myRoleMessage = myPlayer
+    ? myPlayer.status === 'sold' && myTeam
+      ? `You've been sold to ${myTeam.name} for ${myPlayer.currentBid}!`
+      : myPlayer.status === 'unsold'
+        ? "You went unsold — you may still get picked up later."
+        : myPlayer.playerId === auction.currentPlayerId
+          ? "You're up on the block right now!"
+          : "You're in the queue, not sold yet."
+    : myTeamManagerEntry
+      ? `You're the captain of ${myTeamManagerEntry.name}.`
+      : amAuctionManager
+        ? "You're an Auction Manager for this auction."
+        : null
+
   return (
     <Layout>
       <AuctionBackground color={auction.bgColor} imageUrl={auction.backgroundImage} />
       <SoldCelebration sold={sold} onDone={clear} />
+      {auction.status === 'live' && <AuctionJoinQr auctionId={auction.auctionId} />}
       <div className="space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -65,6 +94,12 @@ export function ViewerFeed() {
             Full results
           </Link>
         </div>
+
+        {myRoleMessage && (
+          <p className="glass-card relative z-[3] px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
+            {myRoleMessage}
+          </p>
+        )}
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <section className="glass-card lg:col-span-2 p-6">

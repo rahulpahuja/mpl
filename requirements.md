@@ -129,3 +129,40 @@ which team or tournament — visible on their profile:
 
 These aggregate automatically off each match's final scorecard once it's
 marked `completed` — no manual entry.
+
+## Split live-doc state from bulk state (scaling)
+
+Both the auction and match features share the same pattern: one Firestore
+doc holds everything, and every viewer's `onSnapshot` listener re-receives
+the *whole* doc on every change. `placeBid` rewrites the entire `players[]`
+array on `auctions/{id}` per bid (`lib/auctions.ts:450-491`); `recordBall`
+rewrites the entire innings state on `matches/{id}` per ball
+(`lib/matches.ts:174-238`), on top of its own cheap per-ball write to the
+`balls` subcollection. Firestore bills realtime listeners per doc-read per
+update, so cost scales as **events × concurrent viewers**, not registered
+user count — a single well-watched live match/auction can burn through
+Spark's daily 50K-read quota on its own (roughly 40-50 concurrent-viewer
+matches/day at current doc sizes), and pushes real egress cost on Blaze.
+
+**Why it's needed:** the app is fine at today's traffic, but "host a
+match"/live auction are the whole point of the product — usage is inherently
+bursty and fan-out-heavy (everyone opens the live view at once). Without
+this, growth in spectators (not just players) directly drives Firestore
+cost/quota pressure, and Spark's daily caps fail hard mid-event rather than
+degrading gracefully.
+
+**What it should do:**
+- Split each `auctions/{id}` and `matches/{id}` doc into a small
+  frequently-written "live state" doc (current bid/bidder, current
+  over/score/batsmen) and a bulk doc (full roster, full scorecard history).
+  Viewers listen to the small doc by default; the bulk doc loads once via
+  `getDoc`, not `onSnapshot`.
+- Finish migrating off the legacy base64 `encryptedPhoto` field on `Player`
+  (still written in `syncPlayerProfileSnapshot`, `lib/auctions.ts:200-227`)
+  in favor of `photoSourceFilenId` — inline photo bytes get retransmitted to
+  every viewer on every unrelated bid until this is gone.
+- Confirm the project is on the Blaze plan before a live event outgrows
+  Spark's daily quota — Spark fails hard rather than degrading.
+- Not urgent: `recordBall` writes are human-paced, no batching/debouncing
+  needed yet; `firestore.indexes.json` is empty and fine as long as no
+  filtered/sorted list queries get added.
