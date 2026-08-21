@@ -643,6 +643,49 @@ export async function returnPlayerToQueue(auctionId: string, playerId: string) {
   })
 }
 
+// Emergency reset for a live auction that's gone wrong (wrong bid recorded,
+// corrupted state, etc.) — wipes all bidding progress back to a fresh
+// 'draft' so the Auction Manager can hit "Go Live" and start over, without
+// losing the roster, teams, or team registrations themselves.
+export async function restartAuction(auctionId: string) {
+  const snap = await getDoc(auctionRef(auctionId))
+  if (!snap.exists()) return
+  const auction = snap.data() as Auction
+
+  const [teamsSnap, bidsSnap] = await Promise.all([
+    getDocs(collection(db, 'auctions', auctionId, 'teams')),
+    getDocs(collection(db, 'auctions', auctionId, 'bids')),
+  ])
+
+  const batch = writeBatch(db)
+  for (const d of bidsSnap.docs) batch.delete(d.ref)
+  for (const d of teamsSnap.docs) {
+    const stats = d.data() as AuctionTeamStats
+    batch.update(d.ref, { spent: 0, balance: stats.initialPurse, players: [] })
+  }
+  const players = auction.players.map((p) => ({
+    ...p,
+    status: 'open' as const,
+    currentBid: 0,
+    currentBidder: null,
+    currentBidderName: null,
+    wasUnsoldAssigned: false,
+  }))
+  const teamManagers = auction.teamManagers.map((tm) => ({
+    ...tm,
+    tokensSpent: 0,
+    remainingTokens: tm.purse,
+  }))
+  batch.update(auctionRef(auctionId), {
+    players,
+    teamManagers,
+    currentPlayerId: null,
+    timerEndsAt: null,
+    status: 'draft',
+  })
+  await batch.commit()
+}
+
 export async function deleteAuction(auctionId: string) {
   const snap = await getDoc(auctionRef(auctionId))
   if (!snap.exists()) return

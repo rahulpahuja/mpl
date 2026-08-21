@@ -12,10 +12,12 @@ import { useBidSound } from '../hooks/useBidSound'
 import { useCountdown } from '../hooks/useCountdown'
 import { useJustSoldPlayer } from '../hooks/useJustSoldPlayer'
 import { usePageTitle } from '../hooks/usePageTitle'
+import { useAuthStore } from '../store/authStore'
 import {
   assignUnsoldPlayer,
   markSold,
   markUnsold,
+  restartAuction,
   returnPlayerToQueue,
   setCurrentPlayer,
   startTimer,
@@ -26,6 +28,7 @@ import {
 export function AuctionManagerPanel() {
   const { auctionId } = useParams<{ auctionId: string }>()
   const { auction, loading } = useAuction(auctionId)
+  const user = useAuthStore((s) => s.user)
   usePageTitle(auction ? `${auction.name} · Manage` : 'Manage auction')
   const [timerDuration, setTimerDuration] = useState('30')
   const [busy, setBusy] = useState(false)
@@ -70,6 +73,20 @@ export function AuctionManagerPanel() {
     setAssignTeamByPlayer((prev) => ({ ...prev, [playerId]: '' }))
   }
 
+  async function handleRestart() {
+    if (!auctionId) return
+    if (
+      !confirm(
+        `Discard the current live progress and restart "${auction?.name}" (${auctionId})? ` +
+          'This clears every bid, resets every player back to open, and refunds every team\'s ' +
+          'purse. It cannot be undone.',
+      )
+    ) {
+      return
+    }
+    await run(() => restartAuction(auctionId))
+  }
+
   async function run(fn: () => Promise<void>) {
     setBusy(true)
     try {
@@ -112,6 +129,16 @@ export function AuctionManagerPanel() {
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
                 End auction
+              </button>
+            )}
+            {auction.status === 'live' && user?.role === 'admin' && (
+              <button
+                onClick={handleRestart}
+                disabled={busy}
+                title="Emergency reset: wipes all bids and player/team progress back to draft"
+                className="rounded-lg border border-red-600 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-50"
+              >
+                Discard &amp; restart
               </button>
             )}
           </div>
