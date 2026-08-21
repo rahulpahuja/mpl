@@ -75,6 +75,9 @@ export function Results() {
   const sold = auction.players.filter((p) => p.status === 'sold')
   const unsold = auction.players.filter((p) => p.status === 'unsold')
   const sortedTeams = [...teams].sort((a, b) => b.spent - a.spent)
+  const byPriceDesc = [...sold].sort((a, b) => b.currentBid - a.currentBid)
+  const topSold = byPriceDesc.slice(0, 3)
+  const bottomSold = byPriceDesc.slice(-3).reverse()
 
   return (
     <Layout>
@@ -156,6 +159,40 @@ export function Results() {
             )}
           </div>
         </section>
+
+        {auction.status === 'completed' && topSold.length > 0 && (
+          <section>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Top sales</h2>
+            <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {topSold.map((p, i) => (
+                <li key={p.playerId} className="glass-card relative z-[3] p-4">
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400">#{i + 1}</p>
+                  <p className="mt-1 truncate font-semibold text-gray-900 dark:text-gray-100">{p.name}</p>
+                  <p className="text-xs text-gray-500">{p.position}</p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{p.currentBid}</p>
+                  <p className="text-xs text-gray-500">Sold to {p.currentBidderName}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {auction.status === 'completed' && sold.length > 3 && bottomSold.length > 0 && (
+          <section>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Lowest sales</h2>
+            <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {bottomSold.map((p, i) => (
+                <li key={p.playerId} className="glass-card relative z-[3] p-4">
+                  <p className="text-xs font-medium text-gray-500">#{i + 1}</p>
+                  <p className="mt-1 truncate font-semibold text-gray-900 dark:text-gray-100">{p.name}</p>
+                  <p className="text-xs text-gray-500">{p.position}</p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{p.currentBid}</p>
+                  <p className="text-xs text-gray-500">Sold to {p.currentBidderName}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section>
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Sold players</h2>
