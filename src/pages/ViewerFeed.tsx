@@ -20,6 +20,12 @@ export function ViewerFeed() {
   usePageTitle(auction ? `${auction.name} · Live` : 'Live auction')
   const user = useAuthStore((s) => s.user)
   const currentPlayer = auction?.players.find((p) => p.playerId === auction.currentPlayerId) ?? null
+  const currentGroup =
+    currentPlayer && auction
+      ? currentPlayer.comboId
+        ? auction.players.filter((p) => p.comboId === currentPlayer.comboId)
+        : [currentPlayer]
+      : []
   const bids = useBids(auctionId, auction?.currentPlayerId)
   const remaining = useCountdown(auction?.timerEndsAt ?? null)
   const { sold, clear } = useJustSoldPlayer(auction)
@@ -117,33 +123,61 @@ export function ViewerFeed() {
             ) : (
               <div className="relative z-[3] mt-4 space-y-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:items-start sm:gap-4 sm:text-left">
-                    <Avatar
-                      name={currentPlayer.name}
-                      encryptedPhoto={currentPlayer.encryptedPhoto}
-                      photoURL={currentPlayer.photoURL}
-                      avatarId={currentPlayer.avatarId}
-                      shape="square"
-                      size={72}
-                      mobileSize={32}
-                    />
-                    <div className="min-w-0 space-y-1.5">
+                  {currentGroup.length > 1 ? (
+                    <div className="min-w-0 space-y-3 text-center sm:text-left">
+                      <div className="flex flex-wrap justify-center gap-3 sm:justify-start">
+                        {currentGroup.map((p) => (
+                          <Avatar
+                            key={p.playerId}
+                            name={p.name}
+                            encryptedPhoto={p.encryptedPhoto}
+                            photoURL={p.photoURL}
+                            avatarId={p.avatarId}
+                            shape="square"
+                            size={56}
+                            mobileSize={28}
+                          />
+                        ))}
+                      </div>
                       <div>
                         <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                          {currentPlayer.name}
+                          {currentGroup.map((p) => p.name).join(' + ')}
                         </p>
                         <p className="text-sm text-gray-500">
-                          {currentPlayer.position} · Base price {currentPlayer.basePrice}
+                          Combo of {currentGroup.length} · Base price{' '}
+                          {currentGroup.reduce((sum, p) => sum + p.basePrice, 0)}
                         </p>
                       </div>
-                      <PlayerProfileBadges
-                        battingHandedness={currentPlayer.battingHandedness}
-                        bowlingHandedness={currentPlayer.bowlingHandedness}
-                        battingType={currentPlayer.battingType}
-                        bowlingType={currentPlayer.bowlingType}
-                      />
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:items-start sm:gap-4 sm:text-left">
+                      <Avatar
+                        name={currentPlayer.name}
+                        encryptedPhoto={currentPlayer.encryptedPhoto}
+                        photoURL={currentPlayer.photoURL}
+                        avatarId={currentPlayer.avatarId}
+                        shape="square"
+                        size={72}
+                        mobileSize={32}
+                      />
+                      <div className="min-w-0 space-y-1.5">
+                        <div>
+                          <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                            {currentPlayer.name}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {currentPlayer.position} · Base price {currentPlayer.basePrice}
+                          </p>
+                        </div>
+                        <PlayerProfileBadges
+                          battingHandedness={currentPlayer.battingHandedness}
+                          bowlingHandedness={currentPlayer.bowlingHandedness}
+                          battingType={currentPlayer.battingType}
+                          bowlingType={currentPlayer.bowlingType}
+                        />
+                      </div>
+                    </div>
+                  )}
                   {remaining !== null && (
                     <span
                       className={`self-center rounded-lg px-3 py-1 font-mono text-2xl font-bold tabular-nums sm:shrink-0 sm:self-auto ${

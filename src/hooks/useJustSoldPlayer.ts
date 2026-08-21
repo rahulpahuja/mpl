@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import type { Auction, Player, TeamManagerEntry } from '../types'
 
 export interface JustSoldPlayer {
-  player: Player
+  // Every player who just sold together — more than one when the lead
+  // player (the one that was currentPlayerId) is part of a combo lot (see
+  // the Player.comboId doc comment), since the whole group sells as a unit.
+  players: Player[]
   team: TeamManagerEntry | null
 }
 
@@ -31,8 +34,16 @@ export function useJustSoldPlayer(auction: Auction | null | undefined) {
     if (prevId && prevId !== currentId) {
       const player = auction.players.find((p) => p.playerId === prevId)
       if (player && player.status === 'sold') {
+        const players = player.comboId
+          ? auction.players.filter(
+              (p) =>
+                p.comboId === player.comboId &&
+                p.status === 'sold' &&
+                p.currentBidder === player.currentBidder,
+            )
+          : [player]
         const team = auction.teamManagers.find((tm) => tm.managerId === player.currentBidder) ?? null
-        setSold({ player, team })
+        setSold({ players, team })
       }
     }
     prevPlayerIdRef.current = currentId

@@ -197,35 +197,61 @@ export function AuctionManagerPanel() {
               <p className="relative z-[3] mt-3 text-sm text-gray-500">No player is currently on the block.</p>
             ) : (
               <div className="relative z-[3] mt-4 space-y-4">
-                <div className="flex items-start gap-4">
-                  <Avatar
-                    name={currentPlayer.name}
-                    encryptedPhoto={currentPlayer.encryptedPhoto}
-                    photoURL={currentPlayer.photoURL}
-                    avatarId={currentPlayer.avatarId}
-                    shape="square"
-                    size={36}
-                    enlargeOnClick
-                  />
-                  <div className="space-y-1.5">
+                {currentGroup.length > 1 ? (
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-3">
+                      {currentGroup.map((p) => (
+                        <Avatar
+                          key={p.playerId}
+                          name={p.name}
+                          encryptedPhoto={p.encryptedPhoto}
+                          photoURL={p.photoURL}
+                          avatarId={p.avatarId}
+                          shape="square"
+                          size={28}
+                          enlargeOnClick
+                        />
+                      ))}
+                    </div>
                     <div>
                       <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                         {currentGroup.map((p) => p.name).join(' + ')}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {currentGroup.length > 1
-                          ? `Combo of ${currentGroup.length} · Base price ${currentGroup.reduce((sum, p) => sum + p.basePrice, 0)}`
-                          : `${currentPlayer.position} · Base price ${currentPlayer.basePrice}`}
+                        Combo of {currentGroup.length} · Base price{' '}
+                        {currentGroup.reduce((sum, p) => sum + p.basePrice, 0)}
                       </p>
                     </div>
-                    <PlayerProfileBadges
-                      battingHandedness={currentPlayer.battingHandedness}
-                      bowlingHandedness={currentPlayer.bowlingHandedness}
-                      battingType={currentPlayer.battingType}
-                      bowlingType={currentPlayer.bowlingType}
-                    />
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-start gap-4">
+                    <Avatar
+                      name={currentPlayer.name}
+                      encryptedPhoto={currentPlayer.encryptedPhoto}
+                      photoURL={currentPlayer.photoURL}
+                      avatarId={currentPlayer.avatarId}
+                      shape="square"
+                      size={36}
+                      enlargeOnClick
+                    />
+                    <div className="space-y-1.5">
+                      <div>
+                        <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                          {currentPlayer.name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {currentPlayer.position} · Base price {currentPlayer.basePrice}
+                        </p>
+                      </div>
+                      <PlayerProfileBadges
+                        battingHandedness={currentPlayer.battingHandedness}
+                        bowlingHandedness={currentPlayer.bowlingHandedness}
+                        battingType={currentPlayer.battingType}
+                        bowlingType={currentPlayer.bowlingType}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <div className="rounded-lg surface-inset p-4">
                   <p className="text-sm text-gray-500">Current bid</p>

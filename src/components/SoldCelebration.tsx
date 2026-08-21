@@ -27,7 +27,7 @@ export function SoldCelebration({ sold, onDone }: { sold: JustSoldPlayer | null;
       if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sold?.player.playerId])
+  }, [sold?.players[0]?.playerId])
 
   useEffect(() => {
     if (!sold || reducedMotion) return
@@ -39,8 +39,9 @@ export function SoldCelebration({ sold, onDone }: { sold: JustSoldPlayer | null;
   }, [sold, reducedMotion])
 
   if (!sold) return null
-  const { player, team } = sold
-  const price = player.currentBid || player.basePrice
+  const { players, team } = sold
+  const isCombo = players.length > 1
+  const totalPrice = players.reduce((sum, p) => sum + (p.currentBid || p.basePrice), 0)
 
   return (
     <div
@@ -93,20 +94,46 @@ export function SoldCelebration({ sold, onDone }: { sold: JustSoldPlayer | null;
           className="mt-6 flex flex-col items-center gap-3"
           style={{ animation: 'sold-detail-in 420ms ease-out 900ms both' }}
         >
-          <Avatar
-            name={player.name}
-            encryptedPhoto={player.encryptedPhoto}
-            photoURL={player.photoURL}
-            avatarId={player.avatarId}
-            shape="square"
-            size={40}
-          />
-          <div>
-            <p className="text-xl font-semibold text-white sm:text-2xl">{player.name}</p>
-            <p className="text-sm text-gray-400">{player.position}</p>
-          </div>
+          {isCombo ? (
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              {players.map((p) => (
+                <div key={p.playerId} className="flex flex-col items-center gap-1">
+                  <Avatar
+                    name={p.name}
+                    encryptedPhoto={p.encryptedPhoto}
+                    photoURL={p.photoURL}
+                    avatarId={p.avatarId}
+                    shape="square"
+                    size={32}
+                  />
+                  <p className="max-w-[6rem] truncate text-sm font-medium text-white">{p.name}</p>
+                  <p className="font-mono text-xs text-gray-400">{p.currentBid}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <Avatar
+                name={players[0].name}
+                encryptedPhoto={players[0].encryptedPhoto}
+                photoURL={players[0].photoURL}
+                avatarId={players[0].avatarId}
+                shape="square"
+                size={40}
+              />
+              <div>
+                <p className="text-xl font-semibold text-white sm:text-2xl">{players[0].name}</p>
+                <p className="text-sm text-gray-400">{players[0].position}</p>
+              </div>
+            </>
+          )}
 
-          <p className="mt-1 font-mono text-4xl font-bold text-white sm:text-5xl">{price}</p>
+          <p className="mt-1 font-mono text-4xl font-bold text-white sm:text-5xl">{totalPrice}</p>
+          {isCombo && (
+            <p className="text-xs uppercase tracking-wide text-gray-400">
+              Combo of {players.length} · split equally
+            </p>
+          )}
 
           {team && (
             <div className="mt-1 flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 backdrop-blur-sm">
