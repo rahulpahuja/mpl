@@ -341,6 +341,7 @@ export async function addTeamToAuction(
       logoId: team.logoId ?? null,
       logoImage: team.logoImage ?? null,
       jerseyColor: team.jerseyColor ?? null,
+      managerName: team.managerName ?? null,
     }
     tx.update(auctionRef(auctionId), {
       teamManagers: [...auction.teamManagers, entry],
@@ -353,6 +354,7 @@ export async function addTeamToAuction(
       logoId: team.logoId ?? null,
       logoImage: team.logoImage ?? null,
       jerseyColor: team.jerseyColor ?? null,
+      managerName: team.managerName ?? null,
       initialPurse: purse,
       spent: 0,
       balance: purse,
@@ -378,7 +380,13 @@ export async function addTeamToAuction(
 async function updateTeamSnapshotInAuction(
   auctionId: string,
   teamId: string,
-  snapshot: { name?: string; logoId: string | null; logoImage: string | null; jerseyColor: string | null },
+  snapshot: {
+    name?: string
+    logoId: string | null
+    logoImage: string | null
+    jerseyColor: string | null
+    managerName?: string | null
+  },
 ) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(auctionRef(auctionId))
@@ -394,6 +402,7 @@ async function updateTeamSnapshotInAuction(
               logoId: snapshot.logoId,
               logoImage: snapshot.logoImage,
               jerseyColor: snapshot.jerseyColor,
+              ...(snapshot.managerName !== undefined ? { managerName: snapshot.managerName } : {}),
             }
           : tm,
       ),
@@ -403,13 +412,20 @@ async function updateTeamSnapshotInAuction(
       logoId: snapshot.logoId,
       logoImage: snapshot.logoImage,
       jerseyColor: snapshot.jerseyColor,
+      ...(snapshot.managerName !== undefined ? { managerName: snapshot.managerName } : {}),
     })
   })
 }
 
 export async function syncTeamAcrossAllAuctions(
   teamId: string,
-  snapshot: { name?: string; logoId: string | null; logoImage: string | null; jerseyColor: string | null },
+  snapshot: {
+    name?: string
+    logoId: string | null
+    logoImage: string | null
+    jerseyColor: string | null
+    managerName?: string | null
+  },
 ) {
   const snap = await getDocs(collection(db, 'auctions'))
   const linkedAuctionIds = snap.docs
@@ -605,6 +621,66 @@ export async function assignUnsoldPlayer(
   })
 
   await recordTeamPurchase(auctionId, playerId)
+}
+
+// Undoes a mistaken sale (whether via markSold or assignUnsoldPlayer):
+// refunds the buying team's purse by the sold price, drops the player from
+// that team's roster, and puts them back in the open queue to be
+// re-auctioned. Unlike markSold/recordTeamPurchase's split write, this does
+// the auction doc and the teams/{teamId} stats doc in one transaction so the
+// two can't drift if the second write fails.
+export async function revertSale(auctionId: string, playerId: string) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) throw new Error('Auction not found')
+    const auction = snap.data() as Auction
+    const player = auction.players.find((p) => p.playerId === playerId)
+    if (!player) throw new Error('Player not found')
+    if (player.status !== 'sold') throw new Error('Only sold players can be reverted')
+    if (!player.currentBidder) throw new Error('Sold player has no bidder on record')
+
+    const team = auction.teamManagers.find((tm) => tm.managerId === player.currentBidder)
+    if (!team) throw new Error('Team not found in this auction')
+
+    const teamStatsRef = teamRef(auctionId, team.teamId)
+    const teamStatsSnap = await tx.get(teamStatsRef)
+
+    const price = player.currentBid
+
+    const players = auction.players.map((p) =>
+      p.playerId === playerId
+        ? {
+            ...p,
+            status: 'open' as const,
+            currentBid: 0,
+            currentBidder: null,
+            currentBidderName: null,
+            wasUnsoldAssigned: false,
+          }
+        : p,
+    )
+    const teamManagers = auction.teamManagers.map((tm) =>
+      tm.teamId === team.teamId
+        ? { ...tm, tokensSpent: tm.tokensSpent - price, remainingTokens: tm.remainingTokens + price }
+        : tm,
+    )
+    tx.update(auctionRef(auctionId), { players, teamManagers })
+
+    if (teamStatsSnap.exists()) {
+      const teamData = teamStatsSnap.data() as AuctionTeamStats
+      tx.update(teamStatsRef, {
+        spent: teamData.spent - price,
+        balance: teamData.balance + price,
+        players: teamData.players.filter((p) => p.playerId !== playerId),
+      })
+    }
+
+    tx.update(bidsRef(auctionId, playerId), {
+      finalBidder: null,
+      finalAmount: null,
+      awardedAt: null,
+    })
+  })
 }
 
 export async function markUnsold(auctionId: string, playerId: string) {

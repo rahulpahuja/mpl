@@ -295,6 +295,56 @@ export function TeamManagerBidding() {
           </section>
 
           <section className="glass-card lg:col-span-3 p-6">
+            <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">All teams</h2>
+            <div className="relative z-[3] mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[...auction.teamManagers]
+                .sort((a, b) => b.remainingTokens - a.remainingTokens)
+                .map((tm) => {
+                  const squad = auction.players
+                    .filter((p) => p.currentBidder === tm.managerId && p.status === 'sold')
+                    .sort((a, b) => b.currentBid - a.currentBid)
+                  return (
+                    <div key={tm.managerId} className="rounded-lg surface-inset p-4 text-sm">
+                      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                        <span className="flex min-w-0 items-center gap-2 font-medium text-gray-900 dark:text-gray-100">
+                          <TeamAvatar
+                            teamName={tm.name}
+                            logoId={tm.logoId}
+                            logoImage={tm.logoImage}
+                            jerseyColor={tm.jerseyColor}
+                          />
+                          <span className="truncate">{tm.name}</span>
+                        </span>
+                        <span className="shrink-0 text-gray-500">
+                          Balance{' '}
+                          <span className="font-mono text-gray-900 dark:text-gray-100">{tm.remainingTokens}</span>
+                        </span>
+                      </div>
+                      {tm.managerName && (
+                        <p className="mt-0.5 truncate text-xs text-gray-500">Captain: {tm.managerName}</p>
+                      )}
+                      <p className="mt-1 text-xs text-gray-500">
+                        {squad.length} / {tm.maxPlayers} players
+                      </p>
+                      <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto">
+                        {squad.map((p) => (
+                          <li key={p.playerId} className="flex justify-between gap-2 text-gray-600 dark:text-gray-400">
+                            <span className="min-w-0 truncate">{p.name}</span>
+                            <span className="shrink-0 font-mono">{p.currentBid}</span>
+                          </li>
+                        ))}
+                        {squad.length === 0 && <li className="text-gray-500">No players won yet.</li>}
+                      </ul>
+                    </div>
+                  )
+                })}
+              {auction.teamManagers.length === 0 && (
+                <p className="text-sm text-gray-500">No teams added yet.</p>
+              )}
+            </div>
+          </section>
+
+          <section className="glass-card lg:col-span-3 p-6">
             <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">
               Promote a viewer to Player
             </h2>

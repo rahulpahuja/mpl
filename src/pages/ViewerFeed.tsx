@@ -196,7 +196,12 @@ export function ViewerFeed() {
                       logoImage={tm.logoImage}
                       jerseyColor={tm.jerseyColor}
                     />
-                    <span className="truncate">{tm.name}</span>
+                    <span className="min-w-0 truncate">
+                      {tm.name}
+                      {tm.managerName && (
+                        <span className="block truncate text-xs text-gray-500">Captain: {tm.managerName}</span>
+                      )}
+                    </span>
                   </span>
                   <span className="shrink-0 text-gray-500">
                     Spent {tm.tokensSpent} · Left {tm.remainingTokens}

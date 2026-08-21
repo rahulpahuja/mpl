@@ -155,6 +155,10 @@ export interface TeamManagerEntry {
   // Same snapshot caveat as logoId, for Team.logoImage/jerseyColor.
   logoImage?: string | null
   jerseyColor?: string | null
+  // Snapshot of Team.managerName (the captain's display name) — same
+  // snapshot caveat as logoId/logoImage/jerseyColor. Optional because
+  // auctions created before this field existed won't have it.
+  managerName?: string | null
 }
 
 export type AuctionStatus = 'draft' | 'live' | 'completed'
@@ -219,6 +223,10 @@ export interface AuctionTeamStats {
   logoId?: string | null
   logoImage?: string | null
   jerseyColor?: string | null
+  // Snapshot of Team.managerName (the captain's display name) — same
+  // snapshot caveat as logoId/logoImage/jerseyColor. Optional because teams
+  // added before this field existed won't have it.
+  managerName?: string | null
   initialPurse: number
   spent: number
   balance: number

@@ -49,9 +49,17 @@ export async function updateTeamLogoImage(teamId: string, logoImage: string | nu
 // only ever touches logo fields) still syncs a complete, current snapshot.
 async function syncBrandingIfChanged(
   teamId: string,
-  updates: Partial<Pick<Team, 'teamName' | 'logoId' | 'jerseyColor' | 'logoImage'>>,
+  updates: Partial<Pick<Team, 'teamName' | 'managerName' | 'logoId' | 'jerseyColor' | 'logoImage'>>,
 ) {
-  if (!('teamName' in updates || 'logoId' in updates || 'logoImage' in updates || 'jerseyColor' in updates)) {
+  if (
+    !(
+      'teamName' in updates ||
+      'managerName' in updates ||
+      'logoId' in updates ||
+      'logoImage' in updates ||
+      'jerseyColor' in updates
+    )
+  ) {
     return
   }
   const snap = await getDoc(doc(db, 'teams', teamId))
@@ -62,6 +70,7 @@ async function syncBrandingIfChanged(
     logoId: team.logoId ?? null,
     logoImage: team.logoImage ?? null,
     jerseyColor: team.jerseyColor ?? null,
+    managerName: team.managerName ?? null,
   })
 }
 

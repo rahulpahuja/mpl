@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { toPng } from 'html-to-image'
 import { Layout } from '../components/Layout'
 import { AuctionBackground } from '../components/AuctionBackground'
 import { TeamAvatar } from '../components/TeamAvatar'
@@ -18,6 +19,28 @@ export function Results() {
   const canAssign = user?.role === 'admin' || user?.role === 'auctionManager'
   const [assignTeamByPlayer, setAssignTeamByPlayer] = useState<Record<string, string>>({})
   const [assigning, setAssigning] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const exportRef = useRef<HTMLDivElement>(null)
+
+  async function handleExportImage() {
+    if (!exportRef.current || !auction) return
+    setExporting(true)
+    try {
+      const isDark = document.documentElement.classList.contains('dark')
+      const dataUrl = await toPng(exportRef.current, {
+        backgroundColor: isDark ? '#111827' : '#ffffff',
+        pixelRatio: 2,
+      })
+      const link = document.createElement('a')
+      link.href = dataUrl
+      link.download = `${auction.name.replace(/\s+/g, '-').toLowerCase()}-results.png`
+      link.click()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to export image')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   async function handleAssign(playerId: string) {
     const teamId = assignTeamByPlayer[playerId]
@@ -57,19 +80,31 @@ export function Results() {
     <Layout>
       <AuctionBackground color={auction.bgColor} imageUrl={auction.backgroundImage} />
       <div className="space-y-10">
-        <div>
-          <h1
-            className="text-2xl font-semibold text-gray-900 dark:text-gray-100"
-            style={{ color: auction.titleColor || undefined }}
-          >
-            {auction.name} — Results
-          </h1>
-          <p className="text-sm text-gray-500" style={{ color: auction.secondaryColor || undefined }}>
-            Auction ID: <span className="font-mono">{auction.auctionId}</span> · {sold.length} sold ·{' '}
-            {unsold.length} unsold
-          </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1
+              className="text-2xl font-semibold text-gray-900 dark:text-gray-100"
+              style={{ color: auction.titleColor || undefined }}
+            >
+              {auction.name} — Results
+            </h1>
+            <p className="text-sm text-gray-500" style={{ color: auction.secondaryColor || undefined }}>
+              Auction ID: <span className="font-mono">{auction.auctionId}</span> · {sold.length} sold ·{' '}
+              {unsold.length} unsold
+            </p>
+          </div>
+          {auction.status === 'completed' && (
+            <button
+              onClick={handleExportImage}
+              disabled={exporting}
+              className="rounded-lg btn-glass border px-4 py-2 text-sm font-medium disabled:opacity-50"
+            >
+              {exporting ? 'Exporting...' : 'Export as image'}
+            </button>
+          )}
         </div>
 
+        <div ref={exportRef} className="space-y-10">
         <section>
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Team strength</h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -87,6 +122,11 @@ export function Results() {
                   </h3>
                   <span className="shrink-0 text-sm text-gray-500">Balance {team.balance}</span>
                 </div>
+                {team.managerName && (
+                  <p className="relative z-[3] mt-0.5 truncate text-xs text-gray-500">
+                    Captain: {team.managerName}
+                  </p>
+                )}
                 <p className="relative z-[3] mt-1 text-xs text-gray-500">
                   Spent {team.spent} of {team.initialPurse}
                 </p>
@@ -245,6 +285,7 @@ export function Results() {
             )}
           </section>
         )}
+        </div>
       </div>
     </Layout>
   )

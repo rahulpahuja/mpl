@@ -19,6 +19,7 @@ import {
   markUnsold,
   restartAuction,
   returnPlayerToQueue,
+  revertSale,
   setCurrentPlayer,
   startTimer,
   stopTimer,
@@ -301,6 +302,9 @@ export function AuctionManagerPanel() {
                       Balance <span className="font-mono text-gray-900 dark:text-gray-100">{tm.remainingTokens}</span>
                     </span>
                   </div>
+                  {tm.managerName && (
+                    <p className="mt-0.5 truncate text-xs text-gray-500">Captain: {tm.managerName}</p>
+                  )}
                   <p className="mt-1 text-xs text-gray-500">
                     {squad.length} / {tm.maxPlayers} players
                   </p>
@@ -319,7 +323,27 @@ export function AuctionManagerPanel() {
                             />
                           )}
                         </span>
-                        <span className="shrink-0 font-mono">{p.currentBid}</span>
+                        <span className="flex shrink-0 items-center gap-2">
+                          <span className="font-mono">{p.currentBid}</span>
+                          <button
+                            onClick={() => {
+                              if (
+                                !confirm(
+                                  `Remove ${p.name} from ${tm.name}? This refunds ${p.currentBid} to their ` +
+                                    'purse and puts the player back in the queue to be re-auctioned.',
+                                )
+                              ) {
+                                return
+                              }
+                              run(() => revertSale(auctionId, p.playerId))
+                            }}
+                            disabled={busy}
+                            title="Sold to the wrong team? Undo it and refund the purse."
+                            className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                          >
+                            Revert
+                          </button>
+                        </span>
                       </li>
                     ))}
                     {squad.length === 0 && (
