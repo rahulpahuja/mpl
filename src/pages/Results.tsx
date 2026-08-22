@@ -86,7 +86,7 @@ export function Results() {
         t.balance,
         t.spent,
         t.initialPurse,
-        t.players.length,
+        soldPlayers.filter((p) => p.currentBidder === t.managerId).length,
       ]),
       [],
       ['Player Results'],
@@ -197,6 +197,15 @@ export function Results() {
             {sortedTeams.map((team) => {
               const captainName =
                 team.managerName || teamsRegistry.find((t) => t.teamId === team.teamId)?.managerName
+              // Computed from auction.players rather than trusted from this
+              // team's own `players` snapshot — that snapshot is written by
+              // a second, non-atomic call (recordTeamPurchase) after the
+              // player is marked sold, so it can drift/miss entries (e.g. an
+              // unsold-then-assigned player) if that second write fails.
+              // auction.players is the one place a sale is always recorded.
+              const squad = auction.players
+                .filter((p) => p.currentBidder === team.managerId && p.status === 'sold')
+                .sort((a, b) => b.currentBid - a.currentBid)
               return (
               <div key={team.teamId} className="glass-card p-4">
                 <div className="relative z-[3] flex flex-wrap items-center justify-between gap-2">
@@ -220,10 +229,10 @@ export function Results() {
                   Spent {team.spent} of {team.initialPurse}
                 </p>
                 <ul className="relative z-[3] mt-3 space-y-1 text-sm">
-                  {team.players.map((p) => (
+                  {squad.map((p) => (
                     <li key={p.playerId} className="flex justify-between gap-2 text-gray-600 dark:text-gray-400">
                       <span className="min-w-0 truncate flex items-center gap-1.5">
-                        <span className="truncate">{p.playerName}</span>
+                        <span className="truncate">{p.name}</span>
                         {p.wasUnsoldAssigned && (
                           <span
                             title="Went unsold, later assigned to this team"
@@ -231,10 +240,10 @@ export function Results() {
                           />
                         )}
                       </span>
-                      <span className="shrink-0 font-mono">{p.soldAt}</span>
+                      <span className="shrink-0 font-mono">{p.currentBid}</span>
                     </li>
                   ))}
-                  {team.players.length === 0 && (
+                  {squad.length === 0 && (
                     <li className="text-gray-500">No players acquired.</li>
                   )}
                 </ul>
