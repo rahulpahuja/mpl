@@ -480,6 +480,36 @@ async function updateTeamSnapshotInAuction(
   })
 }
 
+// Backfills a missing/stale managerName onto multiple teams within ONE
+// auction, in a single transaction. Deliberately not built on top of
+// syncTeamAcrossAllAuctions/updateTeamSnapshotInAuction: calling those once
+// per team fires that many concurrent runTransaction calls against the same
+// auction doc, which race each other and can all fail with
+// failed-precondition under contention (observed in production — see
+// Results.tsx). One transaction touching every corrected team at once
+// avoids that entirely, and only ever writes the managerName field (not the
+// whole team entry with its embedded logo image).
+export async function backfillCaptainNames(
+  auctionId: string,
+  corrections: { teamId: string; managerName: string }[],
+) {
+  if (corrections.length === 0) return
+  const correctionMap = new Map(corrections.map((c) => [c.teamId, c.managerName]))
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) return
+    const auction = snap.data() as Auction
+    tx.update(auctionRef(auctionId), {
+      teamManagers: auction.teamManagers.map((tm) =>
+        correctionMap.has(tm.teamId) ? { ...tm, managerName: correctionMap.get(tm.teamId)! } : tm,
+      ),
+    })
+    for (const { teamId, managerName } of corrections) {
+      tx.update(teamRef(auctionId, teamId), { managerName })
+    }
+  })
+}
+
 export async function syncTeamAcrossAllAuctions(
   teamId: string,
   snapshot: {

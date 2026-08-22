@@ -10,7 +10,7 @@ import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
 import { useUsers } from '../hooks/useUsers'
-import { assignUnsoldPlayer, syncTeamAcrossAllAuctions } from '../lib/auctions'
+import { assignUnsoldPlayer, backfillCaptainNames } from '../lib/auctions'
 
 export function Results() {
   const { auctionId } = useParams<{ auctionId: string }>()
@@ -35,21 +35,28 @@ export function Results() {
   // rules) views this page and a team's snapshot here disagrees with the
   // live team registry's managerName, push the correction back so the
   // public snapshot is right for every future viewer — no runtime fallback
-  // needed. Safe to fire repeatedly; it's a no-op once synced.
+  // needed. Guarded to fire at most once per auction visit: teams/
+  // teamsRegistry are new array references on every Firestore snapshot
+  // event, so without this a naive effect would refire (and re-write)
+  // repeatedly for as long as the page stays open.
+  const captainSyncAttemptedRef = useRef<string | null>(null)
   useEffect(() => {
-    if (!canAssign || teams.length === 0 || teamsRegistry.length === 0) return
-    for (const team of teams) {
-      const live = teamsRegistry.find((t) => t.teamId === team.teamId)
-      if (!live?.managerName) continue
-      if (team.managerName === live.managerName) continue
-      syncTeamAcrossAllAuctions(team.teamId, {
-        logoId: team.logoId ?? null,
-        logoImage: team.logoImage ?? null,
-        jerseyColor: team.jerseyColor ?? null,
-        managerName: live.managerName,
-      }).catch((err) => console.error('Failed to resync captain name', team.teamId, err))
-    }
-  }, [canAssign, teams, teamsRegistry])
+    if (!canAssign || !auctionId || teams.length === 0 || teamsRegistry.length === 0) return
+    if (captainSyncAttemptedRef.current === auctionId) return
+    const corrections = teams
+      .map((team) => {
+        const live = teamsRegistry.find((t) => t.teamId === team.teamId)
+        return live?.managerName && team.managerName !== live.managerName
+          ? { teamId: team.teamId, managerName: live.managerName }
+          : null
+      })
+      .filter((c): c is { teamId: string; managerName: string } => c !== null)
+    if (corrections.length === 0) return
+    captainSyncAttemptedRef.current = auctionId
+    backfillCaptainNames(auctionId, corrections).catch((err) =>
+      console.error('Failed to backfill captain names', err),
+    )
+  }, [canAssign, auctionId, teams, teamsRegistry])
   const [assignTeamByPlayer, setAssignTeamByPlayer] = useState<Record<string, string>>({})
   const [assignAmountByPlayer, setAssignAmountByPlayer] = useState<Record<string, string>>({})
   const [assigning, setAssigning] = useState(false)
