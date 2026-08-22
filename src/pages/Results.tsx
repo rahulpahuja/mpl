@@ -187,7 +187,12 @@ export function Results() {
 
         <div ref={exportRef} className="space-y-10">
         <section>
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Team strength</h2>
+          <h2
+            className="text-lg font-medium text-gray-900 dark:text-gray-100"
+            style={{ color: auction.titleColor || undefined }}
+          >
+            Team strength
+          </h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {sortedTeams.map((team) => {
               const captainName =
@@ -237,14 +242,21 @@ export function Results() {
               )
             })}
             {sortedTeams.length === 0 && (
-              <p className="text-sm text-gray-500">No teams registered.</p>
+              <p className="text-sm text-gray-500" style={{ color: auction.secondaryColor || undefined }}>
+                No teams registered.
+              </p>
             )}
           </div>
         </section>
 
         {auction.status === 'completed' && topSold.length > 0 && (
           <section>
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Top sales</h2>
+            <h2
+              className="text-lg font-medium text-gray-900 dark:text-gray-100"
+              style={{ color: auction.titleColor || undefined }}
+            >
+              Top sales
+            </h2>
             <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {topSold.map((p, i) => (
                 <li key={p.playerId} className="glass-card relative z-[3] p-4">
@@ -261,7 +273,12 @@ export function Results() {
 
         {auction.status === 'completed' && sold.length > 3 && bottomSold.length > 0 && (
           <section>
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Lowest sales</h2>
+            <h2
+              className="text-lg font-medium text-gray-900 dark:text-gray-100"
+              style={{ color: auction.titleColor || undefined }}
+            >
+              Lowest sales
+            </h2>
             <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {bottomSold.map((p, i) => (
                 <li key={p.playerId} className="glass-card relative z-[3] p-4">
@@ -277,9 +294,16 @@ export function Results() {
         )}
 
         <section>
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Sold players</h2>
+          <h2
+            className="text-lg font-medium text-gray-900 dark:text-gray-100"
+            style={{ color: auction.titleColor || undefined }}
+          >
+            Sold players
+          </h2>
           {sold.length === 0 ? (
-            <p className="mt-4 text-sm text-gray-500">No players sold yet.</p>
+            <p className="mt-4 text-sm text-gray-500" style={{ color: auction.secondaryColor || undefined }}>
+              No players sold yet.
+            </p>
           ) : (
             <>
               <ul className="mt-4 space-y-2 sm:hidden">
@@ -353,7 +377,12 @@ export function Results() {
 
         {unsold.length > 0 && (
           <section>
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Unsold players</h2>
+            <h2
+              className="text-lg font-medium text-gray-900 dark:text-gray-100"
+              style={{ color: auction.titleColor || undefined }}
+            >
+              Unsold players
+            </h2>
             {canAssign ? (
               <ul className="mt-3 space-y-2">
                 {unsold.map((p) => (

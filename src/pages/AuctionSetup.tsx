@@ -80,9 +80,12 @@ const AUCTION_BG_JPEG_QUALITY = 0.72
 const DEFAULT_AUCTION_BG_COLOR = '#1e293b'
 // Starting swatches for the title/secondary color pickers — <input type="color">
 // needs a valid hex value even before the Auction Manager has chosen one.
-// Matches the default text-gray-900/text-gray-500 these override once saved.
-const DEFAULT_TITLE_COLOR = '#111827'
-const DEFAULT_SECONDARY_COLOR = '#6b7280'
+// Light, not dark: DEFAULT_AUCTION_BG_COLOR above is a dark slate, so these
+// need to read like the dark-mode text-gray-100/text-gray-400 pairing, not
+// the light-mode one, or saving settings untouched leaves dark text on a
+// dark backdrop.
+const DEFAULT_TITLE_COLOR = '#f3f4f6'
+const DEFAULT_SECONDARY_COLOR = '#9ca3af'
 
 function parseMaxPlayers(value: string): number {
   const n = Number(value)
