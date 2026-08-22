@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { toPng } from 'html-to-image'
 import { Layout } from '../components/Layout'
@@ -10,7 +10,7 @@ import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
 import { useUsers } from '../hooks/useUsers'
-import { assignUnsoldPlayer } from '../lib/auctions'
+import { assignUnsoldPlayer, syncTeamAcrossAllAuctions } from '../lib/auctions'
 
 export function Results() {
   const { auctionId } = useParams<{ auctionId: string }>()
@@ -19,12 +19,37 @@ export function Results() {
   const teams = useTeams(auctionId)
   // Older auctions' team snapshots predate the managerName field and were
   // never resynced (see lib/teams.ts syncBrandingIfChanged — it only fires
-  // on a team edit), so fall back to the live team registry, which always
-  // has the current captain name, when the snapshot is missing it.
+  // on a team edit). The registry read below is admin/auctionManager-only
+  // (Firestore rules), so it can only ever backstop *this* viewer's own
+  // render — a captain/player/viewer has no way to read it, and would see
+  // no captain name at all. The effect further down does the real fix: it
+  // writes the captain name back onto the auction's own team snapshot
+  // (which IS public), so every viewer sees it from the primary source.
   const { teams: teamsRegistry } = useTeamsRegistry()
   const { users } = useUsers()
   const user = useAuthStore((s) => s.user)
   const canAssign = user?.role === 'admin' || user?.role === 'auctionManager'
+
+  // Self-heals missing captain names: whenever an admin/auctionManager (the
+  // only roles with write access to auctions/{id}/teams, per Firestore
+  // rules) views this page and a team's snapshot here disagrees with the
+  // live team registry's managerName, push the correction back so the
+  // public snapshot is right for every future viewer — no runtime fallback
+  // needed. Safe to fire repeatedly; it's a no-op once synced.
+  useEffect(() => {
+    if (!canAssign || teams.length === 0 || teamsRegistry.length === 0) return
+    for (const team of teams) {
+      const live = teamsRegistry.find((t) => t.teamId === team.teamId)
+      if (!live?.managerName) continue
+      if (team.managerName === live.managerName) continue
+      syncTeamAcrossAllAuctions(team.teamId, {
+        logoId: team.logoId ?? null,
+        logoImage: team.logoImage ?? null,
+        jerseyColor: team.jerseyColor ?? null,
+        managerName: live.managerName,
+      }).catch((err) => console.error('Failed to resync captain name', team.teamId, err))
+    }
+  }, [canAssign, teams, teamsRegistry])
   const [assignTeamByPlayer, setAssignTeamByPlayer] = useState<Record<string, string>>({})
   const [assignAmountByPlayer, setAssignAmountByPlayer] = useState<Record<string, string>>({})
   const [assigning, setAssigning] = useState(false)
