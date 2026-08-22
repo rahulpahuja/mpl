@@ -279,12 +279,21 @@ export function Home() {
                     )
                   )}
                   {user.role === 'player' && (
-                    <Link
-                      to={`/viewer/${auctionId}`}
-                      className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
-                    >
-                      Watch
-                    </Link>
+                    auction?.status === 'completed' ? (
+                      <Link
+                        to={`/results/${auctionId}`}
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
+                      >
+                        Results
+                      </Link>
+                    ) : (
+                      <Link
+                        to={`/viewer/${auctionId}`}
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
+                      >
+                        Watch
+                      </Link>
+                    )
                   )}
                 </span>
               </li>
