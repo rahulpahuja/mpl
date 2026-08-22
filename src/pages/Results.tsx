@@ -43,6 +43,32 @@ export function Results() {
     }
   }
 
+  function handleExportCsv() {
+    if (!auction) return
+    const escape = (value: string | number) => {
+      const str = String(value)
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
+    }
+    const rows = [
+      ['Player', 'Position', 'Status', 'Team', 'Price'],
+      ...auction.players.map((p) => [
+        p.name,
+        p.position,
+        p.status,
+        p.status === 'sold' ? p.currentBidderName ?? '' : '',
+        p.status === 'sold' ? p.currentBid : '',
+      ]),
+    ]
+    const csv = rows.map((row) => row.map(escape).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${auction.name.replace(/\s+/g, '-').toLowerCase()}-results.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   async function handleAssign(playerId: string) {
     const teamId = assignTeamByPlayer[playerId]
     if (!teamId || !auctionId) return
@@ -101,13 +127,21 @@ export function Results() {
             </p>
           </div>
           {auction.status === 'completed' && (
-            <button
-              onClick={handleExportImage}
-              disabled={exporting}
-              className="rounded-lg btn-glass border px-4 py-2 text-sm font-medium disabled:opacity-50"
-            >
-              {exporting ? 'Exporting...' : 'Export as image'}
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleExportImage}
+                disabled={exporting}
+                className="rounded-lg btn-glass border px-4 py-2 text-sm font-medium disabled:opacity-50"
+              >
+                {exporting ? 'Exporting...' : 'Export as image'}
+              </button>
+              <button
+                onClick={handleExportCsv}
+                className="rounded-lg btn-glass border px-4 py-2 text-sm font-medium"
+              >
+                Export as CSV
+              </button>
+            </div>
           )}
         </div>
 
