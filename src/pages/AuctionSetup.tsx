@@ -71,6 +71,12 @@ async function resolvePlayerPhotoFields(user: AppUser): Promise<{
   }
 }
 
+const MAX_BG_UPLOAD_BYTES = 8 * 1024 * 1024
+// Higher than imageProcessing's avatar-sized default — shown full-bleed as
+// this auction's page backdrop, same reasoning as AdminVenues.tsx's photos.
+const AUCTION_BG_MAX_DIMENSION_PX = 900
+const AUCTION_BG_JPEG_QUALITY = 0.72
+
 const DEFAULT_AUCTION_BG_COLOR = '#1e293b'
 // Starting swatches for the title/secondary color pickers — <input type="color">
 // needs a valid hex value even before the Auction Manager has chosen one.
@@ -153,6 +159,8 @@ export function AuctionSetup() {
   const [titleColor, setTitleColor] = useState(DEFAULT_TITLE_COLOR)
   const [secondaryColor, setSecondaryColor] = useState(DEFAULT_SECONDARY_COLOR)
   const [backgroundImage, setBackgroundImage] = useState('')
+  const [uploadingBg, setUploadingBg] = useState(false)
+  const [bgUploadError, setBgUploadError] = useState<string | null>(null)
   const [applyingPurse, setApplyingPurse] = useState(false)
   const [purseError, setPurseError] = useState<string | null>(null)
   const [applyingMaxPlayers, setApplyingMaxPlayers] = useState(false)
@@ -510,6 +518,33 @@ export function AuctionSetup() {
     }
   }
 
+  async function handleBackgroundUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setBgUploadError(null)
+    if (!file.type.startsWith('image/')) {
+      setBgUploadError('Please choose an image file.')
+      return
+    }
+    if (file.size > MAX_BG_UPLOAD_BYTES) {
+      setBgUploadError('Image is too large — choose a photo under 8MB.')
+      return
+    }
+    setUploadingBg(true)
+    try {
+      const dataUrl = await compressImageToDataUrl(file, {
+        maxDimension: AUCTION_BG_MAX_DIMENSION_PX,
+        quality: AUCTION_BG_JPEG_QUALITY,
+      })
+      setBackgroundImage(dataUrl)
+    } catch (err) {
+      setBgUploadError(err instanceof Error ? err.message : 'Failed to upload image')
+    } finally {
+      setUploadingBg(false)
+    }
+  }
+
   async function handleSaveSettings() {
     if (!auctionId) return
     await updateAuctionSettings(auctionId, {
@@ -671,10 +706,39 @@ export function AuctionSetup() {
                     <img src={img.path} alt={img.label} className="h-full w-full object-cover" />
                   </button>
                 ))}
+                {backgroundImage && !BACKGROUND_IMAGES.some((img) => img.path === backgroundImage) ? (
+                  <div className="group relative h-14 w-20 shrink-0 overflow-hidden rounded-lg ring-2 ring-orange-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900">
+                    <img src={backgroundImage} alt="Custom background" className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setBackgroundImage('')}
+                      aria-label="Remove custom background"
+                      className="absolute inset-0 hidden items-center justify-center bg-black/50 text-[10px] font-medium text-white group-hover:flex"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    className={`flex h-14 w-20 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 dark:border-gray-700 text-center text-[10px] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                      uploadingBg ? 'opacity-50' : ''
+                    }`}
+                  >
+                    {uploadingBg ? 'Uploading...' : '+ Upload image'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleBackgroundUpload}
+                      disabled={uploadingBg}
+                      className="hidden"
+                    />
+                  </label>
+                )}
               </div>
+              {bgUploadError && <p className="mt-1 text-xs text-red-600">{bgUploadError}</p>}
               <p className="mt-1 text-xs text-gray-500">
                 Used as the backdrop on this auction's setup, live bidding, viewer, and results
-                pages, replacing the background color below.
+                pages, replacing the background color below. Pick a preset or upload your own.
               </p>
             </div>
             <div>
@@ -1520,7 +1584,12 @@ export function AuctionSetup() {
                       logoImage={liveTeam?.logoImage ?? tm.logoImage}
                       jerseyColor={liveTeam?.jerseyColor ?? tm.jerseyColor}
                     />
-                    <span className="truncate">{tm.name}</span>
+                    <span className="min-w-0 truncate">
+                      {tm.name}
+                      {tm.managerName && (
+                        <span className="block truncate text-xs text-gray-500">Captain: {tm.managerName}</span>
+                      )}
+                    </span>
                   </span>
                   <span className="shrink-0 text-gray-500">
                     Purse: {tm.purse} · Max players: {tm.maxPlayers}

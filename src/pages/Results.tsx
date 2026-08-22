@@ -8,6 +8,7 @@ import { useAuction } from '../hooks/useAuction'
 import { useTeams } from '../hooks/useTeams'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
+import { useUsers } from '../hooks/useUsers'
 import { assignUnsoldPlayer } from '../lib/auctions'
 
 export function Results() {
@@ -15,6 +16,7 @@ export function Results() {
   const { auction, loading } = useAuction(auctionId)
   usePageTitle(auction ? `${auction.name} · Results` : 'Auction results')
   const teams = useTeams(auctionId)
+  const { users } = useUsers()
   const user = useAuthStore((s) => s.user)
   const canAssign = user?.role === 'admin' || user?.role === 'auctionManager'
   const [assignTeamByPlayer, setAssignTeamByPlayer] = useState<Record<string, string>>({})
@@ -49,7 +51,39 @@ export function Results() {
       const str = String(value)
       return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
     }
-    const rows = [
+    const managerNames = auction.auctionManagerIds
+      .map((uid) => users.find((u) => u.uid === uid)?.displayName ?? uid)
+      .join('; ')
+    const soldPlayers = auction.players.filter((p) => p.status === 'sold')
+    const unsoldPlayers = auction.players.filter((p) => p.status === 'unsold')
+    const standings = [...teams].sort((a, b) => b.spent - a.spent)
+
+    const rows: (string | number)[][] = [
+      ['Auction Name', auction.name],
+      ['Auction ID', auction.auctionId],
+      ['Status', auction.status],
+      ['Auction Manager(s)', managerNames || 'None'],
+      ['Background Color', auction.bgColor || 'Default'],
+      ['Title Color', auction.titleColor || 'Default'],
+      ['Secondary Color', auction.secondaryColor || 'Default'],
+      ['Background Image', auction.backgroundImage || 'None'],
+      ['Total Players', auction.players.length],
+      ['Sold', soldPlayers.length],
+      ['Unsold', unsoldPlayers.length],
+      ['Exported At', new Date().toISOString()],
+      [],
+      ['Team Standings'],
+      ['Team', 'Captain', 'Balance', 'Spent', 'Initial Purse', 'Players'],
+      ...standings.map((t) => [
+        t.teamName,
+        t.managerName ?? '',
+        t.balance,
+        t.spent,
+        t.initialPurse,
+        t.players.length,
+      ]),
+      [],
+      ['Player Results'],
       ['Player', 'Position', 'Status', 'Team', 'Price'],
       ...auction.players.map((p) => [
         p.name,

@@ -22,6 +22,7 @@ export function AdminAuctions() {
   const [creating, setCreating] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
 
   async function handleCreate() {
     if (!newAuctionName.trim() || !user) return
@@ -66,7 +67,33 @@ export function AdminAuctions() {
       <div className="space-y-6">
         <AdminNav />
         <section>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Auctions</h1>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Auctions</h1>
+            <div className="flex gap-1 rounded-lg border border-gray-200 dark:border-gray-800 p-1">
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={`rounded-md px-3 py-1 text-sm font-medium ${
+                  viewMode === 'list'
+                    ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400'
+                    : 'text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                List
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                className={`rounded-md px-3 py-1 text-sm font-medium ${
+                  viewMode === 'grid'
+                    ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400'
+                    : 'text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                Grid
+              </button>
+            </div>
+          </div>
           <div className="glass-card mt-4 flex gap-2 p-4">
             <input
               value={newAuctionName}
@@ -87,6 +114,70 @@ export function AdminAuctions() {
             <p className="mt-6 text-sm text-gray-500">Loading auctions...</p>
           ) : auctions.length === 0 ? (
             <p className="mt-6 text-sm text-gray-500">No auctions yet.</p>
+          ) : viewMode === 'grid' ? (
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {auctions.map((a) => (
+                <div key={a.auctionId} className="glass-card overflow-hidden">
+                  <div
+                    className="relative z-[3] h-28 w-full bg-gray-200 bg-cover bg-center dark:bg-gray-800"
+                    style={a.backgroundImage ? { backgroundImage: `url(${a.backgroundImage})` } : undefined}
+                  >
+                    <span
+                      className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[a.status]}`}
+                    >
+                      {a.status}
+                    </span>
+                  </div>
+                  <div className="relative z-[3] p-4">
+                    <p className="truncate font-medium text-gray-900 dark:text-gray-100">{a.name}</p>
+                    <p className="font-mono text-xs text-gray-500">{a.auctionId}</p>
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      {a.players.length} players · {a.teamManagers.length} teams
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                      <Link
+                        to={`/admin/auctions/${a.auctionId}/setup`}
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
+                      >
+                        Setup
+                      </Link>
+                      <Link
+                        to={`/manage/${a.auctionId}`}
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
+                      >
+                        Manage
+                      </Link>
+                      <Link
+                        to={`/results/${a.auctionId}`}
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
+                      >
+                        Results
+                      </Link>
+                      <Link
+                        to={`/viewer/${a.auctionId}`}
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
+                      >
+                        View
+                      </Link>
+                      <button
+                        onClick={() => handleDuplicate(a.auctionId, a.name)}
+                        disabled={duplicatingId === a.auctionId}
+                        className="font-medium text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50"
+                      >
+                        {duplicatingId === a.auctionId ? 'Duplicating...' : 'Duplicate'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(a.auctionId, a.name)}
+                        disabled={deletingId === a.auctionId}
+                        className="font-medium text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                      >
+                        {deletingId === a.auctionId ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             <>
               <ul className="mt-6 space-y-2 sm:hidden">
