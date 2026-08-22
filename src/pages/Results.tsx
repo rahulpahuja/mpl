@@ -89,6 +89,24 @@ export function Results() {
         soldPlayers.filter((p) => p.currentBidder === t.managerId).length,
       ]),
       [],
+      ['Team Squads'],
+      ...standings.flatMap((t) => {
+        const captain =
+          t.managerName || teamsRegistry.find((r) => r.teamId === t.teamId)?.managerName || ''
+        const squad = soldPlayers
+          .filter((p) => p.currentBidder === t.managerId)
+          .sort((a, b) => b.currentBid - a.currentBid)
+        return [
+          [`${t.teamName} (Captain: ${captain || 'Unknown'})`],
+          ['Player', 'Position', 'Price', 'Unsold → Reassigned'],
+          ...squad.map((p) => [p.name, p.position, p.currentBid, p.wasUnsoldAssigned ? 'Yes' : ''] as (
+            | string
+            | number
+          )[]),
+          ...(squad.length === 0 ? [['No players acquired.']] : []),
+          [],
+        ]
+      }),
       ['Player Results'],
       ['Player', 'Position', 'Status', 'Team', 'Price'],
       ...auction.players.map((p) => [
