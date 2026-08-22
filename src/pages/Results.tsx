@@ -199,7 +199,7 @@ export function Results() {
                 </div>
                 {team.managerName && (
                   <p className="relative z-[3] mt-0.5 truncate text-xs text-gray-500">
-                    Captain: {team.managerName}
+                    {team.managerName} (C)
                   </p>
                 )}
                 <p className="relative z-[3] mt-1 text-xs text-gray-500">
