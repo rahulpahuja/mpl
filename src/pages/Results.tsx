@@ -6,6 +6,7 @@ import { AuctionBackground } from '../components/AuctionBackground'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useTeams } from '../hooks/useTeams'
+import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
 import { useUsers } from '../hooks/useUsers'
@@ -16,6 +17,11 @@ export function Results() {
   const { auction, loading } = useAuction(auctionId)
   usePageTitle(auction ? `${auction.name} · Results` : 'Auction results')
   const teams = useTeams(auctionId)
+  // Older auctions' team snapshots predate the managerName field and were
+  // never resynced (see lib/teams.ts syncBrandingIfChanged — it only fires
+  // on a team edit), so fall back to the live team registry, which always
+  // has the current captain name, when the snapshot is missing it.
+  const { teams: teamsRegistry } = useTeamsRegistry()
   const { users } = useUsers()
   const user = useAuthStore((s) => s.user)
   const canAssign = user?.role === 'admin' || user?.role === 'auctionManager'
@@ -76,7 +82,7 @@ export function Results() {
       ['Team', 'Captain', 'Balance', 'Spent', 'Initial Purse', 'Players'],
       ...standings.map((t) => [
         t.teamName,
-        t.managerName ?? '',
+        t.managerName || teamsRegistry.find((r) => r.teamId === t.teamId)?.managerName || '',
         t.balance,
         t.spent,
         t.initialPurse,
@@ -183,7 +189,10 @@ export function Results() {
         <section>
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Team strength</h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {sortedTeams.map((team) => (
+            {sortedTeams.map((team) => {
+              const captainName =
+                team.managerName || teamsRegistry.find((t) => t.teamId === team.teamId)?.managerName
+              return (
               <div key={team.teamId} className="glass-card p-4">
                 <div className="relative z-[3] flex flex-wrap items-center justify-between gap-2">
                   <h3 className="flex min-w-0 items-center gap-2 font-semibold text-gray-900 dark:text-gray-100">
@@ -197,9 +206,9 @@ export function Results() {
                   </h3>
                   <span className="shrink-0 text-sm text-gray-500">Balance {team.balance}</span>
                 </div>
-                {team.managerName && (
+                {captainName && (
                   <p className="relative z-[3] mt-0.5 truncate text-xs text-gray-500">
-                    {team.managerName} (C)
+                    {captainName} (C)
                   </p>
                 )}
                 <p className="relative z-[3] mt-1 text-xs text-gray-500">
@@ -225,7 +234,8 @@ export function Results() {
                   )}
                 </ul>
               </div>
-            ))}
+              )
+            })}
             {sortedTeams.length === 0 && (
               <p className="text-sm text-gray-500">No teams registered.</p>
             )}
