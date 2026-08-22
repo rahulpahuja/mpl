@@ -330,6 +330,12 @@ export function TeamManagerBidding() {
                   <span className="min-w-0 truncate text-gray-900 dark:text-gray-100">
                     {p.name}
                     {p.position && <span className="text-gray-500"> · {p.position}</span>}
+                    {p.wasUnsoldAssigned && (
+                      <span
+                        title="Went unsold, later assigned to this team"
+                        className="ml-1.5 inline-block h-2 w-2 rounded-full bg-amber-500"
+                      />
+                    )}
                   </span>
                   <span className="shrink-0 font-mono text-gray-600 dark:text-gray-400">{p.currentBid}</span>
                 </li>
@@ -375,7 +381,15 @@ export function TeamManagerBidding() {
                       <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto">
                         {squad.map((p) => (
                           <li key={p.playerId} className="flex justify-between gap-2 text-gray-600 dark:text-gray-400">
-                            <span className="min-w-0 truncate">{p.name}</span>
+                            <span className="min-w-0 truncate flex items-center gap-1.5">
+                              <span className="truncate">{p.name}</span>
+                              {p.wasUnsoldAssigned && (
+                                <span
+                                  title="Went unsold, later assigned to this team"
+                                  className="shrink-0 inline-block h-2 w-2 rounded-full bg-amber-500"
+                                />
+                              )}
+                            </span>
                             <span className="shrink-0 font-mono">{p.currentBid}</span>
                           </li>
                         ))}
