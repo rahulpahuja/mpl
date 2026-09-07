@@ -87,7 +87,7 @@ export function NavDrawer() {
               onClick={() => setOpen(false)}
             />
             <nav className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col overflow-y-auto border-r border-gray-200 bg-white p-3 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-              <div className="flex items-center justify-between px-2 pb-2 pt-1">
+              <div className="flex shrink-0 items-center justify-between px-2 pb-2 pt-1">
                 <span className="flex items-center gap-2 bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-base font-bold tracking-tight text-transparent">
                   <span aria-hidden="true">🏏</span> Auction Manager
                 </span>
@@ -101,52 +101,54 @@ export function NavDrawer() {
                 </button>
               </div>
 
-              {DRAWER_GROUPS.map((group) => {
-                const groupLinks = links.filter((d) => d.group === group)
-                const isAccount = group === 'Account'
-                if (groupLinks.length === 0 && !isAccount) return null
-                return (
-                  <div key={group} className="mt-1">
-                    <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                      {group}
-                    </p>
-                    {groupLinks.map((d) => (
-                      <NavLink
-                        key={d.to}
-                        to={d.to}
-                        end={d.end}
-                        onClick={() => setOpen(false)}
-                        className={({ isActive }) => rowClass(isActive)}
-                      >
-                        {({ isActive }) => (
-                          <>
-                            {d.icon && <Icon name={d.icon} active={isActive} />}
-                            {d.label}
-                          </>
-                        )}
-                      </NavLink>
-                    ))}
-                    {isAccount && (
-                      <>
-                        <button type="button" onClick={toggleSound} className={rowClass(false)}>
-                          <Icon name={soundOn ? 'volume_up' : 'volume_off'} />
-                          {soundOn ? 'Sound on' : 'Sound off'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => signOut()}
-                          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+              <div className="flex flex-1 flex-col justify-between gap-4 py-2">
+                {DRAWER_GROUPS.map((group) => {
+                  const groupLinks = links.filter((d) => d.group === group)
+                  const isAccount = group === 'Account'
+                  if (groupLinks.length === 0 && !isAccount) return null
+                  return (
+                    <div key={group} className="flex flex-col gap-0.5">
+                      <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                        {group}
+                      </p>
+                      {groupLinks.map((d) => (
+                        <NavLink
+                          key={d.to}
+                          to={d.to}
+                          end={d.end}
+                          onClick={() => setOpen(false)}
+                          className={({ isActive }) => rowClass(isActive)}
                         >
-                          <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
-                            logout
-                          </span>
-                          Sign out
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )
-              })}
+                          {({ isActive }) => (
+                            <>
+                              {d.icon && <Icon name={d.icon} active={isActive} />}
+                              {d.label}
+                            </>
+                          )}
+                        </NavLink>
+                      ))}
+                      {isAccount && (
+                        <>
+                          <button type="button" onClick={toggleSound} className={rowClass(false)}>
+                            <Icon name={soundOn ? 'volume_up' : 'volume_off'} />
+                            {soundOn ? 'Sound on' : 'Sound off'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => signOut()}
+                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                          >
+                            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                              logout
+                            </span>
+                            Sign out
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </nav>
           </div>,
           document.body,
