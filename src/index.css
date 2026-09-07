@@ -300,26 +300,42 @@ body {
 .glass-card {
   position: relative;
   border-radius: 1rem;
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.5));
+  /* Light catches the pane from above by default; on hoverable cards
+     useGlassPointer moves --gx/--gy to follow the cursor. */
+  background:
+    radial-gradient(
+      260px circle at var(--gx, 50%) var(--gy, 12%),
+      rgba(255, 255, 255, 0.55),
+      transparent 60%
+    ),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.5));
   border: 1px solid rgba(255, 255, 255, 0.65);
   box-shadow:
     0 1px 2px rgba(15, 23, 42, 0.06),
-    0 10px 28px -14px rgba(15, 23, 42, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+    0 14px 34px -16px rgba(15, 23, 42, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
   overflow: hidden;
   isolation: isolate;
-  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+  transition: box-shadow 0.25s ease, transform 0.18s ease-out, border-color 0.25s ease;
 }
 
 :root.dark .glass-card {
-  background: linear-gradient(155deg, rgba(30, 41, 59, 0.78), rgba(10, 17, 32, 0.58));
+  background:
+    radial-gradient(
+      260px circle at var(--gx, 50%) var(--gy, 12%),
+      rgba(255, 255, 255, 0.1),
+      transparent 60%
+    ),
+    linear-gradient(155deg, rgba(30, 41, 59, 0.8), rgba(10, 17, 32, 0.6));
   border-color: rgba(255, 255, 255, 0.09);
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.35),
-    0 12px 32px -14px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 16px 38px -16px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
 /* Brand-gradient hairline ring, drawn as a masked pseudo-border so it can
@@ -380,15 +396,17 @@ body {
   cursor: pointer;
 }
 
-/* Lift the card and deepen its shadow together, so the hover reads as the
-   pane physically rising off the page rather than just sliding up. */
+/* Lift the card, deepen its shadow, and tilt it a few degrees toward the
+   cursor (rx/ry come from useGlassPointer) so the hover reads as a real
+   pane rising and catching the light rather than just sliding up. */
 .glass-card-hoverable:hover {
-  transform: translateY(-3px);
+  transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-3px);
   border-color: rgba(255, 140, 26, 0.3);
   box-shadow:
     0 2px 6px rgba(15, 23, 42, 0.08),
     0 22px 48px -18px rgba(15, 23, 42, 0.32),
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  will-change: transform;
 }
 
 :root.dark .glass-card-hoverable:hover {
@@ -397,6 +415,18 @@ body {
     0 2px 6px rgba(0, 0, 0, 0.45),
     0 24px 52px -18px rgba(0, 0, 0, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-card {
+    transition: none;
+  }
+  .glass-card::after {
+    animation: none;
+  }
+  .glass-card-hoverable:hover {
+    transform: none;
+  }
 }
 
 /* Shared brand affordances — named once here instead of repeating the same

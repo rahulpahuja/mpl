@@ -5,6 +5,7 @@ import { CricketMotifs } from './components/CricketMotifs'
 import { ProfileSetupModal } from './components/ProfileSetupModal'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { SplashScreen } from './components/SplashScreen'
+import { useGlassPointer } from './hooks/useGlassPointer'
 import { useTimeBasedTheme } from './hooks/useTimeBasedTheme'
 import { lazyWithRetry } from './lib/lazyWithRetry'
 import { Home } from './pages/Home'
@@ -62,6 +63,7 @@ const MatchScorecard = lazyWithRetry(() =>
 
 export default function App() {
   useTimeBasedTheme()
+  useGlassPointer()
   return (
     <AuthProvider>
       <BrowserRouter>
