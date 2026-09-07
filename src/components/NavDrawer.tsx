@@ -59,10 +59,10 @@ export function NavDrawer() {
           aria-label="Navigation menu"
         >
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
-          <nav className="absolute inset-y-0 left-0 flex w-64 max-w-[80vw] flex-col gap-1 border-r border-gray-200/80 dark:border-gray-800/80 bg-white/90 dark:bg-gray-950/90 p-3 shadow-xl backdrop-blur-md">
+          <nav className="absolute inset-y-0 left-0 flex w-64 max-w-[80vw] flex-col gap-1 border-r border-gray-200 dark:border-gray-800 bg-white p-3 shadow-2xl dark:bg-gray-900">
             <div className="flex items-center justify-between px-2 py-1">
               <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">Menu</span>
               <button
