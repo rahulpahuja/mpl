@@ -358,38 +358,51 @@ export function AdminTeams() {
               Create Franchise Team
             </span>
           </div>
-          <div className="relative z-[3] grid grid-cols-1 gap-2 sm:grid-cols-4">
-            <input
-              value={teamName}
-              onChange={(e) => setTeamName(e.target.value)}
-              placeholder="Team name"
-              className="input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-            />
-            <div className="sm:col-span-2">
-              <ManagerPicker
-                candidates={managerMatches(teamManagerUsers, managerSearch)}
-                search={managerSearch}
-                onSearchChange={(value) => {
-                  setManagerSearch(value)
-                  setSelectedManagerId('')
-                }}
-                onSelect={(m) => {
-                  setSelectedManagerId(m.uid)
-                  setManagerSearch(`${m.displayName} (${m.phone || m.email})`)
-                }}
+          <div className="relative z-[3] grid grid-cols-1 items-start gap-3 lg:grid-cols-12">
+            <div className="lg:col-span-4">
+              <label className="aa-label" htmlFor="new-team-name">
+                Team name
+              </label>
+              <input
+                id="new-team-name"
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                placeholder="e.g. Royal Strikers"
+                className="input-glass mt-1.5 w-full rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
               />
             </div>
-            <button
-              onClick={handleCreateTeam}
-              disabled={creatingTeam || !teamName.trim() || !selectedManagerId}
-              className="btn-brand rounded-lg px-4 py-2 text-sm font-medium h-fit"
-            >
-              Create team
-            </button>
+            <div className="lg:col-span-6">
+              <label className="aa-label">Search and assign manager</label>
+              <div className="mt-1.5">
+                <ManagerPicker
+                  candidates={managerMatches(teamManagerUsers, managerSearch)}
+                  search={managerSearch}
+                  onSearchChange={(value) => {
+                    setManagerSearch(value)
+                    setSelectedManagerId('')
+                  }}
+                  onSelect={(m) => {
+                    setSelectedManagerId(m.uid)
+                    setManagerSearch(`${m.displayName} (${m.phone || m.email})`)
+                  }}
+                />
+              </div>
+            </div>
+            <div className="lg:col-span-2">
+              <span className="aa-label block opacity-0">Action</span>
+              <button
+                onClick={handleCreateTeam}
+                disabled={creatingTeam || !teamName.trim() || !selectedManagerId}
+                className="btn-brand mt-1.5 w-full rounded-lg px-4 py-2 text-sm font-medium"
+              >
+                Create team
+              </button>
+            </div>
           </div>
-          <div className="relative z-[3] mt-2 flex flex-wrap items-end gap-4">
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Team logo (optional):</p>
+
+          <div className="relative z-[3] mt-5 grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-8">
+              <p className="aa-label">Team logo preset (optional)</p>
               <div className="mt-1.5">
                 <AvatarPicker
                   selectedId={teamLogoId}
@@ -397,14 +410,13 @@ export function AdminTeams() {
                   disabled={creatingTeam}
                 />
               </div>
-              <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-                Uploading a custom logo image is available once the team is created — edit it
-                from the list below.
+              <p className="mt-1.5 text-xs aa-muted">
+                Upload a custom logo image once the team is created — edit it from the list below.
               </p>
             </div>
-            <div>
-              <label className="text-xs text-gray-500 dark:text-gray-400" htmlFor="new-team-jersey-color">
-                Jersey color:
+            <div className="lg:col-span-4">
+              <label className="aa-label" htmlFor="new-team-jersey-color">
+                Jersey color
               </label>
               <div className="mt-1.5 flex items-center gap-2">
                 <input
@@ -416,7 +428,7 @@ export function AdminTeams() {
                     setTeamJerseyColorError(null)
                   }}
                   disabled={creatingTeam}
-                  className="block h-9 w-14 cursor-pointer rounded btn-glass border bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm disabled:opacity-50"
+                  className="block h-10 w-10 shrink-0 cursor-pointer rounded-lg btn-glass border disabled:opacity-50"
                 />
                 <input
                   type="text"
@@ -425,11 +437,27 @@ export function AdminTeams() {
                     setTeamJerseyColor(e.target.value)
                     setTeamJerseyColorError(null)
                   }}
-                  placeholder="or type e.g. Maroon"
+                  placeholder="#dc2626 or Maroon"
                   minLength={3}
                   disabled={creatingTeam}
-                  className="h-9 w-36 rounded-lg btn-glass border bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm px-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50"
+                  className="aa-numeric h-10 flex-1 rounded-lg btn-glass border px-2 text-sm uppercase text-gray-900 dark:text-gray-100 disabled:opacity-50"
                 />
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {['#dc2626', '#2563eb', '#16a34a', '#d97706'].map((hex) => (
+                    <button
+                      key={hex}
+                      type="button"
+                      onClick={() => {
+                        setTeamJerseyColor(hex)
+                        setTeamJerseyColorError(null)
+                      }}
+                      disabled={creatingTeam}
+                      aria-label={`Set jersey color ${hex}`}
+                      style={{ backgroundColor: hex }}
+                      className="h-6 w-6 rounded-md border border-white/20 transition-transform hover:scale-110 disabled:opacity-50"
+                    />
+                  ))}
+                </div>
               </div>
               {teamJerseyColorError && (
                 <p className="mt-1 text-xs text-red-600">{teamJerseyColorError}</p>
