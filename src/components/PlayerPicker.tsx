@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Avatar } from './Avatar'
+import { SearchInput } from './SearchInput'
 import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
 import type { AppUser } from '../types'
 
@@ -80,12 +81,13 @@ export function PlayerPicker({
             {selectedIds?.size ?? 0} / {maxSelect} selected
           </p>
         )}
-        <input
+        <SearchInput
           autoFocus
+          containerClassName="mt-3"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search by name, email, phone, or ID..."
-          className="mt-3 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
         />
         {extraRow}
         <ul className="mt-3 flex-1 divide-y divide-gray-200 overflow-y-auto text-sm dark:divide-gray-800">

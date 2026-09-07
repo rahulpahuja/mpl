@@ -4,6 +4,7 @@ import { AdminNav } from '../components/AdminNav'
 import { Avatar } from '../components/Avatar'
 import { AvatarPicker } from '../components/AvatarPicker'
 import { PlayerPicker } from '../components/PlayerPicker'
+import { SearchInput } from '../components/SearchInput'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { TeamLogoUpload } from '../components/TeamLogoUpload'
 import { WhatsAppButton } from '../components/WhatsAppButton'
@@ -192,7 +193,7 @@ function ManagerPicker({
 }) {
   return (
     <>
-      <input
+      <SearchInput
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder="Search manager by name, email, phone, or ID..."
