@@ -20,6 +20,9 @@ const SPORTS: Sport[] = [
   { id: 'kabaddi', name: 'Kabaddi', icon: '🤼' },
   { id: 'golf', name: 'Golf', icon: '⛳' },
   { id: 'tableTennis', name: 'Table Tennis', icon: '🏓' },
+  { id: 'bikeRacing', name: 'Bike Racing', icon: '🏍️' },
+  { id: 'carRacing', name: 'Car Racing', icon: '🏎️' },
+  { id: 'f1Racing', name: 'F1 Racing', icon: '🏁' },
 ]
 
 export function Sports() {
