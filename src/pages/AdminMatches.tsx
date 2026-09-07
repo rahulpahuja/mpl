@@ -57,16 +57,43 @@ function MatchKpi({
   )
 }
 
-function matchLink(match: Match): { to: string; label: string } {
+const STATUS_CHIP: Record<Match['status'], string> = {
+  setup: 'aa-chip aa-chip-muted',
+  toss: 'aa-chip aa-chip-muted',
+  live: 'aa-chip aa-chip-orange',
+  inningsBreak: 'aa-chip aa-chip-orange',
+  completed: 'aa-chip aa-chip-mint',
+  abandoned: 'aa-chip aa-chip-muted',
+}
+
+function oversFmt(legalBalls: number): string {
+  return `${Math.floor(legalBalls / 6)}.${legalBalls % 6}`
+}
+
+function inningsLine(m: Match): string | null {
+  const parts: string[] = []
+  for (const inn of [m.innings1, m.innings2]) {
+    if (!inn) continue
+    const side = inn.battingTeamId === m.teamA.teamId ? m.teamA.teamName : m.teamB.teamName
+    parts.push(`${side} ${inn.totalRuns}/${inn.wickets} (${oversFmt(inn.legalBallsBowled)})`)
+  }
+  return parts.length ? parts.join('  ·  ') : null
+}
+
+function matchLink(match: Match): { to: string; label: string; icon: string } {
   switch (match.status) {
     case 'setup':
     case 'toss':
-      return { to: `/admin/matches/${match.matchId}/setup`, label: 'Continue setup' }
+      return {
+        to: `/admin/matches/${match.matchId}/setup`,
+        label: 'Continue setup',
+        icon: 'tune',
+      }
     case 'live':
     case 'inningsBreak':
-      return { to: `/score/${match.matchId}`, label: 'Score live' }
+      return { to: `/score/${match.matchId}`, label: 'Score live', icon: 'sports_score' }
     default:
-      return { to: `/matches/${match.matchId}`, label: 'View scorecard' }
+      return { to: `/matches/${match.matchId}`, label: 'View scorecard', icon: 'description' }
   }
 }
 
@@ -332,34 +359,63 @@ export function AdminMatches() {
         <section>
           <h2 className="aa-head text-lg text-gray-900 dark:text-gray-100">All matches</h2>
           {loading && <p className="mt-2 text-sm text-gray-500">Loading...</p>}
-          <ul className="mt-3 space-y-2.5 text-sm">
+          <ul className="mt-3 space-y-3">
             {matches.map((m) => {
               const link = matchLink(m)
+              const scores = inningsLine(m)
+              const isLive = m.status === 'live' || m.status === 'inningsBreak'
               return (
                 <li
                   key={m.matchId}
-                  className="glass-card glass-card-hoverable flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                  className={`aa-card p-4 sm:p-5 ${isLive ? 'border-[#ea580c99]!' : ''}`}
                 >
-                  <div className="relative z-[3] flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
-                    <span className="flex items-center gap-1.5">
-                      <TeamAvatar teamName={m.teamA.teamName} logoId={m.teamA.logoId} logoImage={m.teamA.logoImage} jerseyColor={m.teamA.jerseyColor} />
-                      <TeamAvatar teamName={m.teamB.teamName} logoId={m.teamB.logoId} logoImage={m.teamB.logoImage} jerseyColor={m.teamB.jerseyColor} />
-                    </span>
-                    <span className="min-w-0 truncate">{m.name}</span>
-                    <span className="shrink-0 rounded-full bg-gray-100/80 dark:bg-gray-800/80 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
-                      {STATUS_LABELS[m.status]}
-                    </span>
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className={STATUS_CHIP[m.status]}>{STATUS_LABELS[m.status]}</span>
+                    <span className="aa-chip aa-chip-muted capitalize">{m.format}</span>
+                    <span className="aa-chip aa-chip-muted">{m.oversLimit} ov</span>
+                    <span className="aa-chip aa-chip-muted">{BALL_TYPE_LABELS[m.ballType]}</span>
+                    {m.venueName && (
+                      <span className="flex items-center gap-1 aa-muted">
+                        <span className="material-symbols-outlined text-[14px]" aria-hidden="true">
+                          location_on
+                        </span>
+                        {m.venueName}
+                      </span>
+                    )}
+                    <span className="aa-numeric ml-auto aa-muted">ID: {m.matchId}</span>
                   </div>
-                  <Link
-                    to={link.to}
-                    className="relative z-[3] shrink-0 font-medium text-orange-600 dark:text-orange-400 hover:underline"
-                  >
-                    {link.label}
-                  </Link>
+
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <TeamAvatar teamName={m.teamA.teamName} logoId={m.teamA.logoId} logoImage={m.teamA.logoImage} jerseyColor={m.teamA.jerseyColor} />
+                      <span className="aa-head truncate text-[15px]">{m.teamA.teamName}</span>
+                      <span className="aa-numeric shrink-0 rounded border px-1.5 py-0.5 text-[10px] aa-muted">
+                        VS
+                      </span>
+                      <span className="aa-head truncate text-[15px]">{m.teamB.teamName}</span>
+                      <TeamAvatar teamName={m.teamB.teamName} logoId={m.teamB.logoId} logoImage={m.teamB.logoImage} jerseyColor={m.teamB.jerseyColor} />
+                    </div>
+                    <Link to={link.to} className="aa-btn aa-btn-primary shrink-0">
+                      <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                        {link.icon}
+                      </span>
+                      {link.label}
+                    </Link>
+                  </div>
+
+                  {m.status === 'completed' && m.result && (
+                    <p className="aa-chip aa-chip-mint mt-3">
+                      <span className="material-symbols-outlined text-[14px]" aria-hidden="true">
+                        emoji_events
+                      </span>
+                      {m.result}
+                    </p>
+                  )}
+                  {scores && <p className="mt-2 text-xs aa-dim aa-numeric">{scores}</p>}
                 </li>
               )
             })}
-            {!loading && matches.length === 0 && <li className="py-2 text-gray-500">No matches yet.</li>}
+            {!loading && matches.length === 0 && <li className="py-2 aa-muted">No matches yet.</li>}
           </ul>
         </section>
       </div>
