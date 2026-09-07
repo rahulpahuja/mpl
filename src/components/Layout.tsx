@@ -57,7 +57,7 @@ export function Layout({ children }: { children: ReactNode }) {
             to="/"
             className="shrink-0 bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-base sm:text-lg font-semibold tracking-tight text-transparent"
           >
-            MPL Auction Manager
+            Auction Manager
           </Link>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm">
             <button

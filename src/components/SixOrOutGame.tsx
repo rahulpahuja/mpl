@@ -586,7 +586,7 @@ export function SixOrOutGame({ onClose }: { onClose: () => void }) {
           <button type="button" className="soo-icon-btn" title="Back" aria-label="Back" onClick={handleBack}>
             ←
           </button>
-          <span className="soo-wordmark">MPL Auction Manager</span>
+          <span className="soo-wordmark">Auction Manager</span>
           <div className="soo-controls">
             <button
               type="button"

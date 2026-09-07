@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-const APP_NAME = 'MPL Auction Manager'
+const APP_NAME = 'Auction Manager'
 
 // Every page calls this with its own segment title so the browser tab,
 // history entries, and screen readers announcing navigation all reflect
