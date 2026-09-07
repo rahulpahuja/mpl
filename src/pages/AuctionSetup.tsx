@@ -644,9 +644,28 @@ export function AuctionSetup() {
   return (
     <Layout>
       <AuctionBackground color={auction.bgColor} imageUrl={auction.backgroundImage} />
-      <div className="apex-arena space-y-10">
+      <div className="apex-arena space-y-8">
+        <p className="flex items-center gap-2 text-xs aa-muted">
+          <span>Auctions</span>
+          <span className="material-symbols-outlined text-[14px]" aria-hidden="true">
+            chevron_right
+          </span>
+          <span className="aa-dim">
+            {auction.name} ({auction.auctionId})
+          </span>
+          <span className="material-symbols-outlined text-[14px]" aria-hidden="true">
+            chevron_right
+          </span>
+          <span className="aa-orange-text font-semibold">Setup</span>
+        </p>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-[color:var(--aa-locker)] text-[#ea580c]">
+              <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
+                gavel
+              </span>
+            </span>
+            <div>
             {editingAuctionName ? (
               <div className="flex flex-wrap items-center gap-2">
                 <input
@@ -690,23 +709,46 @@ export function AuctionSetup() {
                 </button>
               </h1>
             )}
-            <p className="text-sm text-gray-500" style={{ color: auction.secondaryColor || undefined }}>
-              Auction ID: <span className="font-mono">{auction.auctionId}</span> · Status:{' '}
-              {auction.status}
-            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm aa-muted">
+              <span className="aa-numeric">
+                Auction ID: <span className="aa-dim">{auction.auctionId}</span>
+              </span>
+              <span className="h-1 w-1 rounded-full bg-[color:var(--aa-border-strong)]" />
+              <span className="aa-chip aa-chip-muted capitalize">{auction.status}</span>
+            </div>
+            </div>
           </div>
           {auction.status === 'draft' && (
             <button
               onClick={handleGoLive}
               disabled={auction.players.length === 0 || auction.teamManagers.length === 0}
-              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+              className="aa-btn aa-btn-primary bg-[#16a34a]! border-[#16a34a]! disabled:opacity-50"
             >
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                play_arrow
+              </span>
               Go live
             </button>
           )}
         </div>
 
-        <section className="glass-card p-5">
+        <nav className="sticky top-16 z-20 -mx-1 flex gap-1 overflow-x-auto rounded-lg border bg-[color:var(--aa-dugout)] p-1">
+          {[
+            { href: '#setup-general', label: 'General settings' },
+            { href: '#setup-roster', label: 'Player roster' },
+            { href: '#setup-teams', label: 'Team managers' },
+          ].map((tab) => (
+            <a
+              key={tab.href}
+              href={tab.href}
+              className="aa-numeric shrink-0 rounded-md px-3 py-1.5 text-xs font-semibold aa-dim hover:bg-white/5 hover:text-white"
+            >
+              {tab.label}
+            </a>
+          ))}
+        </nav>
+
+        <section id="setup-general" className="glass-card p-5 scroll-mt-28">
           <h2 className="aa-head relative z-[3] text-lg text-gray-900 dark:text-gray-100">Auction settings</h2>
           <div className="relative z-[3] mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
@@ -915,7 +957,7 @@ export function AuctionSetup() {
           </button>
         </section>
 
-        <section className="glass-card p-5">
+        <section id="setup-roster" className="glass-card p-5 scroll-mt-28">
           <div className="relative z-[3] flex items-center justify-between gap-2">
             <h2 className="aa-head text-lg text-gray-900 dark:text-gray-100">Player roster</h2>
             <button
@@ -1488,7 +1530,7 @@ export function AuctionSetup() {
           </div>
         )}
 
-        <section className="glass-card p-5">
+        <section id="setup-teams" className="glass-card p-5 scroll-mt-28">
           <h2 className="aa-head relative z-[3] text-lg text-gray-900 dark:text-gray-100">Team managers</h2>
 
           <p className="relative z-[3] mt-1 text-sm text-gray-500 dark:text-gray-400">
