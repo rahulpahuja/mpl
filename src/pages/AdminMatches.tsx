@@ -11,6 +11,7 @@ import { useVenuesRegistry } from '../hooks/useVenuesRegistry'
 import { useAuthStore } from '../store/authStore'
 import { createMatch } from '../lib/matches'
 import type { BallType, DayNight, GroundType, Match, MatchFormat } from '../types'
+import '../styles/apex-arena.css'
 
 const BALL_TYPE_LABELS: Record<BallType, string> = { tennis: 'Tennis ball', leather: 'Leather ball' }
 const GROUND_TYPE_LABELS: Record<GroundType, string> = { ground: 'Ground', box: 'Box cricket', gully: 'Gully' }
@@ -22,6 +23,38 @@ const STATUS_LABELS: Record<Match['status'], string> = {
   inningsBreak: 'Innings break',
   completed: 'Completed',
   abandoned: 'Abandoned',
+}
+
+function MatchKpi({
+  label,
+  value,
+  icon,
+  accent,
+}: {
+  label: string
+  value: number
+  icon: string
+  accent?: 'orange' | 'mint' | 'live'
+}) {
+  const valueClass =
+    accent === 'orange'
+      ? 'aa-orange-text'
+      : accent === 'mint'
+        ? 'aa-mint-text'
+        : accent === 'live'
+          ? 'text-[#ef4444]'
+          : ''
+  return (
+    <div className="aa-kpi flex items-center justify-between gap-3">
+      <div>
+        <p className="aa-label">{label}</p>
+        <p className={`aa-numeric mt-1 text-xl ${valueClass}`}>{value}</p>
+      </div>
+      <span className="material-symbols-outlined aa-muted text-[22px]" aria-hidden="true">
+        {icon}
+      </span>
+    </div>
+  )
 }
 
 function matchLink(match: Match): { to: string; label: string } {
@@ -115,11 +148,43 @@ export function AdminMatches() {
     <Layout>
       <div className="space-y-6">
         <AdminNav />
-        <section>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Matches</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <section className="apex-arena">
+          <p className="aa-label aa-orange-text flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+              sports_cricket
+            </span>
+            Tournament Operations
+          </p>
+          <h1 className="aa-head mt-1.5 text-2xl sm:text-3xl">Matches &amp; Fixtures</h1>
+          <p className="mt-1.5 max-w-3xl text-sm aa-dim">
             Host a team-vs-team match — pick two teams, set the format, then run the live scorer.
           </p>
+
+          <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <MatchKpi
+              label="Live now"
+              value={matches.filter((m) => m.status === 'live' || m.status === 'inningsBreak').length}
+              icon="sports_score"
+              accent="live"
+            />
+            <MatchKpi
+              label="Upcoming"
+              value={matches.filter((m) => m.status === 'setup' || m.status === 'toss').length}
+              icon="schedule"
+              accent="orange"
+            />
+            <MatchKpi
+              label="Completed"
+              value={matches.filter((m) => m.status === 'completed').length}
+              icon="check_circle"
+              accent="mint"
+            />
+            <MatchKpi
+              label="Venues"
+              value={venues.filter((v) => !v.retired).length}
+              icon="stadium"
+            />
+          </div>
 
           <div className="glass-card mt-4 grid grid-cols-1 gap-3 p-5 sm:grid-cols-2">
             <div className="sm:col-span-2">
@@ -265,7 +330,7 @@ export function AdminMatches() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">All matches</h2>
+          <h2 className="aa-head text-lg text-gray-900 dark:text-gray-100">All matches</h2>
           {loading && <p className="mt-2 text-sm text-gray-500">Loading...</p>}
           <ul className="mt-3 space-y-2.5 text-sm">
             {matches.map((m) => {
