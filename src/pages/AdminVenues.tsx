@@ -120,6 +120,28 @@ function VenueGallery({ venue }: { venue: Venue }) {
   )
 }
 
+// The location picker with a titled, pinned label — shared by the add and
+// edit venue forms.
+function LocationField({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <label className="flex flex-col gap-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+      <span className="flex items-center gap-1">
+        <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+          location_on
+        </span>
+        Location
+      </span>
+      <LocationAutocomplete value={value} onChange={onChange} />
+    </label>
+  )
+}
+
 export function AdminVenues() {
   usePageTitle('Venues')
   const { venues } = useVenuesRegistry()
@@ -208,7 +230,7 @@ export function AdminVenues() {
                 className="input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
               />
               <div className="sm:col-span-2">
-                <LocationAutocomplete value={editLocation} onChange={setEditLocation} />
+                <LocationField value={editLocation} onChange={setEditLocation} />
               </div>
             </div>
             <div className="relative z-[3] flex gap-2">
@@ -299,7 +321,7 @@ export function AdminVenues() {
               className="input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             />
             <div className="sm:col-span-2">
-              <LocationAutocomplete value={location} onChange={setLocation} />
+              <LocationField value={location} onChange={setLocation} />
             </div>
             <button
               onClick={handleCreateVenue}
