@@ -1,15 +1,12 @@
 import { Suspense, useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuthStore } from '../store/authStore'
-import { signOut } from '../lib/auth'
-import { Avatar } from './Avatar'
 import { NavDrawer } from './NavDrawer'
 import { PhotoApprovalPrompt } from './PhotoApprovalPrompt'
 import { PhotoRequestOutcomeToast } from './PhotoRequestOutcomeToast'
 import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp'
 import { useGlobalKeyboardShortcuts } from '../hooks/useGlobalKeyboardShortcuts'
 import { useKeyboardShortcutsEnabled } from '../hooks/useKeyboardShortcutsEnabled'
-import { isSoundEnabled, setSoundEnabled, unlockAudio } from '../lib/sound'
+import { unlockAudio } from '../lib/sound'
 import { lazyWithRetry } from '../lib/lazyWithRetry'
 
 // Lazy-loaded, not just because it's big (a full mini-game's worth of SVG
@@ -19,19 +16,9 @@ const SixOrOutGame = lazyWithRetry(() =>
   import('./SixOrOutGame').then((m) => ({ default: m.SixOrOutGame })),
 )
 
-const roleLabel: Record<string, string> = {
-  admin: 'Admin',
-  auctionManager: 'Auction Manager',
-  manager: 'Captain',
-  player: 'Player',
-  viewer: 'Viewer',
-}
-
 export function Layout({ children }: { children: ReactNode }) {
-  const user = useAuthStore((s) => s.user)
   const [shortcutsEnabled] = useKeyboardShortcutsEnabled()
   const [helpOpen, setHelpOpen] = useState(false)
-  const [soundOn, setSoundOn] = useState(() => isSoundEnabled())
   const [gameOpen, setGameOpen] = useState(false)
   useGlobalKeyboardShortcuts(shortcutsEnabled, () => setHelpOpen((v) => !v))
 
@@ -63,70 +50,15 @@ export function Layout({ children }: { children: ReactNode }) {
               Auction Manager
             </Link>
           </div>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm">
-            <button
-              type="button"
-              onClick={() => setGameOpen(true)}
-              title="Play a quick cricket game while you wait"
-              aria-label="Play a quick cricket game while you wait"
-              className="flex items-center gap-1.5 rounded-md bg-gradient-to-r from-blue-700 to-orange-500 px-3 py-1.5 font-medium text-white hover:opacity-90"
-            >
-              🏏 Play
-            </button>
-            {user && (
-              <>
-                <Link to="/profile" title="View your profile" aria-label="View your profile">
-                  <Avatar
-                    name={user.displayName}
-                    filenPhotoId={user.filenPhotoId}
-                    encryptedPhoto={user.encryptedPhoto}
-                    photoURL={user.photoURL}
-                    avatarId={user.avatarId}
-                    size={7}
-                  />
-                </Link>
-                <span
-                  className="hidden text-gray-500 dark:text-gray-400 sm:inline"
-                  title={user.email}
-                >
-                  {user.displayName} <span className="text-gray-400">· {roleLabel[user.role]}</span>
-                </span>
-                <Link
-                  to="/profile"
-                  className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  Profile
-                </Link>
-              </>
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                const next = !soundOn
-                setSoundOn(next)
-                setSoundEnabled(next)
-              }}
-              title={soundOn ? 'Mute auction sound effects' : 'Unmute auction sound effects'}
-              aria-label={soundOn ? 'Mute sound effects' : 'Unmute sound effects'}
-              className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              {soundOn ? '🔊' : '🔇'}
-            </button>
-            <Link
-              to="/docs"
-              className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              Help
-            </Link>
-            {user && (
-              <button
-                onClick={() => signOut()}
-                className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                Sign out
-              </button>
-            )}
-          </div>
+          <button
+            type="button"
+            onClick={() => setGameOpen(true)}
+            title="Play a quick cricket game while you wait"
+            aria-label="Play a quick cricket game while you wait"
+            className="flex items-center gap-1.5 rounded-md bg-gradient-to-r from-blue-700 to-orange-500 px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+          >
+            🏏 Play
+          </button>
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>

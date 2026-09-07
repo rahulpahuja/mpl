@@ -2,20 +2,44 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { NavLink } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import { NAV_DESTINATIONS } from '../lib/navShortcuts'
+import { signOut } from '../lib/auth'
+import { isSoundEnabled, setSoundEnabled } from '../lib/sound'
+import { DRAWER_GROUPS, NAV_DESTINATIONS } from '../lib/navShortcuts'
 
-// Top-left slide-in menu for the less-frequently-used destinations (Home,
-// Settings, Users, Venues — see lib/navShortcuts.ts, section 'drawer').
-// Rendered once in Layout so it's available on every page; hides itself
-// entirely when the signed-in role can't reach any of its links. The overlay
-// is portalled to <body> because Layout's header has a backdrop-filter, which
-// would otherwise become the containing block for the fixed-positioned panel
-// and clip it to the header's height.
+// Top-left slide-in menu. Its links come from lib/navShortcuts.ts
+// (section 'drawer', grouped under DRAWER_GROUPS headings); the Account group
+// also carries the sound toggle and sign-out actions. The overlay is portalled
+// to <body> because Layout's header has a backdrop-filter, which would
+// otherwise become the containing block for the fixed-positioned panel and
+// clip it to the header's height.
+
+function rowClass(active: boolean): string {
+  return `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+    active
+      ? 'bg-gradient-to-r from-blue-700 to-orange-500 text-white'
+      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800'
+  }`
+}
+
+function Icon({ name, active }: { name: string; active?: boolean }) {
+  return (
+    <span
+      className={`material-symbols-outlined text-[20px] ${
+        active ? 'text-white' : 'text-gray-500 dark:text-gray-400'
+      }`}
+      aria-hidden="true"
+    >
+      {name}
+    </span>
+  )
+}
+
 export function NavDrawer() {
   const user = useAuthStore((s) => s.user)
   const [open, setOpen] = useState(false)
+  const [soundOn, setSoundOn] = useState(() => isSoundEnabled())
 
-  const destinations = NAV_DESTINATIONS.filter(
+  const links = NAV_DESTINATIONS.filter(
     (d) => d.section === 'drawer' && user && (!d.roles || d.roles.includes(user.role)),
   )
 
@@ -28,7 +52,13 @@ export function NavDrawer() {
     return () => document.removeEventListener('keydown', onKey)
   }, [open])
 
-  if (destinations.length === 0) return null
+  if (!user || links.length === 0) return null
+
+  function toggleSound() {
+    const next = !soundOn
+    setSoundOn(next)
+    setSoundEnabled(next)
+  }
 
   return (
     <>
@@ -37,22 +67,11 @@ export function NavDrawer() {
         onClick={() => setOpen(true)}
         aria-label="Open navigation menu"
         aria-expanded={open}
-        className="rounded-md border border-gray-300 dark:border-gray-700 px-2.5 py-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="rounded-md border border-gray-300 px-2.5 py-1.5 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
       >
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          aria-hidden="true"
-        >
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
+        <span className="material-symbols-outlined block text-[20px]" aria-hidden="true">
+          menu
+        </span>
       </button>
 
       {open &&
@@ -67,35 +86,67 @@ export function NavDrawer() {
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setOpen(false)}
             />
-            <nav className="absolute inset-y-0 left-0 flex w-64 max-w-[80vw] flex-col gap-1 border-r border-gray-200 bg-white p-3 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-              <div className="flex items-center justify-between px-2 py-1">
-                <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">Menu</span>
+            <nav className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col overflow-y-auto border-r border-gray-200 bg-white p-3 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+              <div className="flex items-center justify-between px-2 pb-2 pt-1">
+                <span className="flex items-center gap-2 bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-base font-bold tracking-tight text-transparent">
+                  <span aria-hidden="true">🏏</span> Auction Manager
+                </span>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
                   aria-label="Close navigation menu"
-                  className="rounded-md px-2 py-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="material-symbols-outlined rounded-md p-1 text-[20px] text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  ✕
+                  close
                 </button>
               </div>
-              {destinations.map((d) => (
-                <NavLink
-                  key={d.to}
-                  to={d.to}
-                  end={d.end}
-                  onClick={() => setOpen(false)}
-                  className={({ isActive }) =>
-                    `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-gradient-to-r from-blue-700 to-orange-500 text-white'
-                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`
-                  }
-                >
-                  {d.label}
-                </NavLink>
-              ))}
+
+              {DRAWER_GROUPS.map((group) => {
+                const groupLinks = links.filter((d) => d.group === group)
+                const isAccount = group === 'Account'
+                if (groupLinks.length === 0 && !isAccount) return null
+                return (
+                  <div key={group} className="mt-1">
+                    <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                      {group}
+                    </p>
+                    {groupLinks.map((d) => (
+                      <NavLink
+                        key={d.to}
+                        to={d.to}
+                        end={d.end}
+                        onClick={() => setOpen(false)}
+                        className={({ isActive }) => rowClass(isActive)}
+                      >
+                        {({ isActive }) => (
+                          <>
+                            {d.icon && <Icon name={d.icon} active={isActive} />}
+                            {d.label}
+                          </>
+                        )}
+                      </NavLink>
+                    ))}
+                    {isAccount && (
+                      <>
+                        <button type="button" onClick={toggleSound} className={rowClass(false)}>
+                          <Icon name={soundOn ? 'volume_up' : 'volume_off'} />
+                          {soundOn ? 'Sound on' : 'Sound off'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => signOut()}
+                          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                        >
+                          <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                            logout
+                          </span>
+                          Sign out
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )
+              })}
             </nav>
           </div>,
           document.body,
