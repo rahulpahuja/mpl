@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { Layout } from '../components/Layout'
-import { AdminNav } from '../components/AdminNav'
 import { LocationAutocomplete } from '../components/LocationAutocomplete'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useVenuesRegistry } from '../hooks/useVenuesRegistry'
@@ -286,7 +285,6 @@ export function AdminVenues() {
   return (
     <Layout>
       <div className="space-y-6">
-        <AdminNav />
         <section>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Venues</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
