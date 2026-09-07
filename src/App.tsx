@@ -31,6 +31,7 @@ const BootstrapAdmin = lazyWithRetry(() =>
   import('./pages/BootstrapAdmin').then((m) => ({ default: m.BootstrapAdmin })),
 )
 const Profile = lazyWithRetry(() => import('./pages/Profile').then((m) => ({ default: m.Profile })))
+const Settings = lazyWithRetry(() => import('./pages/Settings').then((m) => ({ default: m.Settings })))
 const AuctionSetup = lazyWithRetry(() =>
   import('./pages/AuctionSetup').then((m) => ({ default: m.AuctionSetup })),
 )
@@ -122,7 +123,15 @@ export default function App() {
               }
             />
             <Route
-              path="/admin/filen-test"
+              path="/settings"
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/filen-test"
               element={
                 <ProtectedRoute roles={['admin']}>
                   <FilenTest />

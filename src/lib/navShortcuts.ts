@@ -6,7 +6,9 @@ export interface NavDestination {
   // Omitted means every signed-in role can reach it (e.g. Home, Profile).
   roles?: UserRole[]
   end?: boolean
-  section: 'global' | 'admin'
+  // 'admin' renders in the AdminNav tab strip; 'drawer' in the top-left
+  // navigation drawer (see components/NavDrawer.tsx); 'global' in neither.
+  section: 'global' | 'admin' | 'drawer'
   // Two-key chord (e.g. "g t") — press the first key, then the second within
   // CHORD_TIMEOUT_MS (see hooks/useGlobalKeyboardShortcuts.ts).
   chord: string
@@ -21,12 +23,12 @@ export const NAV_DESTINATIONS: NavDestination[] = [
   { to: '/profile', label: 'Profile', section: 'global', chord: 'g p' },
   { to: '/admin', label: 'Auctions', end: true, roles: ['admin'], section: 'admin', chord: 'g a' },
   { to: '/admin/teams', label: 'Teams', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g t' },
-  { to: '/admin/venues', label: 'Venues', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g v' },
-  { to: '/admin/users', label: 'Users', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g u' },
   // "g l" (not "g p") — "p" is already Profile above.
   { to: '/admin/players', label: 'Players', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g l' },
-  { to: '/admin/filen-test', label: 'Filen test', roles: ['admin'], section: 'admin', chord: 'g f' },
   { to: '/admin/matches', label: 'Matches', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g m' },
+  { to: '/settings', label: 'Settings', roles: ['admin'], section: 'drawer', chord: 'g s' },
+  { to: '/admin/users', label: 'Users', roles: ['admin', 'auctionManager'], section: 'drawer', chord: 'g u' },
+  { to: '/admin/venues', label: 'Venues', roles: ['admin', 'auctionManager'], section: 'drawer', chord: 'g v' },
   {
     to: '/admin/tournaments',
     label: 'Tournaments',

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { signOut } from '../lib/auth'
 import { Avatar } from './Avatar'
+import { NavDrawer } from './NavDrawer'
 import { PhotoApprovalPrompt } from './PhotoApprovalPrompt'
 import { PhotoRequestOutcomeToast } from './PhotoRequestOutcomeToast'
 import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp'
@@ -53,12 +54,15 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-gray-200/80 dark:border-gray-800/80 bg-white/70 dark:bg-gray-950/60 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3">
-          <Link
-            to="/"
-            className="shrink-0 bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-base sm:text-lg font-semibold tracking-tight text-transparent"
-          >
-            Auction Manager
-          </Link>
+          <div className="flex items-center gap-2">
+            <NavDrawer />
+            <Link
+              to="/"
+              className="shrink-0 bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-base sm:text-lg font-semibold tracking-tight text-transparent"
+            >
+              Auction Manager
+            </Link>
+          </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm">
             <button
               type="button"
