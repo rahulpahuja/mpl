@@ -8,6 +8,7 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { Layout } from '../components/Layout'
 import { createAuction, deleteAuction } from '../lib/auctions'
 import { assignUserToAuction, requestToBePlayer } from '../lib/users'
+import '../styles/apex-arena.css'
 
 const statusStyles: Record<string, string> = {
   draft: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
@@ -78,7 +79,7 @@ export function Home() {
 
   return (
     <Layout>
-      <div className="space-y-4">
+      <div className="apex-arena space-y-4">
         {adminClaimed === false && (
           <div className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50/80 dark:bg-red-950/40 backdrop-blur-sm px-4 py-3 text-sm text-red-800 dark:text-red-300">
             No admin has been set up for this app yet.{' '}
@@ -87,7 +88,7 @@ export function Home() {
             </Link>
           </div>
         )}
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+        <h1 className="aa-head text-2xl text-gray-900 dark:text-gray-100">
           Welcome, {user.displayName}
         </h1>
 

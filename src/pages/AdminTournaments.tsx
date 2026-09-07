@@ -8,6 +8,7 @@ import { useTournamentsList } from '../hooks/useTournamentsList'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { addTeamToTournament, createTournament } from '../lib/tournaments'
 import type { Team, TournamentStanding } from '../types'
+import '../styles/apex-arena.css'
 
 function nrrLabel(nrr: number): string {
   const sign = nrr > 0 ? '+' : ''
@@ -135,9 +136,15 @@ export function AdminTournaments() {
     <Layout>
       <div className="space-y-6">
         <AdminNav />
-        <section>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Tournaments</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <section className="apex-arena">
+          <p className="aa-label aa-orange-text flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+              emoji_events
+            </span>
+            Tournament Operations
+          </p>
+          <h1 className="aa-head mt-1.5 text-2xl sm:text-3xl">Tournaments</h1>
+          <p className="mt-1.5 text-sm aa-dim">
             Group matches together with a real points table (wins/losses/points, plus net run rate for
             tie-breaks). A match can also just stand alone as a friendly without any of this.
           </p>
