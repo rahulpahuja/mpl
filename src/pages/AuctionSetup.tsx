@@ -1586,13 +1586,27 @@ export function AuctionSetup() {
         )}
 
         <section id="setup-teams" className="glass-card p-5 scroll-mt-28">
-          <h2 className="aa-head relative z-[3] text-lg text-gray-900 dark:text-gray-100">Team managers</h2>
-
-          <p className="relative z-[3] mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Add an existing team to this auction. Teams are created once from the Admin Dashboard
-            and can be reused across multiple auctions. Purse and max players are a common default
-            for every team you add — set them once below.
-          </p>
+          <div className="relative z-[3] flex flex-wrap items-start justify-between gap-3 border-b pb-4">
+            <div className="flex items-start gap-2.5">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-[#ea580c1a] text-[#ea580c]">
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                  account_balance_wallet
+                </span>
+              </span>
+              <div>
+                <h2 className="aa-head text-lg text-gray-900 dark:text-gray-100">
+                  Franchise teams and purses
+                </h2>
+                <p className="mt-1 max-w-2xl text-sm aa-dim">
+                  Add existing teams to this auction. Purse and max players are a common default for
+                  every team you add — set them once below.
+                </p>
+              </div>
+            </div>
+            <span className="aa-chip aa-chip-muted shrink-0">
+              {auction.teamManagers.length} enrolled
+            </span>
+          </div>
           <input
             value={teamSearch}
             onChange={(e) => {
@@ -1735,7 +1749,12 @@ export function AuctionSetup() {
             </div>
           )}
 
-          <ul className="relative z-[3] mt-4 divide-y divide-gray-200/70 dark:divide-gray-800/70 text-sm">
+          <div className="relative z-[3] mt-4 overflow-hidden rounded-lg border">
+            <div className="grid grid-cols-12 gap-2 border-b bg-[color:var(--aa-locker)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider aa-muted">
+              <div className="col-span-7 sm:col-span-6">Franchise and manager</div>
+              <div className="col-span-3">Purse</div>
+              <div className="col-span-2 sm:col-span-3 text-right">Roster cap</div>
+            </div>
             {auction.teamManagers.map((tm) => {
               // Prefer the live Team doc over the snapshot taken at add-time —
               // a logo/jersey color set on the Teams page afterwards would
@@ -1743,31 +1762,37 @@ export function AuctionSetup() {
               // re-synced-after-add caveat in types/index.ts).
               const liveTeam = teams.find((t) => t.teamId === tm.teamId)
               return (
-                <li key={tm.teamId} className="flex flex-wrap justify-between gap-x-3 gap-y-1 py-2">
-                  <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
+                <div
+                  key={tm.teamId}
+                  className="grid grid-cols-12 items-center gap-2 border-b px-4 py-3 last:border-b-0"
+                >
+                  <div className="col-span-7 flex min-w-0 items-center gap-2.5 sm:col-span-6">
                     <TeamAvatar
                       teamName={tm.name}
                       logoId={liveTeam?.logoId ?? tm.logoId}
                       logoImage={liveTeam?.logoImage ?? tm.logoImage}
                       jerseyColor={liveTeam?.jerseyColor ?? tm.jerseyColor}
                     />
-                    <span className="min-w-0 truncate">
-                      {tm.name}
+                    <span className="min-w-0">
+                      <span className="aa-head block truncate text-[14px]">{tm.name}</span>
                       {tm.managerName && (
-                        <span className="block truncate text-xs text-gray-500">Captain: {tm.managerName}</span>
+                        <span className="block truncate text-xs aa-muted">
+                          Captain: {tm.managerName}
+                        </span>
                       )}
                     </span>
-                  </span>
-                  <span className="shrink-0 text-gray-500">
-                    Purse: {tm.purse} · Max players: {tm.maxPlayers}
-                  </span>
-                </li>
+                  </div>
+                  <div className="aa-numeric col-span-3 text-sm aa-orange-text">{tm.purse}</div>
+                  <div className="aa-numeric col-span-2 text-right text-sm sm:col-span-3">
+                    {tm.maxPlayers} <span className="aa-muted">slots</span>
+                  </div>
+                </div>
               )
             })}
             {auction.teamManagers.length === 0 && (
-              <li className="py-2 text-gray-500">No teams added yet.</li>
+              <p className="px-4 py-3 text-sm aa-muted">No teams added yet.</p>
             )}
-          </ul>
+          </div>
         </section>
       </div>
     </Layout>
