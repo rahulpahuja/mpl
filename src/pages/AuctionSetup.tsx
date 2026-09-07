@@ -32,6 +32,7 @@ import { encryptToBase64 } from '../lib/crypto'
 import { compressImageToDataUrl } from '../lib/imageProcessing'
 import { ROSTER_PHOTO_JPEG_QUALITY, ROSTER_PHOTO_MAX_DIMENSION_PX } from '../lib/photoUpload'
 import type { AppUser } from '../types'
+import '../styles/apex-arena.css'
 
 // A linked player's current photo may live in Filen (current uploads) or as
 // a legacy encryptedPhoto (pre-Filen accounts that haven't re-uploaded). The
@@ -643,7 +644,7 @@ export function AuctionSetup() {
   return (
     <Layout>
       <AuctionBackground color={auction.bgColor} imageUrl={auction.backgroundImage} />
-      <div className="space-y-10">
+      <div className="apex-arena space-y-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             {editingAuctionName ? (
@@ -706,7 +707,7 @@ export function AuctionSetup() {
         </div>
 
         <section className="glass-card p-5">
-          <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">Auction settings</h2>
+          <h2 className="aa-head relative z-[3] text-lg text-gray-900 dark:text-gray-100">Auction settings</h2>
           <div className="relative z-[3] mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label className="text-sm text-gray-500">Logo</label>
@@ -916,7 +917,7 @@ export function AuctionSetup() {
 
         <section className="glass-card p-5">
           <div className="relative z-[3] flex items-center justify-between gap-2">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Player roster</h2>
+            <h2 className="aa-head text-lg text-gray-900 dark:text-gray-100">Player roster</h2>
             <button
               onClick={() => setShowImportDialog(true)}
               className="rounded-lg btn-glass border px-3 py-1.5 text-sm font-medium"
@@ -1488,7 +1489,7 @@ export function AuctionSetup() {
         )}
 
         <section className="glass-card p-5">
-          <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">Team managers</h2>
+          <h2 className="aa-head relative z-[3] text-lg text-gray-900 dark:text-gray-100">Team managers</h2>
 
           <p className="relative z-[3] mt-1 text-sm text-gray-500 dark:text-gray-400">
             Add an existing team to this auction. Teams are created once from the Admin Dashboard

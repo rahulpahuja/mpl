@@ -303,3 +303,45 @@
   background-image: none;
   background-color: var(--aa-orange);
 }
+.apex-arena .glass-card {
+  background: var(--aa-dugout);
+  border: 1px solid var(--aa-border);
+  border-radius: 0.5rem;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+.apex-arena .glass-card::before,
+.apex-arena .glass-card::after {
+  display: none;
+}
+.apex-arena .glass-card-hoverable:hover {
+  transform: none;
+  border-color: var(--aa-border-strong);
+  box-shadow: none;
+}
+.apex-arena .btn-glass {
+  background: var(--aa-locker);
+  border-color: var(--aa-border-strong);
+  color: var(--aa-text-primary);
+}
+.apex-arena .surface-inset {
+  background: var(--aa-locker);
+}
+.apex-arena .tab-brand {
+  background-image: none;
+  background-color: var(--aa-orange);
+  color: #fff;
+}
+
+/* KPI metric card on directory pages */
+.aa-kpi {
+  background: var(--aa-dugout);
+  border: 1px solid var(--aa-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  transition: border-color 0.2s ease;
+}
+.aa-kpi:hover {
+  border-color: rgba(234, 88, 12, 0.4);
+}
