@@ -71,8 +71,12 @@ export function PlayerPicker({
       >
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-base font-semibold text-gray-900 sm:text-lg dark:text-gray-100">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" aria-label="Close">
-            ✕
+          <button
+            onClick={onClose}
+            className="material-symbols-outlined text-[20px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            aria-label="Close"
+          >
+            close
           </button>
         </div>
         {description && <p className="mt-1 text-xs text-gray-500 sm:text-sm dark:text-gray-400">{description}</p>}

@@ -524,9 +524,12 @@ export function MatchScorer() {
 
         <Link
           to={`/matches/${match.matchId}`}
-          className="inline-block text-sm font-medium text-orange-600 dark:text-orange-400 hover:underline"
+          className="inline-flex items-center gap-1 text-sm font-medium text-orange-600 dark:text-orange-400 hover:underline"
         >
-          View full scorecard →
+          View full scorecard
+          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+            arrow_forward
+          </span>
         </Link>
 
         {showWicketModal && (

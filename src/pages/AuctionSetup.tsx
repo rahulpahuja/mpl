@@ -683,9 +683,9 @@ export function AuctionSetup() {
                   onClick={startEditAuctionName}
                   title="Rename auction"
                   aria-label="Rename auction"
-                  className="text-base text-gray-400 opacity-60 hover:opacity-100"
+                  className="material-symbols-outlined text-[20px] text-gray-400 opacity-60 hover:opacity-100"
                 >
-                  ✏️
+                  edit
                 </button>
               </h1>
             )}
@@ -1409,10 +1409,10 @@ export function AuctionSetup() {
                 </h2>
                 <button
                   onClick={() => setShowImportDialog(false)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  className="material-symbols-outlined text-[20px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                   aria-label="Close"
                 >
-                  ✕
+                  close
                 </button>
               </div>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">

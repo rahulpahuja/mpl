@@ -19,13 +19,18 @@ export function AdminNav() {
           to={tab.to}
           end={tab.end}
           className={({ isActive }) =>
-            `relative shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors duration-200 ${
+            `relative flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors duration-200 ${
               isActive
                 ? 'tab-brand'
                 : 'text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-gray-100'
             }`
           }
         >
+          {tab.icon && (
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+              {tab.icon}
+            </span>
+          )}
           {tab.label}
         </NavLink>
       ))}

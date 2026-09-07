@@ -49,10 +49,19 @@ export function PhotoRequestOutcomeToast() {
             key={u.uid}
             className="rounded-lg border border-gray-200/80 dark:border-gray-800/80 bg-white dark:bg-gray-900 p-3 shadow-lg"
           >
-            <p className="text-sm text-gray-900 dark:text-gray-100">
-              {approved ? '✅' : '❌'}{' '}
-              <span className="font-medium">{u.displayName}</span>{' '}
-              {approved ? 'approved' : 'rejected'} the photo you sent.
+            <p className="flex items-start gap-1.5 text-sm text-gray-900 dark:text-gray-100">
+              <span
+                className={`material-symbols-outlined text-[18px] ${
+                  approved ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                }`}
+                aria-hidden="true"
+              >
+                {approved ? 'check_circle' : 'cancel'}
+              </span>
+              <span>
+                <span className="font-medium">{u.displayName}</span>{' '}
+                {approved ? 'approved' : 'rejected'} the photo you sent.
+              </span>
             </p>
             <button
               onClick={() => handleDismiss(u.uid)}

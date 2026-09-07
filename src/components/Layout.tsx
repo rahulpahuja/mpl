@@ -57,7 +57,10 @@ export function Layout({ children }: { children: ReactNode }) {
             aria-label="Play a quick cricket game while you wait"
             className="flex items-center gap-1.5 rounded-md bg-gradient-to-r from-blue-700 to-orange-500 px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
           >
-            🏏 Play
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+              sports_cricket
+            </span>
+            Play
           </button>
         </div>
       </header>

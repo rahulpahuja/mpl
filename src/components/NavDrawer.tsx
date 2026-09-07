@@ -88,8 +88,16 @@ export function NavDrawer() {
             />
             <nav className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col overflow-y-auto border-r border-gray-200 bg-white p-3 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
               <div className="flex shrink-0 items-center justify-between px-2 pb-2 pt-1">
-                <span className="flex items-center gap-2 bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-base font-bold tracking-tight text-transparent">
-                  <span aria-hidden="true">🏏</span> Auction Manager
+                <span className="flex items-center gap-2 text-base font-bold tracking-tight">
+                  <span
+                    className="material-symbols-outlined bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-[22px] text-transparent"
+                    aria-hidden="true"
+                  >
+                    sports_cricket
+                  </span>
+                  <span className="bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-transparent">
+                    Auction Manager
+                  </span>
                 </span>
                 <button
                   type="button"

@@ -32,16 +32,17 @@ export const NAV_DESTINATIONS: NavDestination[] = [
   { to: '/admin/venues', label: 'Venues', roles: ['admin', 'auctionManager'], section: 'drawer', chord: 'g v', icon: 'stadium', group: 'Main' },
   { to: '/profile', label: 'Profile', section: 'drawer', chord: 'g p', icon: 'account_circle', group: 'Account' },
   { to: '/docs', label: 'Help', section: 'drawer', chord: 'g d', icon: 'help', group: 'Account' },
-  { to: '/admin', label: 'Auctions', end: true, roles: ['admin'], section: 'admin', chord: 'g a' },
-  { to: '/admin/teams', label: 'Teams', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g t' },
+  { to: '/admin', label: 'Auctions', end: true, roles: ['admin'], section: 'admin', chord: 'g a', icon: 'gavel' },
+  { to: '/admin/teams', label: 'Teams', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g t', icon: 'groups' },
   // "g l" (not "g p") — "p" is already Profile above.
-  { to: '/admin/players', label: 'Players', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g l' },
-  { to: '/admin/matches', label: 'Matches', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g m' },
+  { to: '/admin/players', label: 'Players', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g l', icon: 'person' },
+  { to: '/admin/matches', label: 'Matches', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g m', icon: 'sports_cricket' },
   {
     to: '/admin/tournaments',
     label: 'Tournaments',
     roles: ['admin', 'auctionManager'],
     section: 'admin',
     chord: 'g o',
+    icon: 'emoji_events',
   },
 ]
