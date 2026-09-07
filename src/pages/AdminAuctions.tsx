@@ -15,6 +15,17 @@ const STATUS_CHIP: Record<Auction['status'], string> = {
   completed: 'aa-chip aa-chip-mint',
 }
 
+function primaryCta(a: Auction): { to: string; label: string; icon: string } {
+  switch (a.status) {
+    case 'live':
+      return { to: `/manage/${a.auctionId}`, label: 'Enter live room', icon: 'gavel' }
+    case 'completed':
+      return { to: `/results/${a.auctionId}`, label: 'View results', icon: 'emoji_events' }
+    default:
+      return { to: `/admin/auctions/${a.auctionId}/setup`, label: 'Enter setup', icon: 'tune' }
+  }
+}
+
 function KpiCard({
   label,
   value,
@@ -230,37 +241,57 @@ export function AdminAuctions() {
             </p>
           ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((a) => (
-                <div key={a.auctionId} className="aa-card flex flex-col overflow-hidden">
+              {filtered.map((a) => {
+                const cta = primaryCta(a)
+                const soldCount = a.players.filter((p) => p.status === 'sold').length
+                return (
                   <div
-                    className="relative h-28 w-full bg-[color:var(--aa-locker)] bg-cover bg-center"
-                    style={a.backgroundImage ? { backgroundImage: `url(${a.backgroundImage})` } : undefined}
+                    key={a.auctionId}
+                    className={`aa-card flex flex-col overflow-hidden ${
+                      a.status === 'live' ? 'border-[#ea580c99]!' : ''
+                    }`}
                   >
-                    <span className={`absolute right-2 top-2 ${STATUS_CHIP[a.status]}`}>{a.status}</span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-4">
-                    <p className="aa-head truncate text-[15px]">{a.name}</p>
-                    <p className="aa-numeric text-xs aa-muted">{a.auctionId}</p>
-                    <div className="mt-3 grid grid-cols-3 gap-2 rounded-lg border py-2 text-center">
-                      <div>
-                        <p className="aa-label">Players</p>
-                        <p className="aa-numeric mt-0.5 text-sm">{a.players.length}</p>
+                    <div className="border-b bg-[color:var(--aa-locker)] p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={STATUS_CHIP[a.status]}>{a.status}</span>
+                        <span className="flex items-center gap-1.5 text-xs font-semibold aa-orange-text">
+                          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+                            sports_cricket
+                          </span>
+                          Cricket
+                        </span>
                       </div>
-                      <div className="border-x">
-                        <p className="aa-label">Teams</p>
-                        <p className="aa-numeric mt-0.5 text-sm">{a.teamManagers.length}</p>
+                      <p className="aa-head mt-3 truncate text-[15px]">{a.name}</p>
+                      <p className="aa-numeric text-xs aa-muted">ID: {a.auctionId}</p>
+                    </div>
+                    <div className="flex flex-1 flex-col p-4">
+                      <div className="grid grid-cols-3 gap-2 rounded-lg border py-2 text-center">
+                        <div>
+                          <p className="aa-label">Teams</p>
+                          <p className="aa-numeric mt-0.5 text-sm">{a.teamManagers.length}</p>
+                        </div>
+                        <div className="border-x">
+                          <p className="aa-label">Players</p>
+                          <p className="aa-numeric mt-0.5 text-sm">{a.players.length}</p>
+                        </div>
+                        <div>
+                          <p className="aa-label">Sold</p>
+                          <p className="aa-numeric mt-0.5 text-sm aa-mint-text">{soldCount}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="aa-label">Status</p>
-                        <p className="mt-0.5 text-sm capitalize">{a.status}</p>
+                      <Link to={cta.to} className="aa-btn aa-btn-primary mt-3 w-full">
+                        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                          {cta.icon}
+                        </span>
+                        {cta.label}
+                      </Link>
+                      <div className="mt-3 border-t pt-3">
+                        <AuctionActions a={a} />
                       </div>
                     </div>
-                    <div className="mt-3 border-t pt-3">
-                      <AuctionActions a={a} />
-                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <>
