@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { toPng } from 'html-to-image'
 import { Layout } from '../components/Layout'
 import { AuctionBackground } from '../components/AuctionBackground'
+import { AuctionLogo } from '../components/AuctionLogo'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useTeams } from '../hooks/useTeams'
@@ -204,17 +205,20 @@ export function Results() {
       <AuctionBackground color={auction.bgColor} imageUrl={auction.backgroundImage} />
       <div className="space-y-10">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1
-              className="text-2xl font-semibold text-gray-900 dark:text-gray-100"
-              style={{ color: auction.titleColor || undefined }}
-            >
-              {auction.name} — Results
-            </h1>
-            <p className="text-sm text-gray-500" style={{ color: auction.secondaryColor || undefined }}>
-              Auction ID: <span className="font-mono">{auction.auctionId}</span> · {sold.length} sold ·{' '}
-              {unsold.length} unsold
-            </p>
+          <div className="flex items-start gap-3">
+            <AuctionLogo logoImage={auction.logoImage} size={12} />
+            <div>
+              <h1
+                className="text-2xl font-semibold text-gray-900 dark:text-gray-100"
+                style={{ color: auction.titleColor || undefined }}
+              >
+                {auction.name} — Results
+              </h1>
+              <p className="text-sm text-gray-500" style={{ color: auction.secondaryColor || undefined }}>
+                Auction ID: <span className="font-mono">{auction.auctionId}</span> · {sold.length} sold ·{' '}
+                {unsold.length} unsold
+              </p>
+            </div>
           </div>
           {auction.status === 'completed' && (
             <div className="flex flex-wrap gap-2">

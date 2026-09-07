@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { Avatar } from '../components/Avatar'
 import { AuctionBackground } from '../components/AuctionBackground'
+import { AuctionLogo } from '../components/AuctionLogo'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { useAuction } from '../hooks/useAuction'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
@@ -164,6 +165,9 @@ export function AuctionSetup() {
   const [backgroundImage, setBackgroundImage] = useState('')
   const [uploadingBg, setUploadingBg] = useState(false)
   const [bgUploadError, setBgUploadError] = useState<string | null>(null)
+  const [logoImage, setLogoImage] = useState('')
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [logoUploadError, setLogoUploadError] = useState<string | null>(null)
   const [applyingPurse, setApplyingPurse] = useState(false)
   const [purseError, setPurseError] = useState<string | null>(null)
   const [applyingMaxPlayers, setApplyingMaxPlayers] = useState(false)
@@ -178,6 +182,7 @@ export function AuctionSetup() {
       setTitleColor(auction.titleColor || DEFAULT_TITLE_COLOR)
       setSecondaryColor(auction.secondaryColor || DEFAULT_SECONDARY_COLOR)
       setBackgroundImage(auction.backgroundImage || '')
+      setLogoImage(auction.logoImage || '')
     }
   }, [auction?.auctionId])
 
@@ -548,6 +553,30 @@ export function AuctionSetup() {
     }
   }
 
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setLogoUploadError(null)
+    if (!file.type.startsWith('image/')) {
+      setLogoUploadError('Please choose an image file.')
+      return
+    }
+    if (file.size > MAX_BG_UPLOAD_BYTES) {
+      setLogoUploadError('Image is too large — choose a logo under 8MB.')
+      return
+    }
+    setUploadingLogo(true)
+    try {
+      const dataUrl = await compressImageToDataUrl(file)
+      setLogoImage(dataUrl)
+    } catch (err) {
+      setLogoUploadError(err instanceof Error ? err.message : 'Failed to upload logo')
+    } finally {
+      setUploadingLogo(false)
+    }
+  }
+
   async function handleSaveSettings() {
     if (!auctionId) return
     await updateAuctionSettings(auctionId, {
@@ -557,6 +586,7 @@ export function AuctionSetup() {
       titleColor,
       secondaryColor,
       backgroundImage: backgroundImage || null,
+      logoImage: logoImage || null,
     })
   }
 
@@ -678,6 +708,42 @@ export function AuctionSetup() {
         <section className="glass-card p-5">
           <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">Auction settings</h2>
           <div className="relative z-[3] mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label className="text-sm text-gray-500">Logo</label>
+              <div className="mt-1 flex items-center gap-3">
+                <AuctionLogo logoImage={logoImage} size={14} />
+                <div className="flex flex-col items-start gap-1">
+                  <label
+                    className={`cursor-pointer text-sm font-medium text-orange-600 dark:text-orange-400 hover:underline ${
+                      uploadingLogo ? 'opacity-50' : ''
+                    }`}
+                  >
+                    {uploadingLogo ? 'Uploading...' : logoImage ? 'Change logo' : 'Upload logo'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      disabled={uploadingLogo}
+                      className="hidden"
+                    />
+                  </label>
+                  {logoImage && !uploadingLogo && (
+                    <button
+                      type="button"
+                      onClick={() => setLogoImage('')}
+                      className="text-xs text-gray-500 dark:text-gray-400 hover:underline"
+                    >
+                      Remove
+                    </button>
+                  )}
+                  {logoUploadError && <p className="text-xs text-red-600">{logoUploadError}</p>}
+                </div>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                Shown on this auction's results and viewer headers. Without one, a default emblem is
+                used. Save settings below to apply.
+              </p>
+            </div>
             <div className="sm:col-span-2">
               <label className="text-sm text-gray-500">Background image</label>
               <div className="mt-1 flex flex-wrap gap-2">

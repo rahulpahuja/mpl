@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { AuctionBackground } from '../components/AuctionBackground'
 import { AuctionJoinQr } from '../components/AuctionJoinQr'
+import { AuctionLogo } from '../components/AuctionLogo'
 import { Avatar } from '../components/Avatar'
 import { PlayerProfileBadges } from '../components/PlayerProfileBadges'
 import { TeamAvatar } from '../components/TeamAvatar'
@@ -82,16 +83,19 @@ export function ViewerFeed() {
       {auction.status === 'live' && <AuctionJoinQr auctionId={auction.auctionId} />}
       <div className="space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1
-              className="text-2xl font-semibold text-gray-900 dark:text-gray-100"
-              style={{ color: auction.titleColor || undefined }}
-            >
-              {auction.name} <span className="text-gray-400 font-mono text-lg">#{auction.auctionId}</span>
-            </h1>
-            <p className="text-sm text-gray-500" style={{ color: auction.secondaryColor || undefined }}>
-              Status: {auction.status}
-            </p>
+          <div className="flex items-center gap-3">
+            <AuctionLogo logoImage={auction.logoImage} size={12} />
+            <div>
+              <h1
+                className="text-2xl font-semibold text-gray-900 dark:text-gray-100"
+                style={{ color: auction.titleColor || undefined }}
+              >
+                {auction.name} <span className="text-gray-400 font-mono text-lg">#{auction.auctionId}</span>
+              </h1>
+              <p className="text-sm text-gray-500" style={{ color: auction.secondaryColor || undefined }}>
+                Status: {auction.status}
+              </p>
+            </div>
           </div>
           <Link
             to={`/results/${auction.auctionId}`}

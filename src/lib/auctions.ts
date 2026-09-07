@@ -129,6 +129,7 @@ export async function updateAuctionSettings(
       | 'titleColor'
       | 'secondaryColor'
       | 'backgroundImage'
+      | 'logoImage'
     >
   >,
 ) {

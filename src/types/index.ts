@@ -198,6 +198,10 @@ export interface Auction {
   // this auction's page backdrop. Null/absent falls back to the plain
   // bgColor backdrop instead — see components/AuctionBackground.tsx.
   backgroundImage?: string | null
+  // Compressed data URL of this auction's emblem, shown on the results and
+  // viewer headers. Null/absent renders a generic default emblem instead —
+  // see components/AuctionLogo.tsx.
+  logoImage?: string | null
 }
 
 export interface BidEntry {
