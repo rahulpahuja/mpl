@@ -1,0 +1,216 @@
+/* Apex Arena Pro — a dark, data-dense visual language scoped to the Profile
+   and Players pages. Everything here is namespaced under `.apex-arena` so it
+   never leaks into the rest of the app's glass-card theme. Imported by the
+   pages that opt in, so it only ships in their route chunks. */
+
+.apex-arena {
+  --aa-pitch: #0b0f17;
+  --aa-dugout: #111827;
+  --aa-locker: #1e293b;
+  --aa-elevated: #27354a;
+  --aa-border: rgba(255, 255, 255, 0.08);
+  --aa-border-strong: rgba(255, 255, 255, 0.15);
+  --aa-orange: #ea580c;
+  --aa-orange-bright: #f97316;
+  --aa-mint: #10b981;
+  --aa-live: #ef4444;
+  --aa-whatsapp: #22c55e;
+  --aa-text-primary: #f9fafb;
+  --aa-text-secondary: #94a3b8;
+  --aa-text-muted: #64748b;
+
+  color-scheme: dark;
+  color: var(--aa-text-primary);
+  font-family: 'Work Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+.apex-arena *,
+.apex-arena *::before,
+.apex-arena *::after {
+  border-color: var(--aa-border);
+}
+
+/* Headline / metric type */
+.aa-head {
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--aa-text-primary);
+}
+
+.aa-label {
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--aa-text-muted);
+}
+
+.aa-numeric {
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Surfaces */
+.aa-shell {
+  background: var(--aa-pitch);
+  border: 1px solid var(--aa-border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.aa-card {
+  background: var(--aa-dugout);
+  border: 1px solid var(--aa-border);
+  border-radius: 0.5rem;
+}
+
+.aa-panel {
+  background: var(--aa-locker);
+  border: 1px solid var(--aa-border-strong);
+  border-radius: 0.5rem;
+}
+
+.aa-tile {
+  background: var(--aa-dugout);
+  border: 1px solid var(--aa-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+/* Chips / badges — fully pill-shaped */
+.aa-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 9999px;
+  padding: 0.125rem 0.625rem;
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.aa-chip-orange {
+  background: rgba(234, 88, 12, 0.14);
+  color: #ffb599;
+  border: 1px solid rgba(234, 88, 12, 0.4);
+}
+
+.aa-chip-mint {
+  background: rgba(16, 185, 129, 0.14);
+  color: #4edea3;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.aa-chip-muted {
+  background: var(--aa-locker);
+  color: var(--aa-text-secondary);
+  border: 1px solid var(--aa-border);
+}
+
+/* Buttons */
+.aa-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.aa-btn-primary {
+  background: var(--aa-orange);
+  color: #fff;
+  border: 1px solid var(--aa-orange);
+}
+.aa-btn-primary:hover {
+  background: var(--aa-orange-bright);
+}
+.aa-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.aa-btn-ghost {
+  background: var(--aa-locker);
+  color: var(--aa-text-primary);
+  border: 1px solid var(--aa-border-strong);
+}
+.aa-btn-ghost:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.aa-divider {
+  border: 0;
+  border-top: 1px solid var(--aa-border);
+  margin: 0;
+}
+
+.aa-dim {
+  color: var(--aa-text-secondary);
+}
+.aa-muted {
+  color: var(--aa-text-muted);
+}
+.aa-orange-text {
+  color: #ffb599;
+}
+.aa-mint-text {
+  color: #4edea3;
+}
+.aa-watermark {
+  color: rgba(255, 255, 255, 0.05);
+}
+
+/* Re-skin the existing form/stat/photo components rendered inside the shell.
+   These are the only legacy descendants of `.apex-arena`; the overrides are a
+   deliberate, contained theming boundary. */
+.apex-arena .text-gray-900,
+.apex-arena .dark\:text-gray-100,
+.apex-arena .text-gray-100 {
+  color: var(--aa-text-primary);
+}
+.apex-arena .text-gray-700,
+.apex-arena .text-gray-600,
+.apex-arena .dark\:text-gray-300,
+.apex-arena .text-gray-300 {
+  color: var(--aa-text-secondary);
+}
+.apex-arena .text-gray-500,
+.apex-arena .text-gray-400,
+.apex-arena .dark\:text-gray-500 {
+  color: var(--aa-text-muted);
+}
+.apex-arena .bg-gray-50,
+.apex-arena .dark\:bg-gray-900,
+.apex-arena .bg-gray-900,
+.apex-arena .dark\:bg-gray-800,
+.apex-arena .bg-gray-800,
+.apex-arena .dark\:bg-gray-700 {
+  background-color: var(--aa-locker);
+}
+.apex-arena .border-gray-200,
+.apex-arena .dark\:border-gray-800,
+.apex-arena .border-gray-800,
+.apex-arena .dark\:border-gray-700,
+.apex-arena .border-gray-300,
+.apex-arena .border-gray-700 {
+  border-color: var(--aa-border);
+}
+.apex-arena .input-glass {
+  background: var(--aa-pitch);
+  border: 1px solid var(--aa-border-strong);
+  color: var(--aa-text-primary);
+}
+.apex-arena .btn-brand {
+  background-image: none;
+  background-color: var(--aa-orange);
+}
