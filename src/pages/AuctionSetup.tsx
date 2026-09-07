@@ -19,8 +19,10 @@ import {
   removePlayer,
   renamePlayer,
   syncPlayerProfileSnapshot,
+  removeTeamFromAuction,
   updateAuctionSettings,
   updateAuctionStatus,
+  updateTeamInAuction,
   updatePlayerBasePrice,
 } from '../lib/auctions'
 import { assignUserToAuction, promoteViewerToPlayer } from '../lib/users'
@@ -169,6 +171,12 @@ export function AuctionSetup() {
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null)
   const [setupTab, setSetupTab] = useState<'general' | 'roster' | 'teams'>('general')
+  const [editingTeamRowId, setEditingTeamRowId] = useState<string | null>(null)
+  const [rowPurse, setRowPurse] = useState('')
+  const [rowMax, setRowMax] = useState('')
+  const [savingTeamRow, setSavingTeamRow] = useState(false)
+  const [removingTeamId, setRemovingTeamId] = useState<string | null>(null)
+  const [teamRowError, setTeamRowError] = useState<string | null>(null)
   const [applyingPurse, setApplyingPurse] = useState(false)
   const [purseError, setPurseError] = useState<string | null>(null)
   const [applyingMaxPlayers, setApplyingMaxPlayers] = useState(false)
@@ -622,6 +630,44 @@ export function AuctionSetup() {
   async function handleGoLive() {
     if (!auctionId) return
     await updateAuctionStatus(auctionId, 'live')
+  }
+
+  function startEditTeamRow(teamId: string, purseValue: number, maxValue: number) {
+    setEditingTeamRowId(teamId)
+    setRowPurse(String(purseValue))
+    setRowMax(String(maxValue))
+    setTeamRowError(null)
+  }
+
+  async function handleSaveTeamRow(teamId: string) {
+    if (!auctionId) return
+    setTeamRowError(null)
+    setSavingTeamRow(true)
+    try {
+      await updateTeamInAuction(auctionId, teamId, {
+        purse: Number(rowPurse) || 0,
+        maxPlayers: Math.max(0, Math.trunc(Number(rowMax) || 0)),
+      })
+      setEditingTeamRowId(null)
+    } catch (err) {
+      setTeamRowError(err instanceof Error ? err.message : 'Failed to update team')
+    } finally {
+      setSavingTeamRow(false)
+    }
+  }
+
+  async function handleRemoveTeamRow(teamId: string, teamName: string) {
+    if (!auctionId) return
+    if (!confirm(`Remove "${teamName}" from this auction?`)) return
+    setTeamRowError(null)
+    setRemovingTeamId(teamId)
+    try {
+      await removeTeamFromAuction(auctionId, teamId)
+    } catch (err) {
+      setTeamRowError(err instanceof Error ? err.message : 'Failed to remove team')
+    } finally {
+      setRemovingTeamId(null)
+    }
   }
 
   function startEditAuctionName() {
@@ -1811,11 +1857,15 @@ export function AuctionSetup() {
             </div>
           )}
 
-          <div className="relative z-[3] mt-4 overflow-hidden rounded-lg border">
+          {teamRowError && (
+            <p className="relative z-[3] mt-3 text-xs text-red-600">{teamRowError}</p>
+          )}
+          <div className="relative z-[3] mt-3 overflow-hidden rounded-lg border">
             <div className="grid grid-cols-12 gap-2 border-b bg-[color:var(--aa-locker)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider aa-muted">
-              <div className="col-span-7 sm:col-span-6">Franchise and manager</div>
-              <div className="col-span-3">Purse</div>
-              <div className="col-span-2 sm:col-span-3 text-right">Roster cap</div>
+              <div className="col-span-6 sm:col-span-5">Franchise and manager</div>
+              <div className="col-span-2">Purse</div>
+              <div className="col-span-2">Roster cap</div>
+              <div className="col-span-2 sm:col-span-3 text-right">Action</div>
             </div>
             {auction.teamManagers.map((tm) => {
               // Prefer the live Team doc over the snapshot taken at add-time —
@@ -1823,12 +1873,13 @@ export function AuctionSetup() {
               // otherwise never show here (see TeamManagerEntry's never-
               // re-synced-after-add caveat in types/index.ts).
               const liveTeam = teams.find((t) => t.teamId === tm.teamId)
+              const editing = editingTeamRowId === tm.teamId
               return (
                 <div
                   key={tm.teamId}
                   className="grid grid-cols-12 items-center gap-2 border-b px-4 py-3 last:border-b-0"
                 >
-                  <div className="col-span-7 flex min-w-0 items-center gap-2.5 sm:col-span-6">
+                  <div className="col-span-6 flex min-w-0 items-center gap-2.5 sm:col-span-5">
                     <TeamAvatar
                       teamName={tm.name}
                       logoId={liveTeam?.logoId ?? tm.logoId}
@@ -1844,9 +1895,69 @@ export function AuctionSetup() {
                       )}
                     </span>
                   </div>
-                  <div className="aa-numeric col-span-3 text-sm aa-orange-text">{tm.purse}</div>
-                  <div className="aa-numeric col-span-2 text-right text-sm sm:col-span-3">
-                    {tm.maxPlayers} <span className="aa-muted">slots</span>
+                  <div className="col-span-2">
+                    {editing ? (
+                      <input
+                        type="number"
+                        min={0}
+                        value={rowPurse}
+                        onChange={(e) => setRowPurse(e.target.value)}
+                        className="w-full rounded-md input-glass px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                      />
+                    ) : (
+                      <span className="aa-numeric text-sm aa-orange-text">{tm.purse}</span>
+                    )}
+                  </div>
+                  <div className="col-span-2">
+                    {editing ? (
+                      <input
+                        type="number"
+                        min={0}
+                        value={rowMax}
+                        onChange={(e) => setRowMax(e.target.value)}
+                        className="w-full rounded-md input-glass px-2 py-1 text-sm text-gray-900 dark:text-gray-100"
+                      />
+                    ) : (
+                      <span className="aa-numeric text-sm">
+                        {tm.maxPlayers} <span className="aa-muted">slots</span>
+                      </span>
+                    )}
+                  </div>
+                  <div className="col-span-2 flex justify-end gap-2 text-xs sm:col-span-3">
+                    {editing ? (
+                      <>
+                        <button
+                          onClick={() => setEditingTeamRowId(null)}
+                          disabled={savingTeamRow}
+                          className="font-medium aa-muted hover:underline disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => handleSaveTeamRow(tm.teamId)}
+                          disabled={savingTeamRow}
+                          className="font-medium aa-orange-text hover:underline disabled:opacity-50"
+                        >
+                          {savingTeamRow ? 'Saving…' : 'Save'}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => startEditTeamRow(tm.teamId, tm.purse, tm.maxPlayers)}
+                          className="font-medium aa-orange-text hover:underline"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleRemoveTeamRow(tm.teamId, tm.name)}
+                          disabled={removingTeamId === tm.teamId}
+                          className="font-medium text-rose-400 hover:underline disabled:opacity-50"
+                        >
+                          {removingTeamId === tm.teamId ? 'Removing…' : 'Remove'}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               )

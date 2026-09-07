@@ -175,6 +175,92 @@ export async function applyMaxPlayersToAllTeams(auctionId: string, maxPlayers: n
   })
 }
 
+// Per-team override of the common purse / roster cap set at add time. Mirrors
+// applyCommonPurseToAllTeams' balance math (see computeCommonPurseUpdate) but
+// for a single team, and writes both the auction's teamManagers entry and the
+// team subdoc so /bid and /viewer stay in sync.
+export async function updateTeamInAuction(
+  auctionId: string,
+  teamId: string,
+  changes: { purse?: number; maxPlayers?: number },
+) {
+  if (changes.maxPlayers !== undefined && changes.maxPlayers < 0) {
+    throw new Error('Max players must be 0 or more')
+  }
+  if (changes.purse !== undefined && changes.purse < 0) {
+    throw new Error('Purse must be 0 or more')
+  }
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) throw new Error('Auction not found')
+    const auction = snap.data() as Auction
+    const tm = auction.teamManagers.find((t) => t.teamId === teamId)
+    if (!tm) throw new Error('Team is not part of this auction')
+
+    let updated = { ...tm }
+    const teamDocPatch: Record<string, number> = {}
+
+    if (changes.maxPlayers !== undefined) {
+      const soldCount = auction.players.filter(
+        (p) => p.currentBidder === tm.managerId && p.status === 'sold',
+      ).length
+      if (changes.maxPlayers < soldCount) {
+        throw new Error(
+          `${tm.name} already has ${soldCount} players sold, above ${changes.maxPlayers}`,
+        )
+      }
+      updated = { ...updated, maxPlayers: changes.maxPlayers }
+    }
+    if (changes.purse !== undefined) {
+      const { remainingTokens } = computeCommonPurseUpdate(updated, changes.purse)
+      updated = { ...updated, purse: changes.purse, remainingTokens }
+      teamDocPatch.initialPurse = changes.purse
+      teamDocPatch.balance = remainingTokens
+    }
+
+    tx.update(auctionRef(auctionId), {
+      teamManagers: auction.teamManagers.map((t) => (t.teamId === teamId ? updated : t)),
+    })
+    if (Object.keys(teamDocPatch).length > 0) {
+      tx.update(teamRef(auctionId, teamId), teamDocPatch)
+    }
+  })
+}
+
+// Drops a team from this auction. Blocked once the team has bought a player —
+// unwinding those sales is out of scope. The manager's assignedAuctions entry
+// is only removed when they have no other team left in this auction.
+export async function removeTeamFromAuction(auctionId: string, teamId: string) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(auctionRef(auctionId))
+    if (!snap.exists()) throw new Error('Auction not found')
+    const auction = snap.data() as Auction
+    const tm = auction.teamManagers.find((t) => t.teamId === teamId)
+    if (!tm) return
+
+    const soldCount = auction.players.filter(
+      (p) => p.currentBidder === tm.managerId && p.status === 'sold',
+    ).length
+    if (soldCount > 0) {
+      throw new Error(`${tm.name} has already bought ${soldCount} player(s) — can't remove it now`)
+    }
+
+    const remaining = auction.teamManagers.filter((t) => t.teamId !== teamId)
+    const managerStillHasTeam = remaining.some((t) => t.managerId === tm.managerId)
+
+    tx.update(auctionRef(auctionId), {
+      teamManagers: remaining,
+      teamManagerIds: managerStillHasTeam
+        ? auction.teamManagerIds
+        : auction.teamManagerIds.filter((id) => id !== tm.managerId),
+    })
+    tx.delete(teamRef(auctionId, teamId))
+    if (!managerStillHasTeam) {
+      tx.update(doc(db, 'users', tm.managerId), { assignedAuctions: arrayRemove(auctionId) })
+    }
+  })
+}
+
 export async function addPlayers(auctionId: string, players: Omit<Player, 'currentBid' | 'currentBidder' | 'currentBidderName' | 'status'>[]) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(auctionRef(auctionId))
