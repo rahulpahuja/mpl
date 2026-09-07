@@ -264,7 +264,7 @@ export function MatchScorer() {
     const i1 = match.innings1!
     return (
       <Layout>
-        <div className="space-y-4">
+        <div className="apex-arena space-y-4">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Innings break</h1>
           <p className="text-gray-700 dark:text-gray-200">
             {match.teamA.teamId === i1.battingTeamId ? match.teamA.teamName : match.teamB.teamName} scored{' '}
@@ -342,7 +342,7 @@ export function MatchScorer() {
   return (
     <Layout>
       <BallCelebration event={justScored} onDone={clearJustScored} />
-      <div className="space-y-4">
+      <div className="apex-arena space-y-4">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-gray-100">{match.name}</h1>
           <p className="text-xs text-gray-500 sm:text-sm dark:text-gray-400">

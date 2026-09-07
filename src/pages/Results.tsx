@@ -203,7 +203,7 @@ export function Results() {
   return (
     <Layout>
       <AuctionBackground color={auction.bgColor} imageUrl={auction.backgroundImage} />
-      <div className="space-y-10">
+      <div className="apex-arena space-y-10">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-start gap-3">
             <AuctionLogo logoImage={auction.logoImage} size={12} />

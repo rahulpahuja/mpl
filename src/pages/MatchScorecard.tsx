@@ -167,7 +167,7 @@ export function MatchScorecard() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="apex-arena space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-gray-100">
