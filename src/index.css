@@ -286,13 +286,6 @@ body {
   }
 }
 
-@keyframes splash-tagline-in {
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
 @keyframes splash-underline-draw {
   to {
     width: 72px;

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 
-// A cricket ball rockets in and detonates into the MPL wordmark, reusing the
+// A cricket ball rockets in and detonates into the Auction Manager wordmark, reusing the
 // same gold-impact grammar as SoldCelebration so every "arriving somewhere
 // new" moment in the app reads as one system. Plays once on the initial app
 // load, then replays on every route change (see the pathname effect below)
@@ -108,9 +108,9 @@ export function SplashScreen() {
           </>
         )}
 
-        <div className="relative z-10 flex flex-col items-center gap-1.5">
+        <div className="relative z-10 flex flex-col items-center gap-2">
           <div
-            className="relative bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-5xl font-black tracking-tight text-transparent"
+            className="relative max-w-[190px] bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-center text-3xl font-black leading-[1.05] tracking-tight text-transparent"
             style={{
               opacity: reducedMotion ? 1 : 0,
               animation: reducedMotion
@@ -118,7 +118,7 @@ export function SplashScreen() {
                 : `splash-mark-in ${ms(340)} cubic-bezier(.2,1.5,.4,1) ${ms(300)} both`,
             }}
           >
-            MPL
+            Auction Manager
             {!reducedMotion && (
               <span
                 aria-hidden="true"
@@ -131,21 +131,10 @@ export function SplashScreen() {
                   animation: `splash-shimmer-sweep ${ms(340)} ease-out ${ms(640)} both`,
                 }}
               >
-                MPL
+                Auction Manager
               </span>
             )}
           </div>
-
-          <p
-            className="text-[11px] font-bold tracking-[0.32em] text-gray-400 uppercase"
-            style={{
-              opacity: reducedMotion ? 1 : 0,
-              transform: reducedMotion ? 'none' : 'translateY(6px)',
-              animation: reducedMotion ? undefined : `splash-tagline-in ${ms(280)} ease-out ${ms(560)} both`,
-            }}
-          >
-            Auction Manager
-          </p>
 
           <span
             className="h-0.5 rounded-full bg-gradient-to-r from-blue-700 to-orange-500"
