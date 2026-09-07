@@ -1013,14 +1013,29 @@ export function AuctionSetup() {
         </section>
 
         <section id="setup-roster" className="glass-card p-5 scroll-mt-28">
-          <div className="relative z-[3] flex items-center justify-between gap-2">
-            <h2 className="aa-head text-lg text-gray-900 dark:text-gray-100">Player roster</h2>
-            <button
-              onClick={() => setShowImportDialog(true)}
-              className="rounded-lg btn-glass border px-3 py-1.5 text-sm font-medium"
-            >
-              Import players
-            </button>
+          <div className="relative z-[3] flex flex-wrap items-start justify-between gap-3 border-b pb-4">
+            <div className="flex items-start gap-2.5">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-[#ea580c1a] text-[#ea580c]">
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                  format_list_bulleted
+                </span>
+              </span>
+              <div>
+                <h2 className="aa-head text-lg text-gray-900 dark:text-gray-100">Player roster</h2>
+                <p className="mt-1 text-sm aa-dim">
+                  Catalogue the lots for this auction, set base prices, or bulk-import a list.
+                </p>
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="aa-chip aa-chip-muted">{auction.players.length} players</span>
+              <button
+                onClick={() => setShowImportDialog(true)}
+                className="rounded-lg btn-glass border px-3 py-1.5 text-sm font-medium"
+              >
+                Import players
+              </button>
+            </div>
           </div>
 
           <div className="relative z-[3] mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
@@ -1337,21 +1352,22 @@ export function AuctionSetup() {
             </ul>
           )}
 
-          <div className="glass-card relative z-[3] mt-3 hidden overflow-x-auto sm:block">
-            <table className="w-full min-w-[480px] text-sm">
-              <thead className="surface-inset text-left text-gray-500 dark:text-gray-400">
+          <div className="aa-card relative z-[3] mt-3 hidden overflow-x-auto sm:block">
+            <table className="aa-table min-w-[560px]">
+              <thead>
                 <tr>
-                  <th className="px-3 py-2 font-medium"></th>
-                  <th className="px-3 py-2 font-medium">Name</th>
-                  <th className="px-3 py-2 font-medium">Jersey #</th>
-                  <th className="px-3 py-2 font-medium">Position</th>
-                  <th className="px-3 py-2 font-medium">Base price</th>
-                  <th className="px-3 py-2 font-medium">Status</th>
-                  <th className="px-3 py-2 font-medium"></th>
+                  <th>Lot #</th>
+                  <th aria-label="Avatar" />
+                  <th>Name</th>
+                  <th>Jersey #</th>
+                  <th>Position</th>
+                  <th>Base price</th>
+                  <th>Status</th>
+                  <th aria-label="Actions" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                {auction.players.map((p) => {
+              <tbody>
+                {auction.players.map((p, i) => {
                   // Manually-typed players (not added from a registered
                   // account) have no linked AppUser, so there's no jersey
                   // number to look up — see handleAddRegisteredPlayer vs.
@@ -1359,7 +1375,10 @@ export function AuctionSetup() {
                   const jerseyNumber = users.find((u) => u.uid === p.playerId)?.jerseyNumber
                   return (
                   <tr key={p.playerId}>
-                    <td className="px-3 py-2">
+                    <td className="aa-numeric aa-orange-text">
+                      LOT-{String(i + 1).padStart(2, '0')}
+                    </td>
+                    <td>
                       <Avatar
                         name={p.name}
                         encryptedPhoto={p.encryptedPhoto}
@@ -1368,7 +1387,7 @@ export function AuctionSetup() {
                         enlargeOnClick
                       />
                     </td>
-                    <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
+                    <td className="text-gray-900 dark:text-gray-100">
                       {editingNameId === p.playerId ? (
                         <span className="inline-flex items-center gap-2">
                           <input
@@ -1404,13 +1423,13 @@ export function AuctionSetup() {
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
-                      {jerseyNumber ?? <span className="text-gray-400">—</span>}
+                    <td className="aa-numeric aa-dim">
+                      {jerseyNumber != null ? `#${jerseyNumber}` : <span className="aa-muted">—</span>}
                     </td>
-                    <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
-                      {p.position || <span className="text-gray-400">—</span>}
+                    <td className="aa-dim">
+                      {p.position || <span className="aa-muted">—</span>}
                     </td>
-                    <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
+                    <td className="aa-numeric aa-dim">
                       {editingBasePriceId === p.playerId ? (
                         <input
                           type="number"
@@ -1424,10 +1443,20 @@ export function AuctionSetup() {
                         p.basePrice
                       )}
                     </td>
-                    <td className="px-3 py-2 text-gray-600 dark:text-gray-400 capitalize">
-                      {p.status}
+                    <td>
+                      <span
+                        className={`aa-chip ${
+                          p.status === 'sold'
+                            ? 'aa-chip-mint'
+                            : p.status === 'open'
+                              ? 'aa-chip-muted'
+                              : 'aa-chip-orange'
+                        }`}
+                      >
+                        {p.status}
+                      </span>
                     </td>
-                    <td className="px-3 py-2 text-right">
+                    <td className="text-right">
                       {p.status === 'open' && (
                         <span className="inline-flex items-center gap-2">
                           {editingBasePriceId === p.playerId ? (
@@ -1482,13 +1511,32 @@ export function AuctionSetup() {
                 })}
                 {auction.players.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-3 py-3 text-gray-500">
+                    <td colSpan={8} className="aa-muted">
                       No players added yet.
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
+            {auction.players.length > 0 && (
+              <div className="flex flex-wrap items-center gap-4 border-t bg-[color:var(--aa-locker)] px-4 py-2.5 text-xs">
+                <span className="aa-muted">
+                  Total base valuation{' '}
+                  <span className="aa-numeric aa-mint-text">
+                    {auction.players.reduce((n, p) => n + (Number(p.basePrice) || 0), 0)}
+                  </span>
+                </span>
+                <span className="aa-muted">
+                  Average reserve{' '}
+                  <span className="aa-numeric aa-dim">
+                    {Math.round(
+                      auction.players.reduce((n, p) => n + (Number(p.basePrice) || 0), 0) /
+                        auction.players.length,
+                    )}
+                  </span>
+                </span>
+              </div>
+            )}
           </div>
         </section>
 
