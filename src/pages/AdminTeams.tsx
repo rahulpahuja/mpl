@@ -14,6 +14,7 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { addToRoster, createTeam, removeFromRoster, updateTeam } from '../lib/teams'
 import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
 import type { AppUser, RosterPlayer, Team } from '../types'
+import '../styles/apex-arena.css'
 
 // Roster editor for one team — a search-and-add picker (registered users
 // with role 'player', reusing PlayerPicker) plus a manual "add unregistered
@@ -329,9 +330,15 @@ export function AdminTeams() {
     <Layout>
       <div className="space-y-6">
         <AdminNav />
-        <section>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Teams</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <section className="apex-arena">
+          <p className="aa-label aa-orange-text flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+              groups
+            </span>
+            Franchise Management
+          </p>
+          <h1 className="aa-head mt-1.5 text-2xl sm:text-3xl">Teams</h1>
+          <p className="mt-1.5 max-w-3xl text-sm aa-dim">
             Teams exist independently of any auction. Create one here, then add it to specific
             auctions from that auction's Setup page. Rename a team or reassign its manager any
             time from the list below.
