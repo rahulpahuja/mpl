@@ -67,7 +67,7 @@ export function NavDrawer() {
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setOpen(false)}
             />
-            <nav className="absolute inset-y-0 left-0 flex w-64 max-w-[80vw] flex-col gap-1 border-r border-gray-200 bg-white p-3 shadow-2xl dark:border-gray-800 dark:bg-gray-900">
+            <nav className="absolute inset-y-0 left-0 flex w-64 max-w-[80vw] flex-col gap-1 border-r border-gray-200 bg-white p-3 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
               <div className="flex items-center justify-between px-2 py-1">
                 <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">Menu</span>
                 <button
