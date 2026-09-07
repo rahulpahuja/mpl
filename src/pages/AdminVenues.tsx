@@ -1,9 +1,17 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Layout } from '../components/Layout'
 import { AdminNav } from '../components/AdminNav'
 import { LocationAutocomplete } from '../components/LocationAutocomplete'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useVenuesRegistry } from '../hooks/useVenuesRegistry'
+import {
+  ANY,
+  DEFAULT_VENUE_FILTER,
+  VENUE_LOCATIONS,
+  citiesFor,
+  locationMatchesFilter,
+  statesFor,
+} from '../lib/venueLocations'
 import { compressImageToDataUrl } from '../lib/imageProcessing'
 import {
   MAX_VENUE_IMAGES,
@@ -18,6 +26,9 @@ import {
 import type { Venue } from '../types'
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024
+
+const FILTER_SELECT_CLASS =
+  'input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100 disabled:opacity-50'
 
 // Higher than imageProcessing's avatar-sized default — a venue photo is
 // shown full-bleed as an auction page backdrop (see AuctionBackground.tsx),
@@ -123,6 +134,21 @@ export function AdminVenues() {
   const [editLocation, setEditLocation] = useState('')
   const [savingEdit, setSavingEdit] = useState(false)
 
+  const [filter, setFilter] = useState<{ country: string; state: string; city: string }>({
+    ...DEFAULT_VENUE_FILTER,
+  })
+  const stateOptions = statesFor(filter.country)
+  const cityOptions = citiesFor(filter.country, filter.state)
+
+  // Changing a broader level clears the narrower ones, since their options no
+  // longer apply.
+  function setCountry(country: string) {
+    setFilter({ country, state: ANY, city: ANY })
+  }
+  function setStateProvince(state: string) {
+    setFilter((f) => ({ ...f, state, city: ANY }))
+  }
+
   async function handleCreateVenue() {
     if (!name.trim() || !location.trim()) return
     setCreating(true)
@@ -162,8 +188,13 @@ export function AdminVenues() {
     await retireVenue(venueId)
   }
 
-  const activeVenues = venues.filter((v) => !v.retired)
-  const retiredVenues = venues.filter((v) => v.retired)
+  const visibleVenues = useMemo(
+    () => venues.filter((v) => locationMatchesFilter(v.location, filter)),
+    [venues, filter],
+  )
+  const activeVenues = visibleVenues.filter((v) => !v.retired)
+  const retiredVenues = visibleVenues.filter((v) => v.retired)
+  const hiddenByFilter = venues.length - visibleVenues.length
 
   function renderVenue(v: Venue) {
     const isEditing = editingVenueId === v.venueId
@@ -281,9 +312,75 @@ export function AdminVenues() {
             </button>
           </div>
 
+          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <label className="flex flex-col gap-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+              Country
+              <select
+                value={filter.country}
+                onChange={(e) => setCountry(e.target.value)}
+                className={FILTER_SELECT_CLASS}
+              >
+                <option value={ANY}>{ANY} country</option>
+                {VENUE_LOCATIONS.map((c) => (
+                  <option key={c.country} value={c.country}>
+                    {c.country}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+              State / Province
+              <select
+                value={filter.state}
+                onChange={(e) => setStateProvince(e.target.value)}
+                disabled={filter.country === ANY}
+                className={FILTER_SELECT_CLASS}
+              >
+                <option value={ANY}>{ANY} state / province</option>
+                {stateOptions.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+              City
+              <select
+                value={filter.city}
+                onChange={(e) => setFilter((f) => ({ ...f, city: e.target.value }))}
+                disabled={filter.state === ANY}
+                className={FILTER_SELECT_CLASS}
+              >
+                <option value={ANY}>{ANY} city</option>
+                {cityOptions.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {hiddenByFilter > 0 && (
+            <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+              {hiddenByFilter} venue{hiddenByFilter === 1 ? '' : 's'} hidden by this filter.{' '}
+              <button
+                type="button"
+                onClick={() => setFilter({ country: ANY, state: ANY, city: ANY })}
+                className="font-medium text-orange-600 dark:text-orange-400 hover:underline"
+              >
+                Clear
+              </button>
+            </p>
+          )}
+
           <ul className="mt-4 space-y-2.5 text-sm">
             {activeVenues.map(renderVenue)}
-            {activeVenues.length === 0 && <li className="py-2 text-gray-500">No venues added yet.</li>}
+            {activeVenues.length === 0 && (
+              <li className="py-2 text-gray-500">
+                {venues.length === 0 ? 'No venues added yet.' : 'No venues match this filter.'}
+              </li>
+            )}
           </ul>
 
           {retiredVenues.length > 0 && (
