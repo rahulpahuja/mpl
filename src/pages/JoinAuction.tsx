@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { usePageTitle } from '../hooks/usePageTitle'
+import '../styles/apex-arena.css'
 
 export function JoinAuction() {
   usePageTitle('Join an Auction')
@@ -16,10 +17,10 @@ export function JoinAuction() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-8">
+    <div className="apex-arena flex min-h-screen items-center justify-center px-4 py-8">
       <div className="glass-card w-full max-w-sm p-8">
       <div className="relative z-[3]">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Join an auction</h1>
+        <h1 className="aa-head text-2xl text-gray-900 dark:text-gray-100">Join an auction</h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Pick an ongoing auction below, or enter an auction ID directly.
         </p>

@@ -5,6 +5,7 @@ import { DocsSectionView } from '../components/DocsSectionView'
 import { helpSections, getHelpSection } from '../content/helpContent'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
+import '../styles/apex-arena.css'
 
 // Real, bookmarkable/shareable pages for "how to use this app" — one URL per
 // role's guide — instead of a modal. Defaults to the signed-in user's own
@@ -21,7 +22,7 @@ export function Docs() {
 
   return (
     <Layout>
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-[200px_1fr]">
+      <div className="apex-arena grid grid-cols-1 gap-8 sm:grid-cols-[200px_1fr]">
         <DocsSidebar sections={helpSections} />
         {section ? (
           <DocsSectionView section={section} />
