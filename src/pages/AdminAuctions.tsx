@@ -254,11 +254,8 @@ export function AdminAuctions() {
                     <div className="border-b bg-[color:var(--aa-locker)] p-4">
                       <div className="flex items-center justify-between gap-2">
                         <span className={STATUS_CHIP[a.status]}>{a.status}</span>
-                        <span className="flex items-center gap-1.5 text-xs font-semibold aa-orange-text">
-                          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
-                            sports_cricket
-                          </span>
-                          Cricket
+                        <span className="aa-numeric text-xs aa-muted">
+                          {a.players.length} players · {a.teamManagers.length} teams
                         </span>
                       </div>
                       <p className="aa-head mt-3 truncate text-[15px]">{a.name}</p>

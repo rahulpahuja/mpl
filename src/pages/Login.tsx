@@ -72,6 +72,16 @@ export function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="glass-card w-full max-w-sm p-8">
+        <div className="relative z-[3] mb-5 flex items-center gap-2.5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-700 to-orange-500 text-white">
+            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+              sports_cricket
+            </span>
+          </span>
+          <span className="bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-lg font-bold tracking-tight text-transparent">
+            Auction Manager
+          </span>
+        </div>
         <h1 className="relative z-[3] text-2xl font-semibold text-gray-900 dark:text-gray-100">Sign in</h1>
         <p className="relative z-[3] mt-1 text-sm text-gray-500 dark:text-gray-400">
           Sign in with Google to get an account. An Admin then assigns you as a Captain or
