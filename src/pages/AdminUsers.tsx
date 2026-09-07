@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Layout } from '../components/Layout'
-import { AdminNav } from '../components/AdminNav'
 import { Avatar } from '../components/Avatar'
 import { WhatsAppButton } from '../components/WhatsAppButton'
 import { UserDetailModal } from '../components/UserDetailModal'
@@ -235,7 +234,6 @@ export function AdminUsers() {
   return (
     <Layout>
       <div className="space-y-6">
-        <AdminNav />
         <section>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Users</h1>
           {isAdmin && (
