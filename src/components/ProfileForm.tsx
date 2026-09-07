@@ -119,156 +119,160 @@ export function ProfileForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <div>
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-        <input
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          maxLength={80}
-          className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-        />
-      </div>
-      <div>
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone number</label>
-        <div className="mt-1 input-glass flex overflow-hidden rounded-lg focus-within:ring-2 focus-within:ring-orange-400/60">
-          <span className="flex items-center bg-gray-100 dark:bg-gray-700 px-3 text-sm text-gray-500 dark:text-gray-400">
-            {COUNTRY_CODE}
-          </span>
+      <div className="grid grid-cols-1 items-start gap-x-4 gap-y-4 sm:grid-cols-2">
+        <div>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
           <input
-            value={phone}
-            onChange={(e) => handlePhoneChange(e.target.value)}
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            maxLength={80}
+            className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
+          <div className="mt-1">
+            <LocationAutocomplete value={location} onChange={setLocation} />
+          </div>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone number</label>
+          <div className="mt-1 input-glass flex overflow-hidden rounded-lg focus-within:ring-2 focus-within:ring-orange-400/60">
+            <span className="flex items-center bg-gray-100 dark:bg-gray-700 px-3 text-sm text-gray-500 dark:text-gray-400">
+              {COUNTRY_CODE}
+            </span>
+            <input
+              value={phone}
+              onChange={(e) => handlePhoneChange(e.target.value)}
+              inputMode="numeric"
+              maxLength={10}
+              className="w-full bg-transparent px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            WhatsApp number
+          </label>
+          <div className="mt-1 input-glass flex overflow-hidden rounded-lg focus-within:ring-2 focus-within:ring-orange-400/60">
+            <span className="flex items-center bg-gray-100 dark:bg-gray-700 px-3 text-sm text-gray-500 dark:text-gray-400">
+              {COUNTRY_CODE}
+            </span>
+            <input
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(onlyDigits(e.target.value))}
+              disabled={sameAsPhone}
+              inputMode="numeric"
+              maxLength={10}
+              className="w-full bg-transparent px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none disabled:opacity-60"
+            />
+          </div>
+          <label className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+            <input
+              type="checkbox"
+              checked={sameAsPhone}
+              onChange={(e) => handleSameAsPhoneChange(e.target.checked)}
+              className="rounded border-gray-300 dark:border-gray-700 text-red-600 focus:ring-red-500"
+            />
+            Same as phone number
+          </label>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Playing role
+          </label>
+          <select
+            value={playingRole}
+            onChange={(e) => setPlayingRole(e.target.value as PlayingRole | '')}
+            className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+          >
+            <option value="">Not set</option>
+            {PLAYING_ROLE_OPTIONS.map((r) => (
+              <option key={r.value} value={r.value}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Jersey number
+          </label>
+          <input
+            value={jerseyNumber}
+            onChange={(e) => setJerseyNumber(e.target.value.replace(/\D/g, '').slice(0, 2))}
             inputMode="numeric"
-            maxLength={10}
-            className="w-full bg-transparent px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none"
+            maxLength={2}
+            placeholder="e.g. 7"
+            className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
           />
         </div>
-      </div>
-      <div>
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          WhatsApp number
-        </label>
-        <div className="mt-1 input-glass flex overflow-hidden rounded-lg focus-within:ring-2 focus-within:ring-orange-400/60">
-          <span className="flex items-center bg-gray-100 dark:bg-gray-700 px-3 text-sm text-gray-500 dark:text-gray-400">
-            {COUNTRY_CODE}
-          </span>
-          <input
-            value={whatsapp}
-            onChange={(e) => setWhatsapp(onlyDigits(e.target.value))}
-            disabled={sameAsPhone}
-            inputMode="numeric"
-            maxLength={10}
-            className="w-full bg-transparent px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none disabled:opacity-60"
-          />
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Batting handedness
+          </label>
+          <select
+            value={battingHandedness}
+            onChange={(e) => setBattingHandedness(e.target.value as Handedness | '')}
+            className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+          >
+            <option value="">Not set</option>
+            <option value="right">Right-handed</option>
+            <option value="left">Left-handed</option>
+          </select>
         </div>
-        <label className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-          <input
-            type="checkbox"
-            checked={sameAsPhone}
-            onChange={(e) => handleSameAsPhoneChange(e.target.checked)}
-            className="rounded border-gray-300 dark:border-gray-700 text-red-600 focus:ring-red-500"
-          />
-          Same as phone number
-        </label>
-      </div>
-      <div>
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
-        <div className="mt-1">
-          <LocationAutocomplete value={location} onChange={setLocation} />
+        <div>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Batting type
+          </label>
+          <select
+            value={battingType}
+            onChange={(e) => setBattingType(e.target.value as BattingType | '')}
+            className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+          >
+            <option value="">Not set</option>
+            {BATTING_TYPE_OPTIONS.map((b) => (
+              <option key={b.value} value={b.value}>
+                {b.label}
+              </option>
+            ))}
+          </select>
         </div>
-      </div>
-      <div>
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Jersey number
-        </label>
-        <input
-          value={jerseyNumber}
-          onChange={(e) => setJerseyNumber(e.target.value.replace(/\D/g, '').slice(0, 2))}
-          inputMode="numeric"
-          maxLength={2}
-          placeholder="e.g. 7"
-          className="mt-1 w-24 input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-        />
-      </div>
-      <div>
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Playing role
-        </label>
-        <select
-          value={playingRole}
-          onChange={(e) => setPlayingRole(e.target.value as PlayingRole | '')}
-          className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-        >
-          <option value="">Not set</option>
-          {PLAYING_ROLE_OPTIONS.map((r) => (
-            <option key={r.value} value={r.value}>
-              {r.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Batting type
-        </label>
-        <select
-          value={battingType}
-          onChange={(e) => setBattingType(e.target.value as BattingType | '')}
-          className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-        >
-          <option value="">Not set</option>
-          {BATTING_TYPE_OPTIONS.map((b) => (
-            <option key={b.value} value={b.value}>
-              {b.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Bowling type
-        </label>
-        <select
-          value={bowlingType}
-          onChange={(e) => setBowlingType(e.target.value as BowlingType | '')}
-          className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-        >
-          <option value="">Not set</option>
-          {BOWLING_TYPE_OPTIONS.map((b) => (
-            <option key={b.value} value={b.value}>
-              {b.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Batting handedness
-        </label>
-        <select
-          value={battingHandedness}
-          onChange={(e) => setBattingHandedness(e.target.value as Handedness | '')}
-          className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-        >
-          <option value="">Not set</option>
-          <option value="right">Right-handed</option>
-          <option value="left">Left-handed</option>
-        </select>
-      </div>
-      <div>
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Bowling handedness
-        </label>
-        <select
-          value={bowlingHandedness}
-          onChange={(e) => setBowlingHandedness(e.target.value as Handedness | '')}
-          className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-        >
-          <option value="">Not set</option>
-          <option value="right">Right-arm</option>
-          <option value="left">Left-arm</option>
-        </select>
-      </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Bowling handedness
+          </label>
+          <select
+            value={bowlingHandedness}
+            onChange={(e) => setBowlingHandedness(e.target.value as Handedness | '')}
+            className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+          >
+            <option value="">Not set</option>
+            <option value="right">Right-arm</option>
+            <option value="left">Left-arm</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Bowling type
+          </label>
+          <select
+            value={bowlingType}
+            onChange={(e) => setBowlingType(e.target.value as BowlingType | '')}
+            className="mt-1 w-full input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+          >
+            <option value="">Not set</option>
+            {BOWLING_TYPE_OPTIONS.map((b) => (
+              <option key={b.value} value={b.value}>
+                {b.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
       <button
