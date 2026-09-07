@@ -25,7 +25,7 @@ export function ProtectedRoute({
   }
 
   if (!roles.includes(user.role)) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/home" replace />
   }
 
   return children

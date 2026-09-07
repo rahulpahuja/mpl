@@ -9,12 +9,14 @@ import { useTimeBasedTheme } from './hooks/useTimeBasedTheme'
 import { lazyWithRetry } from './lib/lazyWithRetry'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
+import { Sports } from './pages/Sports'
 
 // Every route below is role- or flow-specific — a Team Manager never needs the
 // Admin dashboard's code, a Viewer never needs the bidding page, etc. Lazy
 // splitting them means a visit only downloads the JS its role actually uses,
 // instead of every page in the app bundled into one chunk on every load. Only
-// Home and Login stay eager since virtually every visit hits one of them first.
+// Sports, Home, and Login stay eager since virtually every visit hits one of
+// them first.
 const JoinAuction = lazyWithRetry(() => import('./pages/JoinAuction').then((m) => ({ default: m.JoinAuction })))
 const AdminAuctions = lazyWithRetry(() =>
   import('./pages/AdminAuctions').then((m) => ({ default: m.AdminAuctions })),
@@ -66,7 +68,8 @@ export default function App() {
         <CricketMotifs />
         <Suspense fallback={null}>
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Sports />} />
+            <Route path="/home" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/join" element={<JoinAuction />} />
             <Route path="/viewer/:auctionId" element={<ViewerFeed />} />
