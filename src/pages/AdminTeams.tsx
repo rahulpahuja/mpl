@@ -81,15 +81,13 @@ function TeamRosterPanel({ team, allUsers }: { team: Team; allUsers: AppUser[] }
   }
 
   return (
-    <div className="mt-2 space-y-2 rounded-lg border border-white/50 dark:border-white/10 bg-white/30 dark:bg-black/20 backdrop-blur-sm p-3">
+    <div className="aa-card mt-2 space-y-2 p-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-          Roster ({roster.length}) — the pool matches pick a Playing XI from
-        </p>
+        <p className="aa-label">Roster ({roster.length}) — pool for Playing XI</p>
         <button
           type="button"
           onClick={() => setPickerOpen(true)}
-          className="shrink-0 rounded-lg btn-glass border px-2.5 py-1 text-xs font-medium"
+          className="aa-btn aa-btn-ghost shrink-0 text-xs"
         >
           Add player
         </button>
@@ -100,7 +98,7 @@ function TeamRosterPanel({ team, allUsers }: { team: Team; allUsers: AppUser[] }
           {roster.map((p) => (
             <li
               key={p.playerId}
-              className="flex items-center justify-between gap-2 rounded-lg bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm px-2.5 py-1.5 text-sm"
+              className="aa-card flex items-center justify-between gap-2 px-2.5 py-1.5 text-sm"
             >
               <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
                 <Avatar name={p.name} avatarId={p.avatarId} photoURL={p.photoURL} encryptedPhoto={p.encryptedPhoto} />
@@ -201,7 +199,7 @@ function ManagerPicker({
         className="input-glass rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
       />
       {search && (
-        <ul className="mt-2 max-h-40 divide-y divide-gray-200/70 dark:divide-gray-800/70 overflow-y-auto rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm text-sm">
+        <ul className="aa-card mt-2 max-h-40 divide-y divide-gray-200/70 overflow-y-auto text-sm dark:divide-gray-800/70">
           {candidates.map((m) => (
             <li key={m.uid}>
               <button
@@ -262,6 +260,15 @@ export function AdminTeams() {
   const [editManagerSearch, setEditManagerSearch] = useState('')
   const [editManagerId, setEditManagerId] = useState('')
   const [savingEdit, setSavingEdit] = useState(false)
+  const [teamSearch, setTeamSearch] = useState('')
+
+  const teamQuery = teamSearch.trim().toLowerCase()
+  const visibleTeams = teams.filter(
+    (t) =>
+      !teamQuery ||
+      t.teamName.toLowerCase().includes(teamQuery) ||
+      t.managerName.toLowerCase().includes(teamQuery),
+  )
 
   async function handleCreateTeam() {
     if (!teamName.trim() || !selectedManagerId) return
@@ -344,7 +351,13 @@ export function AdminTeams() {
             time from the list below.
           </p>
 
-          <div className="glass-card mt-3 p-5">
+          <div className="glass-card mt-4 p-5">
+          <div className="relative z-[3] mb-4 flex items-center justify-between gap-2 border-b pb-4">
+            <span className="aa-head flex items-center gap-2.5 text-[15px]">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#ea580c] ring-4 ring-[#ea580c33]" />
+              Create Franchise Team
+            </span>
+          </div>
           <div className="relative z-[3] grid grid-cols-1 gap-2 sm:grid-cols-4">
             <input
               value={teamName}
@@ -425,8 +438,28 @@ export function AdminTeams() {
           </div>
           </div>
 
-          <ul className="mt-4 space-y-2.5 text-sm">
-            {teams.map((t) => {
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative w-full sm:w-96">
+              <span
+                className="material-symbols-outlined aa-muted pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px]"
+                aria-hidden="true"
+              >
+                search
+              </span>
+              <input
+                value={teamSearch}
+                onChange={(e) => setTeamSearch(e.target.value)}
+                placeholder="Search teams by name or manager…"
+                className="aa-input pl-9"
+              />
+            </div>
+            <span className="aa-label shrink-0">
+              {teams.length} team{teams.length === 1 ? '' : 's'} registered
+            </span>
+          </div>
+
+          <ul className="mt-3 space-y-2.5 text-sm">
+            {visibleTeams.map((t) => {
               const manager = users.find((u) => u.uid === t.managerId)
               const isEditing = editingTeamId === t.teamId
 
@@ -540,23 +573,32 @@ export function AdminTeams() {
 
               const rosterOpen = expandedRosterTeamId === t.teamId
               return (
-                <li key={t.teamId} className="glass-card glass-card-hoverable p-4">
-                  <div className="relative z-[3] flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-gray-100">
+                <li
+                  key={t.teamId}
+                  className={`glass-card p-4 ${rosterOpen ? 'border-[#ea580c66]!' : ''}`}
+                >
+                  <div className="relative z-[3] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="flex min-w-0 items-center gap-3">
                       <TeamAvatar
                         teamName={t.teamName}
                         logoId={t.logoId}
                         logoImage={t.logoImage}
                         jerseyColor={t.jerseyColor}
                       />
-                      <span className="truncate">{t.teamName}</span>
+                      <span className="min-w-0">
+                        <span className="aa-head block truncate text-[15px]">{t.teamName}</span>
+                        <span className="flex items-center gap-1.5 text-xs aa-muted">
+                          Manager: <span className="aa-dim">{t.managerName}</span>
+                          <WhatsAppButton phone={manager?.whatsapp || manager?.phone} />
+                        </span>
+                      </span>
                     </span>
-                    <span className="flex flex-wrap items-center gap-3 text-gray-500">
-                      <span className="truncate">Manager: {t.managerName}</span>
-                      <WhatsAppButton phone={manager?.whatsapp || manager?.phone} />
+                    <span className="flex shrink-0 items-center gap-2">
                       <button
                         onClick={() => setExpandedRosterTeamId(rosterOpen ? null : t.teamId)}
-                        className="shrink-0 font-medium text-orange-600 dark:text-orange-400 hover:underline"
+                        className={`aa-btn text-xs ${
+                          rosterOpen ? 'aa-btn-primary' : 'aa-btn-ghost aa-orange-text'
+                        }`}
                       >
                         {rosterOpen ? 'Hide roster' : `Roster (${t.roster?.length ?? 0})`}
                       </button>
@@ -564,7 +606,7 @@ export function AdminTeams() {
                         onClick={() =>
                           startEdit(t.teamId, t.teamName, t.managerId, t.logoId, t.logoImage, t.jerseyColor)
                         }
-                        className="shrink-0 font-medium text-orange-600 dark:text-orange-400 hover:underline"
+                        className="aa-btn aa-btn-ghost text-xs"
                       >
                         Edit
                       </button>
@@ -578,7 +620,13 @@ export function AdminTeams() {
                 </li>
               )
             })}
-            {teams.length === 0 && <li className="py-2 text-gray-500">No teams created yet.</li>}
+            {teams.length === 0 ? (
+              <li className="py-2 aa-muted">No teams created yet.</li>
+            ) : (
+              visibleTeams.length === 0 && (
+                <li className="py-2 aa-muted">No teams match this search.</li>
+              )
+            )}
           </ul>
         </section>
       </div>
