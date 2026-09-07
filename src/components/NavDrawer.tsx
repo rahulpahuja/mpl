@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { NavLink } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { NAV_DESTINATIONS } from '../lib/navShortcuts'
 
-// Top-left slide-in menu for the less-frequently-used destinations (Settings,
-// Users, Venues — see lib/navShortcuts.ts, section 'drawer'). Rendered once in
-// Layout so it's available on every page; hides itself entirely when the
-// signed-in role can't reach any of its links.
+// Top-left slide-in menu for the less-frequently-used destinations (Home,
+// Settings, Users, Venues — see lib/navShortcuts.ts, section 'drawer').
+// Rendered once in Layout so it's available on every page; hides itself
+// entirely when the signed-in role can't reach any of its links. The overlay
+// is portalled to <body> because Layout's header has a backdrop-filter, which
+// would otherwise become the containing block for the fixed-positioned panel
+// and clip it to the header's height.
 export function NavDrawer() {
   const user = useAuthStore((s) => s.user)
   const [open, setOpen] = useState(false)
@@ -51,49 +55,51 @@ export function NavDrawer() {
         </svg>
       </button>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-[100]"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Navigation menu"
-        >
+      {open &&
+        createPortal(
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setOpen(false)}
-          />
-          <nav className="absolute inset-y-0 left-0 flex w-64 max-w-[80vw] flex-col gap-1 border-r border-gray-200 dark:border-gray-800 bg-white p-3 shadow-2xl dark:bg-gray-900">
-            <div className="flex items-center justify-between px-2 py-1">
-              <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">Menu</span>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-label="Close navigation menu"
-                className="rounded-md px-2 py-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                ✕
-              </button>
-            </div>
-            {destinations.map((d) => (
-              <NavLink
-                key={d.to}
-                to={d.to}
-                end={d.end}
-                onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-gradient-to-r from-blue-700 to-orange-500 text-white'
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`
-                }
-              >
-                {d.label}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
-      )}
+            className="fixed inset-0 z-[100]"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
+          >
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setOpen(false)}
+            />
+            <nav className="absolute inset-y-0 left-0 flex w-64 max-w-[80vw] flex-col gap-1 border-r border-gray-200 bg-white p-3 shadow-2xl dark:border-gray-800 dark:bg-gray-900">
+              <div className="flex items-center justify-between px-2 py-1">
+                <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">Menu</span>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label="Close navigation menu"
+                  className="rounded-md px-2 py-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  ✕
+                </button>
+              </div>
+              {destinations.map((d) => (
+                <NavLink
+                  key={d.to}
+                  to={d.to}
+                  end={d.end}
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) =>
+                    `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-gradient-to-r from-blue-700 to-orange-500 text-white'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`
+                  }
+                >
+                  {d.label}
+                </NavLink>
+              ))}
+            </nav>
+          </div>,
+          document.body,
+        )}
     </>
   )
 }
