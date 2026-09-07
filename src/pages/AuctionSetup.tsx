@@ -169,6 +169,7 @@ export function AuctionSetup() {
   const [logoImage, setLogoImage] = useState('')
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null)
+  const [setupTab, setSetupTab] = useState<'general' | 'roster' | 'teams'>('general')
   const [applyingPurse, setApplyingPurse] = useState(false)
   const [purseError, setPurseError] = useState<string | null>(null)
   const [applyingMaxPlayers, setApplyingMaxPlayers] = useState(false)
@@ -733,22 +734,36 @@ export function AuctionSetup() {
         </div>
 
         <nav className="sticky top-16 z-20 -mx-1 flex gap-1 overflow-x-auto rounded-lg border bg-[color:var(--aa-dugout)] p-1">
-          {[
-            { href: '#setup-general', label: 'General settings' },
-            { href: '#setup-roster', label: 'Player roster' },
-            { href: '#setup-teams', label: 'Team managers' },
-          ].map((tab) => (
-            <a
-              key={tab.href}
-              href={tab.href}
-              className="aa-numeric shrink-0 rounded-md px-3 py-1.5 text-xs font-semibold aa-dim hover:bg-white/5 hover:text-white"
+          {(
+            [
+              { id: 'general', label: 'General settings' },
+              { id: 'roster', label: 'Player roster' },
+              { id: 'teams', label: 'Team managers' },
+            ] as const
+          ).map((tab, i) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setSetupTab(tab.id)}
+              className={`aa-numeric flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold ${
+                setupTab === tab.id
+                  ? 'bg-[#ea580c] text-white'
+                  : 'aa-dim hover:bg-white/5 hover:text-white'
+              }`}
             >
+              <span
+                className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] ${
+                  setupTab === tab.id ? 'bg-white/25' : 'bg-white/10'
+                }`}
+              >
+                {i + 1}
+              </span>
               {tab.label}
-            </a>
+            </button>
           ))}
         </nav>
 
-        <section id="setup-general" className="scroll-mt-28">
+        <section id="setup-general" hidden={setupTab !== 'general'} className="scroll-mt-28">
           <div className="relative z-[3]">
             <h2 className="aa-head text-lg text-gray-900 dark:text-gray-100">
               General auction controls
@@ -1012,7 +1027,7 @@ export function AuctionSetup() {
           </div>
         </section>
 
-        <section id="setup-roster" className="glass-card p-5 scroll-mt-28">
+        <section id="setup-roster" hidden={setupTab !== 'roster'} className="glass-card p-5 scroll-mt-28">
           <div className="relative z-[3] flex flex-wrap items-start justify-between gap-3 border-b pb-4">
             <div className="flex items-start gap-2.5">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-[#ea580c1a] text-[#ea580c]">
@@ -1633,7 +1648,7 @@ export function AuctionSetup() {
           </div>
         )}
 
-        <section id="setup-teams" className="glass-card p-5 scroll-mt-28">
+        <section id="setup-teams" hidden={setupTab !== 'teams'} className="glass-card p-5 scroll-mt-28">
           <div className="relative z-[3] flex flex-wrap items-start justify-between gap-3 border-b pb-4">
             <div className="flex items-start gap-2.5">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-[#ea580c1a] text-[#ea580c]">
