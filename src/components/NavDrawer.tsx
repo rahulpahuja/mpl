@@ -1,37 +1,31 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { signOut } from '../lib/auth'
 import { isSoundEnabled, setSoundEnabled } from '../lib/sound'
 import { DRAWER_GROUPS, NAV_DESTINATIONS } from '../lib/navShortcuts'
+import { Avatar } from './Avatar'
+import '../styles/apex-arena.css'
 
-// Top-left slide-in menu. Its links come from lib/navShortcuts.ts
-// (section 'drawer', grouped under DRAWER_GROUPS headings); the Account group
-// also carries the sound toggle and sign-out actions. The overlay is portalled
-// to <body> because Layout's header has a backdrop-filter, which would
-// otherwise become the containing block for the fixed-positioned panel and
-// clip it to the header's height.
-
-function rowClass(active: boolean): string {
-  return `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-    active
-      ? 'bg-gradient-to-r from-blue-700 to-orange-500 text-white'
-      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800'
-  }`
+const ACCOUNT_ROLE_LABELS: Record<string, string> = {
+  admin: 'Admin',
+  auctionManager: 'Auction Manager',
+  manager: 'Captain',
+  player: 'Player',
+  viewer: 'Viewer',
 }
 
-function Icon({ name, active }: { name: string; active?: boolean }) {
-  return (
-    <span
-      className={`material-symbols-outlined text-[20px] ${
-        active ? 'text-white' : 'text-gray-500 dark:text-gray-400'
-      }`}
-      aria-hidden="true"
-    >
-      {name}
-    </span>
-  )
+// Top-left slide-in menu, styled in the Apex Arena dark language. Its links
+// come from lib/navShortcuts.ts (section 'drawer'); Profile, Help and Sign
+// out live in the footer, and the Account group carries the sound toggle.
+// The overlay is portalled to <body> because Layout's header has a
+// backdrop-filter, which would otherwise clip the fixed-positioned panel.
+
+function navRowClass(active: boolean): string {
+  return `flex items-center justify-between gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors ${
+    active ? 'aa-nav-active' : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+  }`
 }
 
 export function NavDrawer() {
@@ -42,6 +36,7 @@ export function NavDrawer() {
   const links = NAV_DESTINATIONS.filter(
     (d) => d.section === 'drawer' && user && (!d.roles || d.roles.includes(user.role)),
   )
+  const helpLink = links.find((d) => d.to === '/docs')
 
   useEffect(() => {
     if (!open) return
@@ -77,87 +72,180 @@ export function NavDrawer() {
       {open &&
         createPortal(
           <div
-            className="fixed inset-0 z-[100]"
+            className="apex-arena fixed inset-0 z-[100]"
             role="dialog"
             aria-modal="true"
             aria-label="Navigation menu"
           >
             <div
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setOpen(false)}
             />
-            <nav className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col overflow-y-auto border-r border-gray-200 bg-white p-3 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-              <div className="flex shrink-0 items-center justify-between px-2 pb-2 pt-1">
-                <span className="flex items-center gap-2 text-base font-bold tracking-tight">
-                  <span
-                    className="material-symbols-outlined bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-[22px] text-transparent"
-                    aria-hidden="true"
-                  >
-                    sports_cricket
+            <div className="aa-drawer absolute inset-y-0 left-0 flex w-80 max-w-[90vw] flex-col border-r border-white/10 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+                <Link
+                  to="/"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-[#c2410c] via-[#ea580c] to-amber-400 text-white shadow-[0_0_24px_-4px_rgba(234,88,12,0.35)]">
+                    <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                      sports_cricket
+                    </span>
                   </span>
-                  <span className="bg-gradient-to-r from-blue-700 to-orange-500 bg-clip-text text-transparent">
-                    Auction Manager
+                  <span className="flex flex-col leading-tight">
+                    <span className="aa-head text-base">
+                      Auction<span className="text-[#f97316]">Manager</span>
+                    </span>
+                    <span className="aa-label text-[10px]">Pro Operator</span>
                   </span>
-                </span>
+                </Link>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
                   aria-label="Close navigation menu"
-                  className="material-symbols-outlined rounded-md p-1 text-[20px] text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="material-symbols-outlined flex h-8 w-8 items-center justify-center rounded-lg text-[18px] text-slate-400 hover:bg-white/10 hover:text-white"
                 >
                   close
                 </button>
               </div>
 
-              <div className="flex flex-1 flex-col justify-between gap-4 py-2">
-                {DRAWER_GROUPS.map((group) => {
-                  const groupLinks = links.filter((d) => d.group === group)
+              <nav className="aa-scroll flex-1 space-y-6 overflow-y-auto px-3 py-4">
+                {DRAWER_GROUPS.map((group, groupIndex) => {
+                  const groupLinks =
+                    group === 'Main'
+                      ? links.filter((d) => d.group === 'Main')
+                      : []
                   const isAccount = group === 'Account'
                   if (groupLinks.length === 0 && !isAccount) return null
                   return (
-                    <div key={group} className="flex flex-col gap-0.5">
-                      <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                        {group}
-                      </p>
+                    <div key={group} className="space-y-1">
+                      <div className="flex items-center justify-between px-3 pb-1.5">
+                        <span className="aa-label">{group === 'Main' ? 'Main Console' : 'System'}</span>
+                        <span className="aa-numeric text-[10px] text-slate-600">
+                          {String(groupIndex + 1).padStart(2, '0')}
+                        </span>
+                      </div>
                       {groupLinks.map((d) => (
                         <NavLink
                           key={d.to}
                           to={d.to}
                           end={d.end}
                           onClick={() => setOpen(false)}
-                          className={({ isActive }) => rowClass(isActive)}
+                          className={({ isActive }) => navRowClass(isActive)}
                         >
                           {({ isActive }) => (
                             <>
-                              {d.icon && <Icon name={d.icon} active={isActive} />}
-                              {d.label}
+                              <span className="flex items-center gap-3">
+                                {d.icon && (
+                                  <span
+                                    className="material-symbols-outlined text-[20px]"
+                                    aria-hidden="true"
+                                  >
+                                    {d.icon}
+                                  </span>
+                                )}
+                                {d.label}
+                              </span>
+                              {isActive && (
+                                <span className="aa-numeric rounded-md border border-[#ea580c4d] bg-[#ea580c33] px-1.5 py-0.5 text-[10px] text-[#fdba74]">
+                                  Active
+                                </span>
+                              )}
                             </>
                           )}
                         </NavLink>
                       ))}
                       {isAccount && (
-                        <>
-                          <button type="button" onClick={toggleSound} className={rowClass(false)}>
-                            <Icon name={soundOn ? 'volume_up' : 'volume_off'} />
-                            {soundOn ? 'Sound on' : 'Sound off'}
-                          </button>
+                        <div className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] px-3.5 py-2">
+                          <span className="flex items-center gap-2.5 text-xs font-medium text-slate-300">
+                            <span
+                              className="material-symbols-outlined text-[18px] text-[#fb923c]"
+                              aria-hidden="true"
+                            >
+                              {soundOn ? 'volume_up' : 'volume_off'}
+                            </span>
+                            Auction sound
+                          </span>
                           <button
                             type="button"
-                            onClick={() => signOut()}
-                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                            role="switch"
+                            aria-checked={soundOn}
+                            aria-label="Toggle auction sound"
+                            onClick={toggleSound}
+                            className={`relative h-5 w-9 rounded-full transition-colors ${
+                              soundOn ? 'bg-[#ea580c]' : 'bg-slate-700'
+                            }`}
                           >
-                            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
-                              logout
-                            </span>
-                            Sign out
+                            <span
+                              className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
+                                soundOn ? 'translate-x-4' : 'translate-x-0.5'
+                              }`}
+                            />
                           </button>
-                        </>
+                        </div>
                       )}
                     </div>
                   )
                 })}
+              </nav>
+
+              <div className="border-t border-white/10 bg-black/40 p-3">
+                <Link
+                  to="/profile"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 transition-colors hover:border-[#ea580c66]"
+                >
+                  <Avatar
+                    name={user.displayName}
+                    filenPhotoId={user.filenPhotoId}
+                    encryptedPhoto={user.encryptedPhoto}
+                    photoURL={user.photoURL}
+                    avatarId={user.avatarId}
+                    shape="square"
+                    size={10}
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-semibold text-white">
+                      {user.displayName}
+                    </span>
+                    <span className="block truncate text-[11px] text-slate-400">
+                      {ACCOUNT_ROLE_LABELS[user.role]} · {user.email}
+                    </span>
+                  </span>
+                  <span
+                    className="material-symbols-outlined shrink-0 text-[18px] text-slate-400"
+                    aria-hidden="true"
+                  >
+                    chevron_right
+                  </span>
+                </Link>
+                <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                  {helpLink && (
+                    <NavLink
+                      to={helpLink.to}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center justify-center gap-2 rounded-lg py-2 text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-100"
+                    >
+                      <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+                        {helpLink.icon ?? 'help'}
+                      </span>
+                      {helpLink.label}
+                    </NavLink>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => signOut()}
+                    className="flex items-center justify-center gap-2 rounded-lg border border-transparent py-2 font-medium text-rose-400 transition-colors hover:border-rose-500/20 hover:bg-rose-500/10 hover:text-rose-300"
+                  >
+                    <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+                      logout
+                    </span>
+                    Sign out
+                  </button>
+                </div>
               </div>
-            </nav>
+            </div>
           </div>,
           document.body,
         )}

@@ -215,6 +215,34 @@
   background: rgba(255, 255, 255, 0.02);
 }
 
+/* Navigation drawer */
+.aa-drawer {
+  background: rgba(12, 16, 23, 0.94);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+}
+.aa-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.aa-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.aa-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+.aa-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(234, 88, 12, 0.5);
+}
+.aa-nav-active {
+  background: rgba(234, 88, 12, 0.15);
+  color: #fb923c;
+  border: 1px solid rgba(234, 88, 12, 0.32);
+  box-shadow:
+    inset 3px 0 0 0 #ea580c,
+    0 0 16px -2px rgba(234, 88, 12, 0.15);
+}
+
 /* Hero sport card on the picker */
 .aa-hero-card {
   background: linear-gradient(135deg, var(--aa-locker), var(--aa-dugout) 60%, var(--aa-pitch));
