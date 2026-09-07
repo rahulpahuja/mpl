@@ -19,7 +19,7 @@ export interface NavDestination {
 // wires up "g <letter>" navigation) read from this list, so a new admin page
 // only needs to be added here once.
 export const NAV_DESTINATIONS: NavDestination[] = [
-  { to: '/', label: 'Home', section: 'global', chord: 'g h' },
+  { to: '/home', label: 'Home', section: 'drawer', chord: 'g h' },
   { to: '/profile', label: 'Profile', section: 'global', chord: 'g p' },
   { to: '/admin', label: 'Auctions', end: true, roles: ['admin'], section: 'admin', chord: 'g a' },
   { to: '/admin/teams', label: 'Teams', roles: ['admin', 'auctionManager'], section: 'admin', chord: 'g t' },
