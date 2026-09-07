@@ -748,10 +748,29 @@ export function AuctionSetup() {
           ))}
         </nav>
 
-        <section id="setup-general" className="glass-card p-5 scroll-mt-28">
-          <h2 className="aa-head relative z-[3] text-lg text-gray-900 dark:text-gray-100">Auction settings</h2>
-          <div className="relative z-[3] mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
+        <section id="setup-general" className="scroll-mt-28">
+          <div className="relative z-[3]">
+            <h2 className="aa-head text-lg text-gray-900 dark:text-gray-100">
+              General auction controls
+            </h2>
+            <p className="mt-0.5 text-sm aa-dim">
+              Branding shown to viewers, the page backdrop and colors, and the live bid timer and
+              increment.
+            </p>
+          </div>
+          <div className="relative z-[3] mt-4 grid gap-4 lg:grid-cols-2">
+            <div className="aa-card p-5">
+              <div className="flex items-center justify-between gap-2 border-b pb-3">
+                <span className="aa-head flex items-center gap-2 text-[15px]">
+                  <span className="material-symbols-outlined aa-orange-text text-[20px]" aria-hidden="true">
+                    palette
+                  </span>
+                  Branding and appearance
+                </span>
+                <span className="text-xs aa-muted">Public viewer</span>
+              </div>
+              <div className="mt-4 space-y-4">
+            <div>
               <label className="text-sm text-gray-500">Logo</label>
               <div className="mt-1 flex items-center gap-3">
                 <AuctionLogo logoImage={logoImage} size={14} />
@@ -787,7 +806,7 @@ export function AuctionSetup() {
                 used. Save settings below to apply.
               </p>
             </div>
-            <div className="sm:col-span-2">
+            <div>
               <label className="text-sm text-gray-500">Background image</label>
               <div className="mt-1 flex flex-wrap gap-2">
                 <button
@@ -853,108 +872,144 @@ export function AuctionSetup() {
                 pages, replacing the background color below. Pick a preset or upload your own.
               </p>
             </div>
-            <div>
-              <label className="text-sm text-gray-500">Bid increment</label>
-              <input
-                type="number"
-                value={increment}
-                onChange={(e) => setIncrement(e.target.value)}
-                className="mt-1 w-32 rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-              />
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <label className="text-sm text-gray-500" htmlFor="auction-bg-color">
+                      Background color
+                    </label>
+                    <div className="mt-1 flex items-center gap-2">
+                      <input
+                        id="auction-bg-color"
+                        type="color"
+                        value={bgColor}
+                        onChange={(e) => setBgColor(e.target.value)}
+                        className="input-glass block h-9 w-14 cursor-pointer rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setBgColor(DEFAULT_AUCTION_BG_COLOR)}
+                        className="text-xs font-medium aa-orange-text hover:underline"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Page theme; ignored when a background image is set.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500" htmlFor="auction-title-color">
+                      Title text color
+                    </label>
+                    <div className="mt-1 flex items-center gap-2">
+                      <input
+                        id="auction-title-color"
+                        type="color"
+                        value={titleColor}
+                        onChange={(e) => setTitleColor(e.target.value)}
+                        className="input-glass block h-9 w-14 cursor-pointer rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setTitleColor(DEFAULT_TITLE_COLOR)}
+                        className="text-xs font-medium aa-orange-text hover:underline"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">Colors the auction name heading.</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500" htmlFor="auction-secondary-color">
+                      Secondary color
+                    </label>
+                    <div className="mt-1 flex items-center gap-2">
+                      <input
+                        id="auction-secondary-color"
+                        type="color"
+                        value={secondaryColor}
+                        onChange={(e) => setSecondaryColor(e.target.value)}
+                        className="input-glass block h-9 w-14 cursor-pointer rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setSecondaryColor(DEFAULT_SECONDARY_COLOR)}
+                        className="text-xs font-medium aa-orange-text hover:underline"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Colors the supporting line under the title.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="text-sm text-gray-500">
-                Default player timer (seconds)
-              </label>
-              <input
-                type="number"
-                value={timerSeconds}
-                onChange={(e) => setTimerSeconds(e.target.value)}
-                className="mt-1 w-32 rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Pre-fills the countdown when a player goes on the block — the Auction Manager
-                can still override it per player from the live panel.
-              </p>
-            </div>
-            <div>
-              <label className="text-sm text-gray-500" htmlFor="auction-bg-color">
-                Background color
-              </label>
-              <div className="mt-1 flex items-center gap-2">
-                <input
-                  id="auction-bg-color"
-                  type="color"
-                  value={bgColor}
-                  onChange={(e) => setBgColor(e.target.value)}
-                  className="input-glass block h-9 w-14 cursor-pointer rounded"
-                />
-                <button
-                  type="button"
-                  onClick={() => setBgColor(DEFAULT_AUCTION_BG_COLOR)}
-                  className="relative z-[3] text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline"
-                >
-                  Reset
+
+            <div className="aa-card flex flex-col p-5">
+              <div className="flex items-center justify-between gap-2 border-b pb-3">
+                <span className="aa-head flex items-center gap-2 text-[15px]">
+                  <span className="material-symbols-outlined aa-orange-text text-[20px]" aria-hidden="true">
+                    timer
+                  </span>
+                  Bidding and timer
+                </span>
+                <span className="text-xs aa-muted">Live room</span>
+              </div>
+              <div className="mt-4 flex-1 space-y-5">
+                <div>
+                  <label className="text-sm text-gray-500">Default player timer (seconds)</label>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <input
+                      type="number"
+                      value={timerSeconds}
+                      onChange={(e) => setTimerSeconds(e.target.value)}
+                      className="w-24 rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                    />
+                    {[10, 15, 30, 45].map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setTimerSeconds(String(s))}
+                        className={`aa-numeric rounded-md border px-2.5 py-1.5 text-xs font-semibold ${
+                          timerSeconds === String(s)
+                            ? 'border-[#ea580c] bg-[#ea580c] text-white'
+                            : 'aa-dim'
+                        }`}
+                      >
+                        {s}s
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Pre-fills the countdown when a player goes on the block — the Auction Manager
+                    can still override it per player from the live panel.
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500">Minimum bid increment</label>
+                  <input
+                    type="number"
+                    value={increment}
+                    onChange={(e) => setIncrement(e.target.value)}
+                    className="mt-1 w-32 rounded-lg input-glass px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    The smallest step a manual raise can add.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 border-t pt-4">
+                <button onClick={handleSaveSettings} className="aa-btn aa-btn-primary">
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                    save
+                  </span>
+                  Save settings
                 </button>
               </div>
-              <p className="mt-1 text-xs text-gray-500">
-                Themes this auction's setup, live bidding, viewer, and results pages. Ignored
-                when a background image is selected above.
-              </p>
-            </div>
-            <div>
-              <label className="text-sm text-gray-500" htmlFor="auction-title-color">
-                Title text color
-              </label>
-              <div className="mt-1 flex items-center gap-2">
-                <input
-                  id="auction-title-color"
-                  type="color"
-                  value={titleColor}
-                  onChange={(e) => setTitleColor(e.target.value)}
-                  className="input-glass block h-9 w-14 cursor-pointer rounded"
-                />
-                <button
-                  type="button"
-                  onClick={() => setTitleColor(DEFAULT_TITLE_COLOR)}
-                  className="relative z-[3] text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline"
-                >
-                  Reset
-                </button>
-              </div>
-              <p className="mt-1 text-xs text-gray-500">Colors the auction name heading.</p>
-            </div>
-            <div>
-              <label className="text-sm text-gray-500" htmlFor="auction-secondary-color">
-                Secondary color
-              </label>
-              <div className="mt-1 flex items-center gap-2">
-                <input
-                  id="auction-secondary-color"
-                  type="color"
-                  value={secondaryColor}
-                  onChange={(e) => setSecondaryColor(e.target.value)}
-                  className="input-glass block h-9 w-14 cursor-pointer rounded"
-                />
-                <button
-                  type="button"
-                  onClick={() => setSecondaryColor(DEFAULT_SECONDARY_COLOR)}
-                  className="relative z-[3] text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline"
-                >
-                  Reset
-                </button>
-              </div>
-              <p className="mt-1 text-xs text-gray-500">
-                Colors the supporting line under the title (status, auction ID, sold count).
-              </p>
             </div>
           </div>
-          <button
-            onClick={handleSaveSettings}
-            className="btn-brand relative z-[3] mt-4 rounded-lg px-4 py-2 text-sm font-medium"
-          >
-            Save
-          </button>
         </section>
 
         <section id="setup-roster" className="glass-card p-5 scroll-mt-28">
