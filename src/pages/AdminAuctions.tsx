@@ -7,7 +7,6 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
 import { createAuction, deleteAuction, duplicateAuction } from '../lib/auctions'
 import type { Auction } from '../types'
-import '../styles/apex-arena.css'
 
 const STATUS_CHIP: Record<Auction['status'], string> = {
   draft: 'aa-chip aa-chip-muted',

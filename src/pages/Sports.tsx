@@ -3,7 +3,6 @@ import { useAuthStore } from '../store/authStore'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { Layout } from '../components/Layout'
-import '../styles/apex-arena.css'
 
 type Sport = { id: string; name: string; icon: string; to?: string }
 

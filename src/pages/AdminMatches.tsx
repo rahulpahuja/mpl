@@ -11,7 +11,6 @@ import { useVenuesRegistry } from '../hooks/useVenuesRegistry'
 import { useAuthStore } from '../store/authStore'
 import { createMatch } from '../lib/matches'
 import type { BallType, DayNight, GroundType, Match, MatchFormat } from '../types'
-import '../styles/apex-arena.css'
 
 const BALL_TYPE_LABELS: Record<BallType, string> = { tennis: 'Tennis ball', leather: 'Leather ball' }
 const GROUND_TYPE_LABELS: Record<GroundType, string> = { ground: 'Ground', box: 'Box cricket', gully: 'Gully' }

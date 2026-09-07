@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { usePageTitle } from '../hooks/usePageTitle'
-import '../styles/apex-arena.css'
 
 export function JoinAuction() {
   usePageTitle('Join an Auction')

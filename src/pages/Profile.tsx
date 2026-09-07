@@ -17,7 +17,6 @@ import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
 import { updateOwnProfile } from '../lib/users'
 import { useAuthStore } from '../store/authStore'
 import type { Handedness } from '../types'
-import '../styles/apex-arena.css'
 
 const ACCOUNT_ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',

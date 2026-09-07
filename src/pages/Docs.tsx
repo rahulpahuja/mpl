@@ -5,7 +5,6 @@ import { DocsSectionView } from '../components/DocsSectionView'
 import { helpSections, getHelpSection } from '../content/helpContent'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
-import '../styles/apex-arena.css'
 
 // Real, bookmarkable/shareable pages for "how to use this app" — one URL per
 // role's guide — instead of a modal. Defaults to the signed-in user's own

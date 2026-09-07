@@ -32,7 +32,6 @@ import { encryptToBase64 } from '../lib/crypto'
 import { compressImageToDataUrl } from '../lib/imageProcessing'
 import { ROSTER_PHOTO_JPEG_QUALITY, ROSTER_PHOTO_MAX_DIMENSION_PX } from '../lib/photoUpload'
 import type { AppUser } from '../types'
-import '../styles/apex-arena.css'
 
 // A linked player's current photo may live in Filen (current uploads) or as
 // a legacy encryptedPhoto (pre-Filen accounts that haven't re-uploaded). The

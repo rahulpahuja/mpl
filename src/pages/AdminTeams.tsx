@@ -14,7 +14,6 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { addToRoster, createTeam, removeFromRoster, updateTeam } from '../lib/teams'
 import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
 import type { AppUser, RosterPlayer, Team } from '../types'
-import '../styles/apex-arena.css'
 
 // Roster editor for one team — a search-and-add picker (registered users
 // with role 'player', reusing PlayerPicker) plus a manual "add unregistered

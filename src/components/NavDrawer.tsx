@@ -6,7 +6,6 @@ import { signOut } from '../lib/auth'
 import { isSoundEnabled, setSoundEnabled } from '../lib/sound'
 import { DRAWER_GROUPS, NAV_DESTINATIONS } from '../lib/navShortcuts'
 import { Avatar } from './Avatar'
-import '../styles/apex-arena.css'
 
 const ACCOUNT_ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',

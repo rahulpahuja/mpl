@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import './styles/apex-arena.css'
 import { applyTimeBasedTheme } from './lib/timeBasedTheme'
 
 // Applied synchronously before the first render so there's no flash of the

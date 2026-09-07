@@ -10,7 +10,6 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { promoteViewerToPlayer } from '../lib/users'
 import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
 import type { AppUser } from '../types'
-import '../styles/apex-arena.css'
 
 function matchesQuery(u: AppUser, query: string): boolean {
   const q = query.trim().toLowerCase()

@@ -8,7 +8,6 @@ import { useTournamentsList } from '../hooks/useTournamentsList'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { addTeamToTournament, createTournament } from '../lib/tournaments'
 import type { Team, TournamentStanding } from '../types'
-import '../styles/apex-arena.css'
 
 function nrrLabel(nrr: number): string {
   const sign = nrr > 0 ? '+' : ''
