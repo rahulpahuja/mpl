@@ -2,6 +2,51 @@
 
 Notes on features that haven't been built yet.
 
+## Sport + location filter on the Auctions Directory — DONE
+
+**Goal:** the Auctions Directory (`/admin/auctions`) should let an admin
+narrow the list to one sport and one place, with the viewer's location
+auto-detected as the starting point.
+
+**What was built:**
+- `lib/sports.ts` — single source of truth for the sport list (moved out of
+  `pages/Sports.tsx`, which now imports it). `DEFAULT_SPORT_ID = 'cricket'`;
+  `sportName(id)` for display.
+- `Auction` gains optional `sport` (sport id) plus canonical
+  `locationCountryCode` / `locationCountry` / `locationState` /
+  `locationCity` and a derived `location` display string. Absent `sport`
+  reads as cricket. `createAuction` takes an `opts` arg;
+  `updateAuctionSettings` and `duplicateAuction` carry all of them.
+- `lib/worldLocations.ts` — wraps the MIT-licensed `countrycitystatejson`
+  package (250 countries, all states, ~150k cities) via its `/client`
+  entrypoint, with on-demand memoised loaders. Bundling is aggressively
+  code-split: `/client` (countries + all states, ~74KB gz) loads when the
+  filter opens; **each country's cities are a separate ~10-50KB gz chunk**
+  fetched only when that country is picked. `resolveDetectedLocation(address)`
+  maps a Nominatim reverse-geocode onto the data, resolving each level as
+  far as it matches (unknown state/city → `ANY`; unknown country → `null`).
+- `lib/sportLocationFilter.ts` — the filter value model (`LocationValue` /
+  `SportLocationValue`), pure cascade transitions (`withCountry`/`withState`/
+  `withCity`/`withDetected` — each clears every narrower level), and
+  `toAuctionLocation` / `fromAuctionLocation` to persist/rehydrate. All
+  unit-tested.
+- `components/LocationCascade.tsx` — three cascading Country → State → City
+  `<select>`s backed by `worldLocations`, shared by the directory filter and
+  Auction Setup.
+- `components/SportLocationFilter.tsx` — sport select + `<LocationCascade>` +
+  "Use my location" button.
+- `hooks/useDetectedLocation.ts` — `navigator.geolocation` + Nominatim
+  reverse lookup → `resolveDetectedLocation`. Auto-runs on mount only when
+  geolocation permission is already `granted`; otherwise the user opts in
+  via the button.
+- `AdminAuctions` renders the filter above the KPIs and matches auctions by
+  **exact** sport + canonical country/state/city equality (both sides come
+  from the same dataset, so no "USA" vs "United States" fuzziness). Shows an
+  "N hidden / Clear" hint, stamps new auctions with the active selection,
+  and shows each auction's sport + location on the grid/list/table.
+- `AuctionSetup` → General tab has a "Sport and location" card (sport select
+  + `<LocationCascade>`), saved with the other settings.
+
 ## Re-auction a player
 
 Once a player is marked `sold` or `unsold`, there's currently no way to put

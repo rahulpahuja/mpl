@@ -3,28 +3,7 @@ import { useAuthStore } from '../store/authStore'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { Layout } from '../components/Layout'
-
-type Sport = { id: string; name: string; icon: string; to?: string }
-
-// Only Cricket is wired up today — every other sport renders as "Coming soon"
-// until it has its own flow. Give a sport a `to` to turn its card live.
-const SPORTS: Sport[] = [
-  { id: 'cricket', name: 'Cricket', icon: '🏏', to: '/home' },
-  { id: 'football', name: 'Football', icon: '⚽' },
-  { id: 'rugby', name: 'Rugby', icon: '🏉' },
-  { id: 'hockey', name: 'Hockey', icon: '🏑' },
-  { id: 'tennis', name: 'Tennis', icon: '🎾' },
-  { id: 'basketball', name: 'Basketball', icon: '🏀' },
-  { id: 'badminton', name: 'Badminton', icon: '🏸' },
-  { id: 'volleyball', name: 'Volleyball', icon: '🏐' },
-  { id: 'baseball', name: 'Baseball', icon: '⚾' },
-  { id: 'kabaddi', name: 'Kabaddi', icon: '🤼' },
-  { id: 'golf', name: 'Golf', icon: '⛳' },
-  { id: 'tableTennis', name: 'Table Tennis', icon: '🏓' },
-  { id: 'bikeRacing', name: 'Bike Racing', icon: '🏍️' },
-  { id: 'carRacing', name: 'Car Racing', icon: '🏎️' },
-  { id: 'f1Racing', name: 'F1 Racing', icon: '🏁' },
-]
+import { SPORTS } from '../lib/sports'
 
 function MetricPill({ dot, label, value }: { dot: string; label: string; value: string }) {
   return (

@@ -17,6 +17,8 @@ import {
 } from 'firebase/firestore'
 import { db } from './firebase'
 import { assertUnsoldAssignment, assertValidBid, computeCommonPurseUpdate } from './auctionRules'
+import { DEFAULT_SPORT_ID } from './sports'
+import type { AuctionLocationFields } from './sportLocationFilter'
 import type {
   Auction,
   AuctionTeamStats,
@@ -68,7 +70,12 @@ function splitEqually(total: number, count: number): number[] {
   return Array.from({ length: count }, (_, i) => base + (i < remainder ? 1 : 0))
 }
 
-export async function createAuction(name: string, createdBy: string, bidIncrement = 10): Promise<string> {
+export async function createAuction(
+  name: string,
+  createdBy: string,
+  bidIncrement = 10,
+  opts: { sport?: string; location?: AuctionLocationFields } = {},
+): Promise<string> {
   const auctionId = generateAuctionId()
   const auction: Omit<Auction, 'createdAt' | 'startTime'> = {
     auctionId,
@@ -83,6 +90,12 @@ export async function createAuction(name: string, createdBy: string, bidIncremen
     timerEndsAt: null,
     players: [],
     teamManagers: [],
+    sport: opts.sport || DEFAULT_SPORT_ID,
+    locationCountryCode: opts.location?.locationCountryCode ?? null,
+    locationCountry: opts.location?.locationCountry ?? null,
+    locationState: opts.location?.locationState ?? null,
+    locationCity: opts.location?.locationCity ?? null,
+    location: opts.location?.location ?? null,
   }
   await setDoc(auctionRef(auctionId), {
     ...auction,
@@ -123,6 +136,12 @@ export async function updateAuctionSettings(
     Pick<
       Auction,
       | 'name'
+      | 'sport'
+      | 'locationCountryCode'
+      | 'locationCountry'
+      | 'locationState'
+      | 'locationCity'
+      | 'location'
       | 'bidIncrement'
       | 'timerDurationSeconds'
       | 'bgColor'
@@ -1071,6 +1090,12 @@ export async function duplicateAuction(auctionId: string): Promise<string> {
     createdAt: serverTimestamp(),
     startTime: null,
     createdBy: source.createdBy,
+    sport: source.sport || DEFAULT_SPORT_ID,
+    locationCountryCode: source.locationCountryCode ?? null,
+    locationCountry: source.locationCountry ?? null,
+    locationState: source.locationState ?? null,
+    locationCity: source.locationCity ?? null,
+    location: source.location ?? null,
     bidIncrement: source.bidIncrement,
     auctionManagerIds: source.auctionManagerIds,
     teamManagerIds: source.teamManagerIds,

@@ -28,6 +28,14 @@ import {
 import { assignUserToAuction, promoteViewerToPlayer } from '../lib/users'
 import { createTeam } from '../lib/teams'
 import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
+import { LocationCascade } from '../components/LocationCascade'
+import {
+  type LocationValue,
+  LOCATION_ANY,
+  fromAuctionLocation,
+  toAuctionLocation,
+} from '../lib/sportLocationFilter'
+import { DEFAULT_SPORT_ID, SPORTS } from '../lib/sports'
 import { BACKGROUND_IMAGES } from '../lib/backgroundImages'
 import { downloadFilenFile } from '../lib/filen'
 import { encryptToBase64 } from '../lib/crypto'
@@ -161,6 +169,8 @@ export function AuctionSetup() {
 
   const [increment, setIncrement] = useState('10')
   const [timerSeconds, setTimerSeconds] = useState('30')
+  const [sport, setSport] = useState(DEFAULT_SPORT_ID)
+  const [locationValue, setLocationValue] = useState<LocationValue>(LOCATION_ANY)
   const [bgColor, setBgColor] = useState(DEFAULT_AUCTION_BG_COLOR)
   const [titleColor, setTitleColor] = useState(DEFAULT_TITLE_COLOR)
   const [secondaryColor, setSecondaryColor] = useState(DEFAULT_SECONDARY_COLOR)
@@ -187,6 +197,8 @@ export function AuctionSetup() {
     if (auction) {
       setIncrement(String(auction.bidIncrement))
       setTimerSeconds(String(auction.timerDurationSeconds))
+      setSport(auction.sport || DEFAULT_SPORT_ID)
+      setLocationValue(fromAuctionLocation(auction))
       setBgColor(auction.bgColor || DEFAULT_AUCTION_BG_COLOR)
       setTitleColor(auction.titleColor || DEFAULT_TITLE_COLOR)
       setSecondaryColor(auction.secondaryColor || DEFAULT_SECONDARY_COLOR)
@@ -589,6 +601,8 @@ export function AuctionSetup() {
   async function handleSaveSettings() {
     if (!auctionId) return
     await updateAuctionSettings(auctionId, {
+      sport,
+      ...toAuctionLocation(locationValue),
       bidIncrement: Number(increment) || 10,
       timerDurationSeconds: Number(timerSeconds) || 30,
       bgColor,
@@ -816,6 +830,38 @@ export function AuctionSetup() {
             <p className="mt-0.5 text-sm aa-dim">
               Branding shown to viewers, the page backdrop and colors, and the live bid timer and
               increment.
+            </p>
+          </div>
+          <div className="relative z-[3] mt-4 aa-card p-5">
+            <div className="flex items-center justify-between gap-2 border-b pb-3">
+              <span className="aa-head flex items-center gap-2 text-[15px]">
+                <span className="material-symbols-outlined aa-orange-text text-[20px]" aria-hidden="true">
+                  distance
+                </span>
+                Sport and location
+              </span>
+              <span className="text-xs aa-muted">Directory filter</span>
+            </div>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <label className="flex flex-col gap-1">
+                <span className="aa-label">Sport</span>
+                <select
+                  value={sport}
+                  onChange={(e) => setSport(e.target.value)}
+                  className="aa-input"
+                >
+                  {SPORTS.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.icon} {s.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <LocationCascade value={locationValue} onChange={setLocationValue} />
+            </div>
+            <p className="mt-2 text-xs text-gray-500">
+              Groups this auction under the sport and worldwide location filter on the Auctions
+              Directory. Save settings below to apply.
             </p>
           </div>
           <div className="relative z-[3] mt-4 grid gap-4 lg:grid-cols-2">

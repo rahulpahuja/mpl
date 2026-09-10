@@ -186,6 +186,22 @@ export interface Auction {
   timerEndsAt: Timestamp | null
   players: Player[]
   teamManagers: TeamManagerEntry[]
+  // Sport id from lib/sports.ts (e.g. "cricket"). Absent on auctions created
+  // before this field existed — treat those as DEFAULT_SPORT_ID.
+  sport?: string | null
+  // Canonical Country / State / City from the worldwide dataset (see
+  // lib/worldLocations.ts), set from the same cascading picker the Auctions
+  // Directory filter uses — so the filter matches on exact equality, not a
+  // fuzzy string search. `locationCountryCode` is the ISO-2 code that
+  // rehydrates the picker; the rest are canonical names. Null at any level
+  // that wasn't picked.
+  locationCountryCode?: string | null
+  locationCountry?: string | null
+  locationState?: string | null
+  locationCity?: string | null
+  // Human-readable "City, State, Country" derived from the three fields
+  // above, for display on auction cards/tables. Null when no location set.
+  location?: string | null
   // Hex color (e.g. "#111827") the Auction Manager picks to theme this
   // auction's pages — see components/AuctionBackground.tsx.
   bgColor?: string | null

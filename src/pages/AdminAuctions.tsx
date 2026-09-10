@@ -6,6 +6,14 @@ import { useAuctionsList } from '../hooks/useAuctionsList'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useAuthStore } from '../store/authStore'
 import { createAuction, deleteAuction, duplicateAuction } from '../lib/auctions'
+import { DEFAULT_SPORT_ID, sportName } from '../lib/sports'
+import { ANY } from '../lib/venueLocations'
+import { SportLocationFilter } from '../components/SportLocationFilter'
+import {
+  SPORT_LOCATION_ANY,
+  type SportLocationValue,
+  toAuctionLocation,
+} from '../lib/sportLocationFilter'
 import type { Auction } from '../types'
 
 const STATUS_CHIP: Record<Auction['status'], string> = {
@@ -64,11 +72,25 @@ export function AdminAuctions() {
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
   const [search, setSearch] = useState('')
+  const [locSport, setLocSport] = useState<SportLocationValue>(SPORT_LOCATION_ANY)
 
   const q = search.trim().toLowerCase()
-  const filtered = auctions.filter(
+  // Both sides are canonical dataset values, so an exact match is right —
+  // no "USA" vs "United States" fuzziness. Older auctions with no stored
+  // location only show while the matching level is left at "Any".
+  function matchesSportLocation(a: Auction): boolean {
+    if (locSport.sport !== ANY && (a.sport ?? DEFAULT_SPORT_ID) !== locSport.sport) return false
+    if (locSport.country !== ANY && a.locationCountry !== locSport.country) return false
+    if (locSport.state !== ANY && a.locationState !== locSport.state) return false
+    if (locSport.city !== ANY && a.locationCity !== locSport.city) return false
+    return true
+  }
+  const bySportLocation = auctions.filter(matchesSportLocation)
+  const filtered = bySportLocation.filter(
     (a) => !q || a.name.toLowerCase().includes(q) || a.auctionId.toLowerCase().includes(q),
   )
+  const locSportActive = locSport.sport !== ANY || locSport.country !== ANY
+  const hiddenBySportLocation = auctions.length - bySportLocation.length
   const liveCount = auctions.filter((a) => a.status === 'live').length
   const draftCount = auctions.filter((a) => a.status === 'draft').length
   const completedCount = auctions.filter((a) => a.status === 'completed').length
@@ -78,7 +100,10 @@ export function AdminAuctions() {
     if (!newAuctionName.trim() || !user) return
     setCreating(true)
     try {
-      await createAuction(newAuctionName.trim(), user.uid)
+      await createAuction(newAuctionName.trim(), user.uid, undefined, {
+        sport: locSport.sport !== ANY ? locSport.sport : undefined,
+        location: toAuctionLocation(locSport),
+      })
       setNewAuctionName('')
     } finally {
       setCreating(false)
@@ -169,6 +194,36 @@ export function AdminAuctions() {
             </div>
           </div>
 
+          <div className="space-y-1.5">
+            <SportLocationFilter value={locSport} onChange={setLocSport} />
+            {locSportActive && (
+              <p className="text-xs aa-muted">
+                Showing{' '}
+                <span className="aa-dim">
+                  {locSport.sport === ANY ? 'all sports' : sportName(locSport.sport)}
+                </span>
+                {locSport.country !== ANY && (
+                  <>
+                    {' · '}
+                    <span className="aa-dim">
+                      {[locSport.city, locSport.state, locSport.country]
+                        .filter((l) => l !== ANY)
+                        .join(', ')}
+                    </span>
+                  </>
+                )}
+                {hiddenBySportLocation > 0 && ` — ${hiddenBySportLocation} hidden`}{' '}
+                <button
+                  type="button"
+                  onClick={() => setLocSport(SPORT_LOCATION_ANY)}
+                  className="font-medium aa-orange-text hover:underline"
+                >
+                  Clear
+                </button>
+              </p>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <KpiCard label="Live now" value={liveCount} hint="Bidding rooms open" accent="live" />
             <KpiCard label="Drafts" value={draftCount} hint="Awaiting go-live" accent="orange" />
@@ -236,7 +291,7 @@ export function AdminAuctions() {
             <p className="text-sm aa-muted">Loading auctions…</p>
           ) : filtered.length === 0 ? (
             <p className="text-sm aa-muted">
-              {auctions.length === 0 ? 'No auctions yet.' : 'No auctions match this search.'}
+              {auctions.length === 0 ? 'No auctions yet.' : 'No auctions match these filters.'}
             </p>
           ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -259,6 +314,15 @@ export function AdminAuctions() {
                       </div>
                       <p className="aa-head mt-3 truncate text-[15px]">{a.name}</p>
                       <p className="aa-numeric text-xs aa-muted">ID: {a.auctionId}</p>
+                      <p className="mt-1 flex items-center gap-1.5 text-xs aa-dim">
+                        <span>{sportName(a.sport)}</span>
+                        {a.location && (
+                          <>
+                            <span className="aa-muted">·</span>
+                            <span className="truncate">{a.location}</span>
+                          </>
+                        )}
+                      </p>
                     </div>
                     <div className="flex flex-1 flex-col p-4">
                       <div className="grid grid-cols-3 gap-2 rounded-lg border py-2 text-center">
@@ -304,6 +368,10 @@ export function AdminAuctions() {
                     <p className="mt-2 text-xs aa-muted">
                       {a.players.length} players · {a.teamManagers.length} teams
                     </p>
+                    <p className="mt-1 text-xs aa-dim">
+                      {sportName(a.sport)}
+                      {a.location ? ` · ${a.location}` : ''}
+                    </p>
                     <div className="mt-2">
                       <AuctionActions a={a} />
                     </div>
@@ -317,6 +385,7 @@ export function AdminAuctions() {
                     <tr>
                       <th>ID</th>
                       <th>Name</th>
+                      <th>Sport / Location</th>
                       <th>Status</th>
                       <th>Players</th>
                       <th>Teams</th>
@@ -328,6 +397,10 @@ export function AdminAuctions() {
                       <tr key={a.auctionId}>
                         <td className="aa-numeric">{a.auctionId}</td>
                         <td className="font-medium">{a.name}</td>
+                        <td className="aa-dim">
+                          {sportName(a.sport)}
+                          {a.location ? ` · ${a.location}` : ''}
+                        </td>
                         <td>
                           <span className={STATUS_CHIP[a.status]}>{a.status}</span>
                         </td>
