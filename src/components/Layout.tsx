@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { NavDrawer } from './NavDrawer'
+import { SportSwitcher } from './SportSwitcher'
 import { PhotoApprovalPrompt } from './PhotoApprovalPrompt'
 import { PhotoRequestOutcomeToast } from './PhotoRequestOutcomeToast'
 import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp'
@@ -49,6 +50,7 @@ export function Layout({ children }: { children: ReactNode }) {
             >
               Auction Manager
             </Link>
+            <SportSwitcher />
           </div>
           <button
             type="button"
