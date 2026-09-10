@@ -12,6 +12,7 @@ import { SportLocationFilter } from '../components/SportLocationFilter'
 import {
   SPORT_LOCATION_ANY,
   type SportLocationValue,
+  auctionMatchesLocation,
   toAuctionLocation,
 } from '../lib/sportLocationFilter'
 import type { Auction } from '../types'
@@ -75,15 +76,9 @@ export function AdminAuctions() {
   const [locSport, setLocSport] = useState<SportLocationValue>(SPORT_LOCATION_ANY)
 
   const q = search.trim().toLowerCase()
-  // Both sides are canonical dataset values, so an exact match is right —
-  // no "USA" vs "United States" fuzziness. Older auctions with no stored
-  // location only show while the matching level is left at "Any".
   function matchesSportLocation(a: Auction): boolean {
     if (locSport.sport !== ANY && (a.sport ?? DEFAULT_SPORT_ID) !== locSport.sport) return false
-    if (locSport.country !== ANY && a.locationCountry !== locSport.country) return false
-    if (locSport.state !== ANY && a.locationState !== locSport.state) return false
-    if (locSport.city !== ANY && a.locationCity !== locSport.city) return false
-    return true
+    return auctionMatchesLocation(a, locSport)
   }
   const bySportLocation = auctions.filter(matchesSportLocation)
   const filtered = bySportLocation.filter(

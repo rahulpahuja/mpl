@@ -1,8 +1,11 @@
 import { Link, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
+import { useLocationFilterStore } from '../store/locationFilterStore'
 import { useAuctionsList } from '../hooks/useAuctionsList'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { Layout } from '../components/Layout'
+import { auctionMatchesLocation, summarizeLocation } from '../lib/sportLocationFilter'
+import { ANY } from '../lib/venueLocations'
 import type { UserRole } from '../types'
 
 interface QuickLink {
@@ -63,6 +66,8 @@ export function Sports() {
   usePageTitle('Cricket Hub')
   const user = useAuthStore((s) => s.user)
   const initializing = useAuthStore((s) => s.initializing)
+  const location = useLocationFilterStore((s) => s.location)
+  const clearLocation = useLocationFilterStore((s) => s.clearLocation)
   const { auctions } = useAuctionsList()
 
   if (initializing) {
@@ -75,8 +80,10 @@ export function Sports() {
     return <Navigate to="/login" replace />
   }
 
-  const liveAuctions = auctions.filter((a) => a.status === 'live')
-  const completedCount = auctions.filter((a) => a.status === 'completed').length
+  const locationActive = location.country !== ANY
+  const scoped = auctions.filter((a) => auctionMatchesLocation(a, location))
+  const liveAuctions = scoped.filter((a) => a.status === 'live')
+  const completedCount = scoped.filter((a) => a.status === 'completed').length
   const links = QUICK_LINKS.filter((l) => !l.roles || l.roles.includes(user.role))
 
   return (
@@ -89,16 +96,35 @@ export function Sports() {
           </span>
           <h1 className="aa-head mt-2 text-3xl sm:text-4xl">Welcome back, {user.displayName}</h1>
           <p className="mt-2 max-w-2xl text-sm aa-dim">
-            Run live hammer auctions, build squads and play matches. Switch sport any time from the
-            selector in the top bar.
+            Run live hammer auctions, build squads and play matches. Switch sport or location any
+            time from the top bar.
           </p>
+          {locationActive && (
+            <p className="mt-3 flex flex-wrap items-center gap-2 text-xs aa-muted">
+              <span className="material-symbols-outlined text-[16px] aa-orange-text" aria-hidden="true">
+                location_on
+              </span>
+              Scoped to <span className="aa-dim">{summarizeLocation(location)}</span>
+              <button
+                type="button"
+                onClick={clearLocation}
+                className="font-medium aa-orange-text hover:underline"
+              >
+                Clear
+              </button>
+            </p>
+          )}
           <div className="mt-5 flex flex-wrap gap-2">
             <Pill
               dot="#ef4444"
               label="Live now"
               value={`${liveAuctions.length} auction${liveAuctions.length === 1 ? '' : 's'}`}
             />
-            <Pill dot="#3b82f6" label="Total auctions" value={String(auctions.length)} />
+            <Pill
+              dot="#3b82f6"
+              label={locationActive ? 'Auctions here' : 'Total auctions'}
+              value={String(scoped.length)}
+            />
             <Pill dot="#10b981" label="Completed" value={String(completedCount)} />
           </div>
         </div>
@@ -114,7 +140,11 @@ export function Sports() {
             <span className="text-xs aa-muted">{liveAuctions.length} open</span>
           </div>
           {liveAuctions.length === 0 ? (
-            <p className="mt-4 text-sm aa-muted">No auctions are live at the moment.</p>
+            <p className="mt-4 text-sm aa-muted">
+              {locationActive
+                ? `No live auctions in ${summarizeLocation(location)} right now.`
+                : 'No auctions are live at the moment.'}
+            </p>
           ) : (
             <ul className="mt-2 divide-y">
               {liveAuctions.map((a) => (

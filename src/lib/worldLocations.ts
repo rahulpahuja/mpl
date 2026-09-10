@@ -1,17 +1,28 @@
 // Worldwide Country -> State -> City data, sourced from the MIT-licensed
-// `countrycitystatejson` package via its client entrypoint.
+// `countrycitystatejson` package.
 //
 // Loading is progressive and code-split:
-//  - `countrycitystatejson/client` (countries + states, ~65KB gz) loads the
-//    first time any of these helpers run — i.e. when the directory filter
-//    is opened.
-//  - City data is split one JSON chunk per country (~10-60KB gz each) and
-//    fetched only when a country + state are chosen.
+//  - `countrycitystatejson/countries` (countries + state names, ~62KB gz)
+//    loads the first time any helper runs — i.e. when a location picker
+//    opens.
+//  - City data is one JSON file per country; Vite turns each into its own
+//    lazy chunk and only the picked country's is ever fetched.
 // Results are memoised so each dataset is parsed once per session.
 
 import { ANY } from './venueLocations'
 
-type Client = Awaited<typeof import('countrycitystatejson/client')>
+type CountriesModule = typeof import('countrycitystatejson/countries')
+
+interface CountryCityData {
+  states: Record<string, { name: string }[]>
+}
+
+// The per-country files live outside the package's `exports` map, so they're
+// referenced by their full path within node_modules.
+const cityLoaders = import.meta.glob<CountryCityData>(
+  '/node_modules/countrycitystatejson/dist/esm/lib/by-country/*.json',
+  { import: 'default' },
+)
 
 export interface WorldCountry {
   code: string
@@ -19,8 +30,8 @@ export interface WorldCountry {
   emoji: string
 }
 
-let clientP: Promise<Client> | undefined
-const loadClient = () => (clientP ??= import('countrycitystatejson/client'))
+let countriesModP: Promise<CountriesModule> | undefined
+const loadCountriesMod = () => (countriesModP ??= import('countrycitystatejson/countries'))
 
 let countriesCache: WorldCountry[] | undefined
 const statesCache = new Map<string, string[]>()
@@ -30,8 +41,8 @@ const collator = new Intl.Collator(undefined, { sensitivity: 'base' })
 
 export async function getCountries(): Promise<WorldCountry[]> {
   if (!countriesCache) {
-    const client = await loadClient()
-    countriesCache = client
+    const mod = await loadCountriesMod()
+    countriesCache = mod
       .getCountries()
       .map((c) => ({ code: c.shortName, name: c.name ?? c.shortName, emoji: c.emoji ?? '' }))
       .sort((a, b) => collator.compare(a.name, b.name))
@@ -43,8 +54,8 @@ export async function getStates(countryCode: string): Promise<string[]> {
   if (!countryCode || countryCode === ANY) return []
   let cached = statesCache.get(countryCode)
   if (!cached) {
-    const client = await loadClient()
-    cached = [...(client.getStatesByShort(countryCode) ?? [])].sort((a, b) => collator.compare(a, b))
+    const mod = await loadCountriesMod()
+    cached = [...(mod.getStatesByShort(countryCode) ?? [])].sort((a, b) => collator.compare(a, b))
     statesCache.set(countryCode, cached)
   }
   return cached
@@ -55,10 +66,14 @@ export async function getCities(countryCode: string, state: string): Promise<str
   const key = `${countryCode}/${state}`
   let cached = citiesCache.get(key)
   if (!cached) {
-    const client = await loadClient()
-    cached = [...((await client.getCities(countryCode, state)) ?? [])].sort((a, b) =>
-      collator.compare(a, b),
-    )
+    const loader =
+      cityLoaders[`/node_modules/countrycitystatejson/dist/esm/lib/by-country/${countryCode}.json`]
+    if (!loader) return []
+    const data = await loader()
+    cached = (data.states?.[state] ?? [])
+      .map((c) => c.name)
+      .filter(Boolean)
+      .sort((a, b) => collator.compare(a, b))
     citiesCache.set(key, cached)
   }
   return cached

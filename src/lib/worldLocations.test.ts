@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { ANY } from './venueLocations'
 import { getCities, getCountries, getStates, resolveDetectedLocation } from './worldLocations'
 import {
+  auctionMatchesLocation,
   fromAuctionLocation,
+  summarizeLocation,
   toAuctionLocation,
   withCity,
   withCountry,
@@ -138,5 +140,35 @@ describe('location cascade helpers', () => {
       locationCity: null,
       location: null,
     })
+  })
+
+  it('summarizeLocation joins set levels, falls back when empty', () => {
+    expect(summarizeLocation({ countryCode: 'IN', country: 'India', state: 'Goa', city: ANY })).toBe(
+      'Goa, India',
+    )
+    expect(summarizeLocation({ countryCode: ANY, country: ANY, state: ANY, city: ANY })).toBe(
+      'Anywhere',
+    )
+  })
+
+  it('auctionMatchesLocation is exact per set level, lenient on ANY', () => {
+    const filter = { countryCode: 'IN', country: 'India', state: 'Maharashtra', city: ANY }
+    expect(
+      auctionMatchesLocation(
+        { locationCountry: 'India', locationState: 'Maharashtra', locationCity: 'Pune' },
+        filter,
+      ),
+    ).toBe(true)
+    expect(
+      auctionMatchesLocation(
+        { locationCountry: 'India', locationState: 'Goa', locationCity: null },
+        filter,
+      ),
+    ).toBe(false)
+    // An auction with no stored location matches only an all-ANY filter.
+    expect(auctionMatchesLocation({}, filter)).toBe(false)
+    expect(
+      auctionMatchesLocation({}, { countryCode: ANY, country: ANY, state: ANY, city: ANY }),
+    ).toBe(true)
   })
 })

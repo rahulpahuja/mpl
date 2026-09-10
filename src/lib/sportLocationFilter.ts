@@ -86,3 +86,27 @@ export function fromAuctionLocation(auction: Partial<AuctionLocationFields>): Lo
     city: auction.locationCity ?? ANY,
   }
 }
+
+// "City, State, Country" for the levels that are set, or a fallback when
+// none are.
+export function summarizeLocation(value: LocationValue, empty = 'Anywhere'): string {
+  const parts = [value.city, value.state, value.country].filter((p) => p !== ANY)
+  return parts.length > 0 ? parts.join(', ') : empty
+}
+
+// True when an auction's stored location satisfies the filter — exact
+// equality on each level that isn't ANY (both sides are canonical dataset
+// values). An auction with no stored location only matches an all-ANY filter.
+export function auctionMatchesLocation(
+  auction: {
+    locationCountry?: string | null
+    locationState?: string | null
+    locationCity?: string | null
+  },
+  filter: LocationValue,
+): boolean {
+  if (filter.country !== ANY && auction.locationCountry !== filter.country) return false
+  if (filter.state !== ANY && auction.locationState !== filter.state) return false
+  if (filter.city !== ANY && auction.locationCity !== filter.city) return false
+  return true
+}
