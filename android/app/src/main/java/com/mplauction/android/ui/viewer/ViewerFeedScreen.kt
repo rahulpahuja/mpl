@@ -1,9 +1,11 @@
 package com.mplauction.android.ui.viewer
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,9 +22,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mplauction.android.appContainer
+import com.mplauction.android.ui.common.auctionBackground
 import com.mplauction.android.data.model.Auction
 import com.mplauction.android.data.model.TeamManagerEntry
 import com.mplauction.android.ui.auction.SharedCountdown
+import com.mplauction.android.ui.auction.SoldCelebrationOverlay
+import com.mplauction.android.ui.auction.rememberJustSoldPlayer
 import com.mplauction.android.ui.auction.SharedCurrentPlayerHeader
 
 // Public, read-only — no auth required (mirrors ViewerFeed.tsx / the
@@ -48,14 +53,23 @@ fun ViewerFeedScreen(auctionId: String, currentUserUid: String?, modifier: Modif
   val myTeamManagerEntry = currentUserUid?.let { uid -> current.teamManagers.find { it.managerId == uid } }
   val amAuctionManager = currentUserUid != null && currentUserUid in current.auctionManagerIds
   val roleMessage = myRoleMessage(current, myPlayer, myTeam, myTeamManagerEntry, amAuctionManager)
+  val (justSold, clearJustSold) = rememberJustSoldPlayer(current)
 
-  LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), modifier = modifier) {
-    item { Text("Status: ${current.status.name}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-    roleMessage?.let { item { Card { Text(it, Modifier.padding(12.dp), style = MaterialTheme.typography.bodyMedium) } } }
-    item { LiveScoreboardCard(current) }
-    item { Text("Team standings", style = MaterialTheme.typography.titleSmall) }
-    items(current.teamManagers.sortedByDescending { it.tokensSpent }, key = { it.teamId }) { tm -> StandingRow(tm) }
-    if (current.teamManagers.isEmpty()) item { Text("No teams yet.", style = MaterialTheme.typography.bodyMedium) }
+  Box(modifier) {
+    LazyColumn(
+      contentPadding = PaddingValues(16.dp),
+      verticalArrangement = Arrangement.spacedBy(12.dp),
+      modifier = Modifier.fillMaxSize().auctionBackground(),
+    ) {
+      item { Text("Status: ${current.status.name}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+      roleMessage?.let { item { Card { Text(it, Modifier.padding(12.dp), style = MaterialTheme.typography.bodyMedium) } } }
+      item { LiveScoreboardCard(current) }
+      item { Text("Team standings", style = MaterialTheme.typography.titleSmall) }
+      items(current.teamManagers.sortedByDescending { it.tokensSpent }, key = { it.teamId }) { tm -> StandingRow(tm) }
+      if (current.teamManagers.isEmpty()) item { Text("No teams yet.", style = MaterialTheme.typography.bodyMedium) }
+    }
+
+    justSold?.let { SoldCelebrationOverlay(it, onDismiss = clearJustSold) }
   }
 }
 

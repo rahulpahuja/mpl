@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Same gavel glyph as ic_launcher_foreground, but padded further in —
+         the Splash Screen API scales this icon down (unlike an adaptive
+         icon, it isn't cropped to a mask), so it can't rely on the launcher
+         icon's safe-zone margins. -->
+    <group android:pivotX="54" android:pivotY="54" android:rotation="-35">
+        <path android:fillColor="#FFFFFFFF" android:pathData="M44,26 H64 V40 H44 Z" />
+        <path android:fillColor="#FFFFFFFF" android:pathData="M50,38 H58 V72 H50 Z" />
+    </group>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M34,76 H74 V84 H34 Z" />
+</vector>

@@ -28,6 +28,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mplauction.android.appContainer
 import com.mplauction.android.data.model.RosterPlayer
+import com.mplauction.android.ui.common.PlayerAvatar
+import com.mplauction.android.ui.common.TeamAvatar
 
 @Composable
 fun TeamDetailScreen(teamId: String, modifier: Modifier = Modifier) {
@@ -43,9 +45,12 @@ fun TeamDetailScreen(teamId: String, modifier: Modifier = Modifier) {
 
   LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), modifier = modifier) {
     item {
-      Column {
-        Text(team.teamName, style = MaterialTheme.typography.headlineSmall)
-        Text("Captain: ${team.managerName}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+      Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        TeamAvatar(team.logoImage, team.logoId, team.teamName, size = 64.dp)
+        Column {
+          Text(team.teamName, style = MaterialTheme.typography.headlineSmall)
+          Text("Captain: ${team.managerName}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
       }
     }
     item {
@@ -69,7 +74,9 @@ fun TeamDetailScreen(teamId: String, modifier: Modifier = Modifier) {
       }
     }
     item { Text("Roster (${team.roster.size})", style = MaterialTheme.typography.titleSmall) }
-    items(team.roster, key = { it.playerId }) { player -> RosterRow(player, onRemove = { viewModel.removePlayer(player.playerId) }) }
+    items(team.roster, key = { it.playerId }) { player ->
+      RosterRow(player, onRemove = { viewModel.removePlayer(player.playerId) }, modifier = Modifier.animateItem())
+    }
     if (team.roster.isEmpty()) {
       item { Text("No players on the roster yet.", style = MaterialTheme.typography.bodyMedium) }
     }
@@ -77,14 +84,17 @@ fun TeamDetailScreen(teamId: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun RosterRow(player: RosterPlayer, onRemove: () -> Unit) {
-  Card(modifier = Modifier.fillMaxWidth()) {
+private fun RosterRow(player: RosterPlayer, onRemove: () -> Unit, modifier: Modifier = Modifier) {
+  Card(modifier = modifier.fillMaxWidth()) {
     Row(
       Modifier.padding(12.dp).fillMaxWidth(),
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically,
     ) {
-      Text(player.name, style = MaterialTheme.typography.bodyLarge)
+      Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        PlayerAvatar(player.photoURL, player.avatarId, player.name, size = 36.dp)
+        Text(player.name, style = MaterialTheme.typography.bodyLarge)
+      }
       IconButton(onClick = onRemove) { Icon(Icons.Filled.Close, contentDescription = "Remove ${player.name}") }
     }
   }

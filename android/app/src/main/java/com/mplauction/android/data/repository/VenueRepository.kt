@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.firestore.FieldValue
 import com.mplauction.android.data.model.Venue
 import com.mplauction.android.data.remote.Firebase
+import com.mplauction.android.data.remote.toObjectOrNull
 import java.util.UUID
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +27,7 @@ class VenueRepository {
           trySend(emptyList())
           return@addSnapshotListener
         }
-        trySend(snap?.documents?.mapNotNull { it.toObject(Venue::class.java) } ?: emptyList())
+        trySend(snap?.documents?.mapNotNull { it.toObjectOrNull<Venue>() } ?: emptyList())
       }
     awaitClose { registration.remove() }
   }

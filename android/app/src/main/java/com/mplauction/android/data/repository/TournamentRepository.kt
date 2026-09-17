@@ -6,6 +6,7 @@ import com.mplauction.android.data.model.Team
 import com.mplauction.android.data.model.Tournament
 import com.mplauction.android.data.model.TournamentStanding
 import com.mplauction.android.data.remote.Firebase
+import com.mplauction.android.data.remote.toObjectOrNull
 import java.util.UUID
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +30,7 @@ class TournamentRepository {
           trySend(emptyList())
           return@addSnapshotListener
         }
-        trySend(snap?.documents?.mapNotNull { it.toObject(Tournament::class.java) } ?: emptyList())
+        trySend(snap?.documents?.mapNotNull { it.toObjectOrNull<Tournament>() } ?: emptyList())
       }
     awaitClose { registration.remove() }
   }
@@ -41,7 +42,7 @@ class TournamentRepository {
           Log.e(TAG, "tournament $tournamentId listener error", error)
           return@addSnapshotListener
         }
-        trySend(snap?.toObject(Tournament::class.java))
+        trySend(snap?.toObjectOrNull<Tournament>())
       }
     awaitClose { registration.remove() }
   }
@@ -64,7 +65,7 @@ class TournamentRepository {
 
   suspend fun addTeamToTournament(tournamentId: String, team: Team) {
     val ref = db.collection("tournaments").document(tournamentId)
-    val tournament = ref.get().await().toObject(Tournament::class.java) ?: throw IllegalStateException("Tournament not found")
+    val tournament = ref.get().await().toObjectOrNull<Tournament>() ?: throw IllegalStateException("Tournament not found")
     if (team.teamId in tournament.teamIds) return
     ref.update(mapOf("teamIds" to tournament.teamIds + team.teamId, "standings" to tournament.standings + emptyStanding(team))).await()
   }

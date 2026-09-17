@@ -1,6 +1,13 @@
 package com.mplauction.android.ui.home
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.People
@@ -23,8 +31,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,11 +48,13 @@ import com.mplauction.android.data.model.Team
 import com.mplauction.android.data.model.UserRole
 import com.mplauction.android.data.repository.BootstrapRepository
 import com.mplauction.android.ui.auctions.AuctionsDirectoryScreen
+import com.mplauction.android.ui.common.GradientTopBar
 import com.mplauction.android.ui.common.StubScreen
 import com.mplauction.android.ui.players.PlayersScreen
 import com.mplauction.android.ui.profile.ProfileScreen
 import com.mplauction.android.ui.teams.TeamsScreen
 import com.mplauction.android.ui.tournaments.TournamentsScreen
+import com.mplauction.android.ui.users.UsersScreen
 import com.mplauction.android.ui.venues.VenuesScreen
 
 // Only the top 4 destinations sit directly in the bottom nav/rail — Material
@@ -59,6 +67,11 @@ private enum class HomeSection(
   val title: String,
   val icon: ImageVector,
   val managerOnly: Boolean = false,
+  // Narrower than managerOnly (excludes Captain/manager) — mirrors this
+  // route's own ProtectedRoute roles list in App.tsx, which is
+  // ['admin', 'auctionManager'] for Users specifically, not the broader set
+  // Teams/Players/Venues/Tournaments use.
+  val adminOrAuctionManagerOnly: Boolean = false,
   val primary: Boolean = true,
 ) {
   // Not managerOnly: a viewer/player browses the same public directory,
@@ -72,10 +85,13 @@ private enum class HomeSection(
   Players("Players", "Players", Icons.Filled.People, managerOnly = true, primary = false),
   Venues("Venues", "Venues", Icons.Filled.Place, managerOnly = true, primary = false),
   Tourneys("Tourneys", "Tournaments", Icons.Filled.EmojiEvents, managerOnly = true, primary = false),
+  Users("Users", "Users", Icons.Filled.ManageAccounts, adminOrAuctionManagerOnly = true, primary = false),
 }
 
 private fun canManageAuctions(role: UserRole) =
   role == UserRole.admin || role == UserRole.auctionManager || role == UserRole.manager
+
+private fun canManageUsers(role: UserRole) = role == UserRole.admin || role == UserRole.auctionManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,7 +107,10 @@ fun HomeScreen(
   val adminClaimed by bootstrapRepository.adminClaimed().collectAsStateWithLifecycle(initialValue = true)
   var selected by remember { mutableStateOf(HomeSection.Auctions) }
   var moreExpanded by remember { mutableStateOf(false) }
-  val visible = HomeSection.entries.filter { !it.managerOnly || canManageAuctions(user.role) }
+  val visible =
+    HomeSection.entries.filter {
+      (!it.managerOnly || canManageAuctions(user.role)) && (!it.adminOrAuctionManagerOnly || canManageUsers(user.role))
+    }
   val primarySections = visible.filter { it.primary }
   val overflowSections = visible.filter { !it.primary }
 
@@ -131,31 +150,39 @@ fun HomeScreen(
     modifier = modifier,
   ) {
     Scaffold(
-      topBar = {
-        TopAppBar(
-          title = { Text(selected.title, color = MaterialTheme.colorScheme.onPrimary) },
-          colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary),
-        )
-      },
+      topBar = { GradientTopBar(title = selected.title) },
     ) { innerPadding ->
       Column(Modifier.fillMaxSize().padding(innerPadding)) {
         if (!adminClaimed && user.role != UserRole.admin) {
           ClaimAdminBanner(onClaimAdmin)
         }
-        when (selected) {
-          HomeSection.Auctions ->
-            AuctionsDirectoryScreen(
-              currentUserUid = user.uid,
-              canCreate = user.role == UserRole.admin || user.role == UserRole.auctionManager,
-              onOpenAuction = onOpenAuction,
-              modifier = Modifier.fillMaxSize(),
-            )
-          HomeSection.Teams -> TeamsScreen(currentUser = user, onOpenTeam = onOpenTeam, modifier = Modifier.fillMaxSize())
-          HomeSection.Players -> PlayersScreen(modifier = Modifier.fillMaxSize())
-          HomeSection.Venues -> VenuesScreen(modifier = Modifier.fillMaxSize())
-          HomeSection.Tourneys -> TournamentsScreen(currentUserUid = user.uid, modifier = Modifier.fillMaxSize())
-          HomeSection.Matches -> StubScreen("Matches", "Live match scoring is coming in a later build.")
-          HomeSection.Profile -> ProfileScreen(user, onSignOut, modifier = Modifier.fillMaxSize())
+        // Material "fade through": the outgoing section fades out *before*
+        // the incoming one fades in. A plain Crossfade overlaps them at
+        // partial alpha, which reads as two screens' text ghosting over each
+        // other mid-swap, not as a transition.
+        AnimatedContent(
+          targetState = selected,
+          transitionSpec = { fadeIn(tween(durationMillis = 210, delayMillis = 90)) togetherWith fadeOut(tween(90)) },
+          label = "home-section",
+        ) { section ->
+          Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            when (section) {
+              HomeSection.Auctions ->
+                AuctionsDirectoryScreen(
+                  currentUserUid = user.uid,
+                  canCreate = user.role == UserRole.admin || user.role == UserRole.auctionManager,
+                  onOpenAuction = onOpenAuction,
+                  modifier = Modifier.fillMaxSize(),
+                )
+              HomeSection.Teams -> TeamsScreen(currentUser = user, onOpenTeam = onOpenTeam, modifier = Modifier.fillMaxSize())
+              HomeSection.Players -> PlayersScreen(modifier = Modifier.fillMaxSize())
+              HomeSection.Venues -> VenuesScreen(modifier = Modifier.fillMaxSize())
+              HomeSection.Tourneys -> TournamentsScreen(currentUserUid = user.uid, modifier = Modifier.fillMaxSize())
+              HomeSection.Matches -> StubScreen("Matches", "Live match scoring is coming in a later build.")
+              HomeSection.Profile -> ProfileScreen(user, onSignOut, modifier = Modifier.fillMaxSize())
+              HomeSection.Users -> UsersScreen(isAdmin = user.role == UserRole.admin, modifier = Modifier.fillMaxSize())
+            }
+          }
         }
       }
     }

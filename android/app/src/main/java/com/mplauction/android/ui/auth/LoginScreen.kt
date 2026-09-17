@@ -1,5 +1,7 @@
 package com.mplauction.android.ui.auth
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,7 +37,7 @@ fun LoginScreen(onWatch: () -> Unit, modifier: Modifier = Modifier) {
   val viewModel: LoginViewModel = viewModel { LoginViewModel(container.authRepository) }
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-  Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+  Box(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()), contentAlignment = Alignment.Center) {
     Column(
       modifier = Modifier.widthIn(max = 360.dp).padding(24.dp),
       horizontalAlignment = Alignment.CenterHorizontally,

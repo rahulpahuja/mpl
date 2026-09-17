@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -37,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -113,7 +115,7 @@ fun AuctionsDirectoryScreen(
       }
     }
     items(uiState.filtered, key = { it.auctionId }) { auction ->
-      AuctionCard(auction, onClick = { onOpenAuction(auction) })
+      AuctionCard(auction, onClick = { onOpenAuction(auction) }, modifier = Modifier.animateItem())
     }
     if (!uiState.loading && uiState.filtered.isEmpty()) {
       item { Text("No auctions yet.", style = MaterialTheme.typography.bodyMedium) }
@@ -128,18 +130,30 @@ private fun KpiRow(auctions: List<Auction>) {
   val completed = auctions.count { it.status == AuctionStatus.completed }
   val players = auctions.sumOf { it.players.size }
   Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-    Kpi("Live", live, Modifier.weight(1f))
-    Kpi("Draft", draft, Modifier.weight(1f))
-    Kpi("Completed", completed, Modifier.weight(1f))
-    Kpi("Players pooled", players, Modifier.weight(1f))
+    Kpi("Live", live, MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer, Modifier.weight(1f))
+    Kpi("Draft", draft, MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant, Modifier.weight(1f))
+    Kpi(
+      "Completed",
+      completed,
+      MaterialTheme.colorScheme.tertiaryContainer,
+      MaterialTheme.colorScheme.onTertiaryContainer,
+      Modifier.weight(1f),
+    )
+    Kpi(
+      "Players pooled",
+      players,
+      MaterialTheme.colorScheme.primaryContainer,
+      MaterialTheme.colorScheme.onPrimaryContainer,
+      Modifier.weight(1f),
+    )
   }
 }
 
 @Composable
-private fun Kpi(label: String, value: Int, modifier: Modifier = Modifier) {
-  Card(modifier = modifier) {
+private fun Kpi(label: String, value: Int, containerColor: Color, contentColor: Color, modifier: Modifier = Modifier) {
+  Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = containerColor, contentColor = contentColor)) {
     Column(Modifier.padding(12.dp)) {
-      Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+      Text(label, style = MaterialTheme.typography.labelSmall)
       Text("$value", style = MaterialTheme.typography.headlineSmall)
     }
   }
@@ -228,8 +242,8 @@ private fun CreateAuctionCard(uiState: AuctionsDirectoryUiState, onNameChanged: 
 }
 
 @Composable
-private fun AuctionCard(auction: Auction, onClick: () -> Unit) {
-  Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+private fun AuctionCard(auction: Auction, onClick: () -> Unit, modifier: Modifier = Modifier) {
+  Card(onClick = onClick, modifier = modifier.fillMaxWidth()) {
     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
       Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(auction.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))

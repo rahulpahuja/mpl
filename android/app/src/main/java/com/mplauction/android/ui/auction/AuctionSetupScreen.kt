@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mplauction.android.appContainer
+import com.mplauction.android.ui.common.auctionBackground
+import com.mplauction.android.data.model.AppUser
 import com.mplauction.android.data.model.Team
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,7 +38,9 @@ import com.mplauction.android.data.model.Team
 fun AuctionSetupScreen(auctionId: String, onLive: () -> Unit, modifier: Modifier = Modifier) {
   val container = LocalContext.current.appContainer()
   val viewModel: AuctionSetupViewModel =
-    viewModel(key = "setup-$auctionId") { AuctionSetupViewModel(container.auctionRepository, container.teamRepository, auctionId) }
+    viewModel(key = "setup-$auctionId") {
+      AuctionSetupViewModel(container.auctionRepository, container.teamRepository, container.userRepository, auctionId)
+    }
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   val auction = uiState.auction
 
@@ -45,12 +49,14 @@ fun AuctionSetupScreen(auctionId: String, onLive: () -> Unit, modifier: Modifier
     return
   }
 
-  LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), modifier = modifier) {
+  LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), modifier = modifier.auctionBackground()) {
     item {
       Text("${auction.players.size} players · ${auction.teamManagers.size} teams", style = MaterialTheme.typography.bodyMedium)
     }
     item { AddTeamCard(uiState, viewModel) }
     item { AddPlayerCard(uiState, viewModel) }
+    item { ImportPlayersCard(uiState, viewModel) }
+    item { AddRegisteredPlayerCard(uiState, viewModel) }
     item { Text("Teams", style = MaterialTheme.typography.titleSmall) }
     items(auction.teamManagers, key = { it.teamId }) { tm ->
       Card(modifier = Modifier.fillMaxWidth()) {
@@ -160,6 +166,77 @@ private fun AddPlayerCard(uiState: AuctionSetupUiState, viewModel: AuctionSetupV
       Button(onClick = viewModel::addPlayer, enabled = !uiState.addingPlayer && uiState.playerName.isNotBlank()) {
         Text(if (uiState.addingPlayer) "Adding..." else "Add player")
       }
+    }
+  }
+}
+
+@Composable
+private fun ImportPlayersCard(uiState: AuctionSetupUiState, viewModel: AuctionSetupViewModel) {
+  Card {
+    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+      Text("Import players", style = MaterialTheme.typography.titleSmall)
+      Text(
+        "One player per line: name, position, base price. Position and base price are optional.",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+      OutlinedTextField(
+        value = uiState.csvText,
+        onValueChange = viewModel::onCsvTextChanged,
+        label = { Text("Virat Kohli, Batsman, 2000") },
+        minLines = 3,
+        modifier = Modifier.fillMaxWidth(),
+      )
+      uiState.importResult?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+      Button(onClick = viewModel::importCsv, enabled = !uiState.importingCsv && uiState.csvText.isNotBlank()) {
+        Text(if (uiState.importingCsv) "Importing..." else "Import players")
+      }
+    }
+  }
+}
+
+@Composable
+private fun AddRegisteredPlayerCard(uiState: AuctionSetupUiState, viewModel: AuctionSetupViewModel) {
+  Card {
+    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+      Text("Add a registered player", style = MaterialTheme.typography.titleSmall)
+      Text(
+        "Search players who already have an account — adding them here links this lot to their " +
+          "profile (photo, batting/bowling style) instead of a plain typed name.",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+      OutlinedTextField(
+        value = uiState.registeredPlayerSearch,
+        onValueChange = viewModel::onRegisteredSearchChanged,
+        label = { Text("Search by name, email, phone, or user code") },
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth(),
+      )
+      if (uiState.registeredPlayerSearch.isNotBlank()) {
+        if (uiState.registeredPlayers.isEmpty()) {
+          Text("No registered players match.", style = MaterialTheme.typography.bodySmall)
+        }
+        uiState.registeredPlayers.forEach { user -> RegisteredPlayerRow(user, uiState, viewModel) }
+      }
+    }
+  }
+}
+
+@Composable
+private fun RegisteredPlayerRow(user: AppUser, uiState: AuctionSetupUiState, viewModel: AuctionSetupViewModel) {
+  val adding = user.uid in uiState.addingRegisteredPlayerIds
+  Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Text(user.displayName, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+    OutlinedTextField(
+      value = uiState.registeredBasePrices[user.uid] ?: "",
+      onValueChange = { viewModel.onRegisteredBasePriceChanged(user.uid, it) },
+      label = { Text("Base") },
+      singleLine = true,
+      modifier = Modifier.weight(0.6f),
+    )
+    Button(onClick = { viewModel.addRegisteredPlayer(user) }, enabled = !adding) {
+      Text(if (adding) "Adding..." else "Add")
     }
   }
 }

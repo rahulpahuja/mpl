@@ -36,7 +36,7 @@ fun TournamentsScreen(currentUserUid: String, modifier: Modifier = Modifier) {
   LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), modifier = modifier) {
     item { CreateTournamentCard(uiState, viewModel) }
     if (uiState.tournaments.isEmpty()) item { Text("No tournaments yet.", style = MaterialTheme.typography.bodyMedium) }
-    items(uiState.tournaments, key = { it.tournamentId }) { tournament -> TournamentCard(tournament) }
+    items(uiState.tournaments, key = { it.tournamentId }) { tournament -> TournamentCard(tournament, modifier = Modifier.animateItem()) }
   }
 }
 
@@ -72,8 +72,8 @@ private fun CreateTournamentCard(uiState: TournamentsUiState, viewModel: Tournam
 }
 
 @Composable
-private fun TournamentCard(tournament: Tournament) {
-  Card(modifier = Modifier.fillMaxWidth()) {
+private fun TournamentCard(tournament: Tournament, modifier: Modifier = Modifier) {
+  Card(modifier = modifier.fillMaxWidth()) {
     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
       Text(tournament.name, style = MaterialTheme.typography.titleMedium)
       Text(

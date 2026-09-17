@@ -1,5 +1,7 @@
 package com.mplauction.android.ui.auth
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -27,7 +29,10 @@ fun ClaimAdminScreen(user: AppUser, onClaimed: () -> Unit, modifier: Modifier = 
 
   LaunchedEffect(uiState.claimed) { if (uiState.claimed) onClaimed() }
 
-  Column(modifier = modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+  Column(
+    modifier = modifier.verticalScroll(rememberScrollState()).padding(24.dp),
+    verticalArrangement = Arrangement.spacedBy(12.dp),
+  ) {
     Text("Set up the first Admin", style = MaterialTheme.typography.titleLarge)
     Text(
       "No admin has claimed this app yet. Since you're signed in as ${user.displayName}, you " +

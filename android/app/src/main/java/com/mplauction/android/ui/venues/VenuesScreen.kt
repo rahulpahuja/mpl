@@ -25,6 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mplauction.android.appContainer
 import com.mplauction.android.data.model.Venue
+import com.mplauction.android.ui.common.VenueAvatar
 
 @Composable
 fun VenuesScreen(modifier: Modifier = Modifier) {
@@ -58,24 +59,27 @@ fun VenuesScreen(modifier: Modifier = Modifier) {
         }
       }
     }
-    items(uiState.venues, key = { it.venueId }) { venue -> VenueRow(venue, viewModel) }
+    items(uiState.venues, key = { it.venueId }) { venue -> VenueRow(venue, viewModel, modifier = Modifier.animateItem()) }
     if (uiState.venues.isEmpty()) item { Text("No venues yet.", style = MaterialTheme.typography.bodyMedium) }
   }
 }
 
 @Composable
-private fun VenueRow(venue: Venue, viewModel: VenuesViewModel) {
+private fun VenueRow(venue: Venue, viewModel: VenuesViewModel, modifier: Modifier = Modifier) {
   val retired = venue.retired == true
-  Card(modifier = Modifier.fillMaxWidth()) {
-    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-      Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-        Text(venue.name, style = MaterialTheme.typography.bodyLarge)
-        if (retired) SuggestionChip(onClick = {}, label = { Text("retired") })
-      }
-      Text(venue.location, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-      Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(onClick = { viewModel.setRetired(venue.venueId, !retired) }) { Text(if (retired) "Unretire" else "Retire") }
-        TextButton(onClick = { viewModel.delete(venue.venueId) }) { Text("Delete") }
+  Card(modifier = modifier.fillMaxWidth()) {
+    Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      VenueAvatar(venue.images.firstOrNull(), venue.name)
+      Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+          Text(venue.name, style = MaterialTheme.typography.bodyLarge)
+          if (retired) SuggestionChip(onClick = {}, label = { Text("retired") })
+        }
+        Text(venue.location, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+          OutlinedButton(onClick = { viewModel.setRetired(venue.venueId, !retired) }) { Text(if (retired) "Unretire" else "Retire") }
+          TextButton(onClick = { viewModel.delete(venue.venueId) }) { Text("Delete") }
+        }
       }
     }
   }

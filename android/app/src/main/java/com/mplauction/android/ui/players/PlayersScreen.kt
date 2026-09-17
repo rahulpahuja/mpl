@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mplauction.android.appContainer
 import com.mplauction.android.data.model.AppUser
+import com.mplauction.android.ui.common.PlayerAvatar
 
 @Composable
 fun PlayersScreen(modifier: Modifier = Modifier) {
@@ -40,7 +41,7 @@ fun PlayersScreen(modifier: Modifier = Modifier) {
         modifier = Modifier.fillMaxWidth(),
       )
     }
-    items(uiState.players, key = { it.uid }) { player -> PlayerRow(player) }
+    items(uiState.players, key = { it.uid }) { player -> PlayerRow(player, modifier = Modifier.animateItem()) }
     if (uiState.players.isEmpty()) item { Text("No registered players yet.", style = MaterialTheme.typography.bodyMedium) }
 
     item { Text("Promote a viewer to player", style = MaterialTheme.typography.titleSmall) }
@@ -79,18 +80,21 @@ fun PlayersScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun PlayerRow(player: AppUser) {
-  Card(modifier = Modifier.fillMaxWidth()) {
-    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-      Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-        Text(player.displayName, style = MaterialTheme.typography.bodyLarge)
-        if (player.assignedAuctions.isNotEmpty()) SuggestionChip(onClick = {}, label = { Text("${player.assignedAuctions.size} auctions") })
+private fun PlayerRow(player: AppUser, modifier: Modifier = Modifier) {
+  Card(modifier = modifier.fillMaxWidth()) {
+    Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      PlayerAvatar(player.photoURL, player.avatarId, player.displayName)
+      Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+          Text(player.displayName, style = MaterialTheme.typography.bodyLarge)
+          if (player.assignedAuctions.isNotEmpty()) SuggestionChip(onClick = {}, label = { Text("${player.assignedAuctions.size} auctions") })
+        }
+        Text(
+          player.phone.ifBlank { player.email },
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
       }
-      Text(
-        player.phone.ifBlank { player.email },
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-      )
     }
   }
 }

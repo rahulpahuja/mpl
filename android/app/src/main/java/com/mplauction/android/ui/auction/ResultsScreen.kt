@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mplauction.android.appContainer
+import com.mplauction.android.ui.common.auctionBackground
 import com.mplauction.android.data.model.PlayerStatus
 
 // Read-only squad summary — mirrors the core of Results.tsx (team-by-team
@@ -37,7 +38,7 @@ fun ResultsScreen(auctionId: String, modifier: Modifier = Modifier) {
     return
   }
 
-  LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), modifier = modifier) {
+  LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), modifier = modifier.auctionBackground()) {
     item {
       Text(
         "${current.players.count { it.status == PlayerStatus.sold }} sold · " +

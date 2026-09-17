@@ -1,11 +1,12 @@
 package com.mplauction.android.ui.auction
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,10 +20,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -33,11 +32,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mplauction.android.appContainer
+import com.mplauction.android.ui.common.auctionBackground
 import com.mplauction.android.data.model.Auction
 import com.mplauction.android.data.model.AuctionStatus
 import com.mplauction.android.data.model.PlayerStatus
 import com.mplauction.android.data.model.TeamManagerEntry
-import kotlinx.coroutines.delay
 
 private val QUICK_BID_STEPS = listOf(1000L, 2000L, 5000L, 10000L)
 
@@ -57,58 +56,29 @@ fun BiddingRoomScreen(auctionId: String, currentUserUid: String, modifier: Modif
 
   val isAuctionManager = currentUserUid in current.auctionManagerIds
   val myTeam = current.teamManagers.find { it.managerId == currentUserUid }
-  var soldBanner by remember { mutableStateOf<String?>(null) }
-  var lastCurrentPlayerId by remember { mutableStateOf(current.currentPlayerId) }
-  if (current.currentPlayerId != lastCurrentPlayerId) {
-    val justFinishedId = lastCurrentPlayerId
-    if (justFinishedId != null) {
-      val player = current.players.find { it.playerId == justFinishedId }
-      if (player?.status == PlayerStatus.sold) {
-        soldBanner = "SOLD — ${player.name} to ${player.currentBidderName} for ${player.currentBid}"
+  val (justSold, clearJustSold) = rememberJustSoldPlayer(current)
+
+  Box(modifier) {
+    LazyColumn(
+      contentPadding = PaddingValues(16.dp),
+      verticalArrangement = Arrangement.spacedBy(12.dp),
+      modifier = Modifier.fillMaxSize().auctionBackground(),
+    ) {
+      item { CurrentPlayerCard(current) }
+      if (isAuctionManager) {
+        item { AuctionManagerControls(current, busy, viewModel) }
+      }
+      if (myTeam != null) {
+        item { BidControls(current, myTeam, currentUserUid, busy, viewModel) }
+      }
+      error?.let { item { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) } }
+      item { Text("Teams", style = MaterialTheme.typography.titleSmall) }
+      items(current.teamManagers.sortedByDescending { it.remainingTokens }, key = { it.teamId }) { tm ->
+        TeamRow(tm, current)
       }
     }
-    lastCurrentPlayerId = current.currentPlayerId
-  }
 
-  LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), modifier = modifier) {
-    item {
-      AnimatedVisibility(visible = soldBanner != null) {
-        soldBanner?.let { SoldBanner(it) { soldBanner = null } }
-      }
-    }
-    item { CurrentPlayerCard(current) }
-    if (isAuctionManager) {
-      item { AuctionManagerControls(current, busy, viewModel) }
-    }
-    if (myTeam != null) {
-      item { BidControls(current, myTeam, currentUserUid, busy, viewModel) }
-    }
-    error?.let { item { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) } }
-    item { Text("Teams", style = MaterialTheme.typography.titleSmall) }
-    items(current.teamManagers.sortedByDescending { it.remainingTokens }, key = { it.teamId }) { tm ->
-      TeamRow(tm, current)
-    }
-  }
-}
-
-@Composable
-private fun SoldBanner(text: String, onDismiss: () -> Unit) {
-  LaunchedEffectDismiss(onDismiss)
-  Card {
-    Text(
-      text,
-      modifier = Modifier.fillMaxWidth().padding(16.dp),
-      style = MaterialTheme.typography.titleMedium,
-      color = MaterialTheme.colorScheme.primary,
-    )
-  }
-}
-
-@Composable
-private fun LaunchedEffectDismiss(onDismiss: () -> Unit) {
-  LaunchedEffect(Unit) {
-    delay(3000)
-    onDismiss()
+    justSold?.let { SoldCelebrationOverlay(it, onDismiss = clearJustSold) }
   }
 }
 

@@ -14,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.mplauction.android.data.model.AppUser
 import com.mplauction.android.data.model.UserRole
 import com.mplauction.android.data.remote.Firebase
+import com.mplauction.android.data.remote.toObjectOrNull
 import kotlin.random.Random
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -79,7 +80,7 @@ class AuthRepository {
           trySend(AuthState.SignedOut)
           return@addSnapshotListener
         }
-        val user = snap?.toObject(AppUser::class.java)
+        val user = snap?.toObjectOrNull<AppUser>()
         trySend(if (user != null) AuthState.SignedIn(user) else AuthState.Loading)
       }
     awaitClose { registration.remove() }
@@ -118,7 +119,7 @@ class AuthRepository {
   // Port of ensureUserDoc in src/lib/auth.ts.
   private suspend fun ensureUserDoc(firebaseUser: FirebaseUser): AppUser {
     val userRef = db.collection("users").document(firebaseUser.uid)
-    val existing = userRef.get().await().toObject(AppUser::class.java)
+    val existing = userRef.get().await().toObjectOrNull<AppUser>()
     if (existing != null) return existing
 
     val email = firebaseUser.email ?: ""

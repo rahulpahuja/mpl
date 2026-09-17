@@ -6,8 +6,10 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.mplauction.android.data.AuctionRules
+import com.mplauction.android.data.PLAYING_ROLE_LABELS
 import com.mplauction.android.data.location.AuctionLocationFields
 import com.mplauction.android.data.model.Auction
+import com.mplauction.android.data.model.AppUser
 import com.mplauction.android.data.model.AuctionTeamStats
 import com.mplauction.android.data.model.Player
 import com.mplauction.android.data.model.PlayerStatus
@@ -15,6 +17,7 @@ import com.mplauction.android.data.model.Team
 import com.mplauction.android.data.model.TeamManagerEntry
 import com.mplauction.android.data.model.TeamPlayerRecord
 import com.mplauction.android.data.remote.Firebase
+import com.mplauction.android.data.remote.toObjectOrNull
 import java.util.Date
 import kotlin.random.Random
 import kotlinx.coroutines.channels.awaitClose
@@ -24,6 +27,8 @@ import kotlinx.coroutines.tasks.await
 
 private const val TAG = "AuctionRepository"
 private const val ID_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
+
+data class NewPlayer(val name: String, val position: String, val basePrice: Long)
 
 // Port of src/lib/auctions.ts + useAuctionsList.ts: the directory list,
 // draft creation, Setup (add team/player, go live), and live bidding
@@ -45,7 +50,7 @@ class AuctionRepository {
             Log.e(TAG, "auctions listener error", error)
             return@addSnapshotListener
           }
-          val auctions = snap?.documents?.mapNotNull { it.toObject(Auction::class.java) } ?: emptyList()
+          val auctions = snap?.documents?.mapNotNull { it.toObjectOrNull<Auction>() } ?: emptyList()
           trySend(auctions)
         }
     awaitClose { registration.remove() }
@@ -102,7 +107,7 @@ class AuctionRepository {
           Log.e(TAG, "auction $auctionId listener error", error)
           return@addSnapshotListener
         }
-        trySend(snap?.toObject(Auction::class.java))
+        trySend(snap?.toObjectOrNull<Auction>())
       }
     awaitClose { registration.remove() }
   }
@@ -122,20 +127,51 @@ class AuctionRepository {
     auctionRef(auctionId).update(fields).await()
   }
 
-  // Only single-player addition, matching Setup's "add one player" flow —
-  // the web app's CSV import isn't ported this pass.
   suspend fun addPlayer(auctionId: String, name: String, position: String, basePrice: Long) {
+    addPlayers(auctionId, listOf(NewPlayer(name, position, basePrice)))
+  }
+
+  // Port of addPlayers in lib/auctions.ts — one transaction appending every
+  // row instead of a round trip per player, for the CSV-paste import.
+  suspend fun addPlayers(auctionId: String, players: List<NewPlayer>) {
+    if (players.isEmpty()) return
+    val newPlayers =
+      players.map { p ->
+        Player(playerId = java.util.UUID.randomUUID().toString(), name = p.name, position = p.position, basePrice = p.basePrice, status = PlayerStatus.open)
+      }
+    appendPlayers(auctionId, newPlayers)
+  }
+
+  // Port of handleAddRegisteredPlayer in AuctionSetup.tsx: unlike a
+  // manually-typed or CSV-imported row, playerId is the user's own uid (not
+  // a random one) so this lot stays linked to their account — their
+  // photo/handedness/batting-bowling type snapshot from their profile, and
+  // they can see this auction on their own Home page once assignUserToAuction
+  // (called by the ViewModel right after this) runs.
+  suspend fun addRegisteredPlayer(auctionId: String, user: AppUser, basePrice: Long) {
+    val position = user.playingRole?.let { PLAYING_ROLE_LABELS[it] } ?: ""
     val player =
       Player(
-        playerId = java.util.UUID.randomUUID().toString(),
-        name = name,
+        playerId = user.uid,
+        name = user.displayName,
         position = position,
         basePrice = basePrice,
         status = PlayerStatus.open,
+        encryptedPhoto = user.encryptedPhoto,
+        avatarId = user.avatarId,
+        photoURL = user.photoURL,
+        battingHandedness = user.battingHandedness,
+        bowlingHandedness = user.bowlingHandedness,
+        battingType = user.battingType,
+        bowlingType = user.bowlingType,
       )
+    appendPlayers(auctionId, listOf(player))
+  }
+
+  private suspend fun appendPlayers(auctionId: String, newPlayers: List<Player>) {
     db.runTransaction { tx ->
-      val auction = tx.get(auctionRef(auctionId)).toObject(Auction::class.java) ?: throw IllegalStateException("Auction not found")
-      tx.update(auctionRef(auctionId), "players", auction.players + player)
+      val auction = tx.get(auctionRef(auctionId)).toObjectOrNull<Auction>() ?: throw IllegalStateException("Auction not found")
+      tx.update(auctionRef(auctionId), "players", auction.players + newPlayers)
       null
     }.await()
   }
@@ -156,7 +192,7 @@ class AuctionRepository {
         managerName = team.managerName,
       )
     db.runTransaction { tx ->
-      val auction = tx.get(auctionRef(auctionId)).toObject(Auction::class.java) ?: throw IllegalStateException("Auction not found")
+      val auction = tx.get(auctionRef(auctionId)).toObjectOrNull<Auction>() ?: throw IllegalStateException("Auction not found")
       if (auction.teamManagers.any { it.teamId == team.teamId }) {
         throw IllegalStateException("This team is already part of this auction")
       }
@@ -197,7 +233,7 @@ class AuctionRepository {
   suspend fun completeAuction(auctionId: String) {
     db.runTransaction { tx ->
       val ref = auctionRef(auctionId)
-      val auction = tx.get(ref).toObject(Auction::class.java) ?: throw IllegalStateException("Auction not found")
+      val auction = tx.get(ref).toObjectOrNull<Auction>() ?: throw IllegalStateException("Auction not found")
       val players =
         auction.players.map {
           if (it.status == PlayerStatus.open || it.status == PlayerStatus.active) {
@@ -212,7 +248,7 @@ class AuctionRepository {
   suspend fun setCurrentPlayer(auctionId: String, playerId: String) {
     db.runTransaction { tx ->
       val ref = auctionRef(auctionId)
-      val auction = tx.get(ref).toObject(Auction::class.java) ?: throw IllegalStateException("Auction not found")
+      val auction = tx.get(ref).toObjectOrNull<Auction>() ?: throw IllegalStateException("Auction not found")
       val players = auction.players.map { if (it.playerId == playerId) it.copy(status = PlayerStatus.active) else it }
       tx.update(ref, mapOf("currentPlayerId" to playerId, "players" to players, "timerEndsAt" to null))
       null
@@ -237,7 +273,7 @@ class AuctionRepository {
   suspend fun placeBid(auctionId: String, playerId: String, managerId: String, managerName: String, amount: Long) {
     db.runTransaction { tx ->
       val ref = auctionRef(auctionId)
-      val auction = tx.get(ref).toObject(Auction::class.java) ?: throw IllegalStateException("Auction not found")
+      val auction = tx.get(ref).toObjectOrNull<Auction>() ?: throw IllegalStateException("Auction not found")
       val player = auction.players.find { it.playerId == playerId } ?: throw IllegalStateException("Player not found")
       val manager =
         auction.teamManagers.find { it.managerId == managerId }
@@ -272,7 +308,7 @@ class AuctionRepository {
     var teamId: String? = null
     db.runTransaction { tx ->
       val ref = auctionRef(auctionId)
-      val auction = tx.get(ref).toObject(Auction::class.java) ?: throw IllegalStateException("Auction not found")
+      val auction = tx.get(ref).toObjectOrNull<Auction>() ?: throw IllegalStateException("Auction not found")
       val player = auction.players.find { it.playerId == playerId } ?: throw IllegalStateException("Player not found")
       val buyerId = player.currentBidder ?: throw IllegalStateException("No bids placed on this player")
       soldAmount = player.currentBid
@@ -298,10 +334,10 @@ class AuctionRepository {
   }
 
   private suspend fun recordTeamPurchase(auctionId: String, playerId: String, teamId: String, amount: Long) {
-    val auction = auctionRef(auctionId).get().await().toObject(Auction::class.java) ?: return
+    val auction = auctionRef(auctionId).get().await().toObjectOrNull<Auction>() ?: return
     val player = auction.players.find { it.playerId == playerId } ?: return
     val statsRef = teamStatsRef(auctionId, teamId)
-    val stats = statsRef.get().await().toObject(AuctionTeamStats::class.java) ?: return
+    val stats = statsRef.get().await().toObjectOrNull<AuctionTeamStats>() ?: return
     statsRef.update(
       mapOf(
         "spent" to stats.spent + amount,
@@ -314,7 +350,7 @@ class AuctionRepository {
   suspend fun markUnsold(auctionId: String, playerId: String) {
     db.runTransaction { tx ->
       val ref = auctionRef(auctionId)
-      val auction = tx.get(ref).toObject(Auction::class.java) ?: throw IllegalStateException("Auction not found")
+      val auction = tx.get(ref).toObjectOrNull<Auction>() ?: throw IllegalStateException("Auction not found")
       val players =
         auction.players.map {
           if (it.playerId == playerId) it.copy(status = PlayerStatus.unsold, currentBid = 0, currentBidder = null, currentBidderName = null)

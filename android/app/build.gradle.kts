@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.mplauction.android"
-    compileSdk = 36
+    compileSdk = 37
     defaultConfig {
         applicationId = "com.mplauction.android"
         minSdk = 26
@@ -55,6 +55,7 @@ dependencies {
 
   // Core Android dependencies
   implementation(libs.androidx.core.ktx)
+  implementation(libs.androidx.core.splashscreen)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.activity.compose)
 
@@ -68,6 +69,7 @@ dependencies {
   implementation(libs.androidx.compose.material3)
   implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
   implementation(libs.androidx.compose.material.icons.extended)
+  implementation(libs.glide.compose)
   // Tooling
   debugImplementation(libs.androidx.compose.ui.tooling)
   // Instrumented tests

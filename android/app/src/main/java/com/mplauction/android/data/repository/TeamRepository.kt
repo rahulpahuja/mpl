@@ -5,6 +5,7 @@ import com.google.firebase.firestore.FieldValue
 import com.mplauction.android.data.model.RosterPlayer
 import com.mplauction.android.data.model.Team
 import com.mplauction.android.data.remote.Firebase
+import com.mplauction.android.data.remote.toObjectOrNull
 import java.util.UUID
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -30,7 +31,7 @@ class TeamRepository {
           trySend(emptyList())
           return@addSnapshotListener
         }
-        trySend(snap?.documents?.mapNotNull { it.toObject(Team::class.java) } ?: emptyList())
+        trySend(snap?.documents?.mapNotNull { it.toObjectOrNull<Team>() } ?: emptyList())
       }
     awaitClose { registration.remove() }
   }
@@ -42,7 +43,7 @@ class TeamRepository {
           Log.e(TAG, "team $teamId listener error", error)
           return@addSnapshotListener
         }
-        trySend(snap?.toObject(Team::class.java))
+        trySend(snap?.toObjectOrNull<Team>())
       }
     awaitClose { registration.remove() }
   }
@@ -73,7 +74,7 @@ class TeamRepository {
 
   suspend fun addToRoster(teamId: String, player: RosterPlayer) {
     val ref = db.collection("teams").document(teamId)
-    val team = ref.get().await().toObject(Team::class.java) ?: throw IllegalStateException("Team not found")
+    val team = ref.get().await().toObjectOrNull<Team>() ?: throw IllegalStateException("Team not found")
     if (team.roster.any { it.playerId == player.playerId }) {
       throw IllegalStateException("${player.name} is already on this team's roster")
     }
@@ -82,7 +83,7 @@ class TeamRepository {
 
   suspend fun removeFromRoster(teamId: String, playerId: String) {
     val ref = db.collection("teams").document(teamId)
-    val team = ref.get().await().toObject(Team::class.java) ?: return
+    val team = ref.get().await().toObjectOrNull<Team>() ?: return
     ref.update("roster", team.roster.filterNot { it.playerId == playerId }).await()
   }
 }

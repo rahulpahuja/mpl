@@ -2,4 +2,14 @@
 <resources>
 
     <style name="Theme.MPLAuction" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Shown from process start until installSplashScreen()'s condition
+         clears in MainActivity — brand_blue + the gavel glyph instead of the
+         system's default blank window, on every API level core-splashscreen
+         supports (not just 12+). -->
+    <style name="Theme.MPLAuction.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/brand_blue</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_gavel</item>
+        <item name="postSplashScreenTheme">@style/Theme.MPLAuction</item>
+    </style>
 </resources>

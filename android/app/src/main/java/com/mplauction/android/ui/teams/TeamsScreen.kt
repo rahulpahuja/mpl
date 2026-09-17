@@ -3,6 +3,7 @@ package com.mplauction.android.ui.teams
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,6 +24,7 @@ import com.mplauction.android.appContainer
 import com.mplauction.android.data.model.AppUser
 import com.mplauction.android.data.model.Team
 import com.mplauction.android.data.model.UserRole
+import com.mplauction.android.ui.common.TeamAvatar
 
 @Composable
 fun TeamsScreen(currentUser: AppUser, onOpenTeam: (Team) -> Unit, modifier: Modifier = Modifier) {
@@ -46,7 +48,9 @@ fun TeamsScreen(currentUser: AppUser, onOpenTeam: (Team) -> Unit, modifier: Modi
       if (!uiState.loading && uiState.teams.isEmpty()) {
         item { Text("No teams yet.", style = MaterialTheme.typography.bodyMedium) }
       }
-      items(uiState.teams, key = { it.teamId }) { team -> TeamCard(team, onClick = { onOpenTeam(team) }) }
+      items(uiState.teams, key = { it.teamId }) { team ->
+        TeamCard(team, onClick = { onOpenTeam(team) }, modifier = Modifier.animateItem())
+      }
     }
   }
 }
@@ -89,12 +93,15 @@ private fun CreateTeamCard(uiState: TeamsUiState, viewModel: TeamsViewModel) {
 }
 
 @Composable
-private fun TeamCard(team: Team, onClick: () -> Unit) {
-  Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-      Text(team.teamName, style = MaterialTheme.typography.titleMedium)
-      Text("Captain: ${team.managerName}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-      Text("${team.roster.size} on roster", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun TeamCard(team: Team, onClick: () -> Unit, modifier: Modifier = Modifier) {
+  Card(onClick = onClick, modifier = modifier.fillMaxWidth()) {
+    Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      TeamAvatar(team.logoImage, team.logoId, team.teamName)
+      Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(team.teamName, style = MaterialTheme.typography.titleMedium)
+        Text("Captain: ${team.managerName}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("${team.roster.size} on roster", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+      }
     }
   }
 }

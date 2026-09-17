@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches ui/theme/Color.kt's BrandBlue — the splash window is native
+         Android chrome that renders before Compose (and this theme file)
+         exist, so the brand color has to be duplicated here as a resource. -->
+    <color name="brand_blue">#FF1D4ED8</color>
+</resources>
