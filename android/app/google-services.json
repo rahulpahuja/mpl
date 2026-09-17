@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "761770839676",
+    "project_id": "mplauction-87c8b",
+    "storage_bucket": "mplauction-87c8b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:761770839676:android:203adc11f958bf405143f9",
+        "android_client_info": {
+          "package_name": "com.mplauction.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "761770839676-3sp4njphlpohf5lhaq49ljbokabsov1l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mplauction.android",
+            "certificate_hash": "aaf0be17fc080d8f6126aa5022d28d6afbcf5fd1"
+          }
+        },
+        {
+          "client_id": "761770839676-3o0a2pe1vkkdc09jdh7a85rtakp2vp60.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-40EGKSM81fUZ1FS2Fl2Nov5RKhZcb30"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "761770839676-3o0a2pe1vkkdc09jdh7a85rtakp2vp60.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
