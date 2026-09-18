@@ -21,6 +21,8 @@ import com.mplauction.android.ui.auth.ClaimAdminScreen
 import com.mplauction.android.ui.auth.LoginScreen
 import com.mplauction.android.ui.auth.SessionViewModel
 import com.mplauction.android.ui.common.DetailScaffold
+import com.mplauction.android.ui.draft.DraftScreen
+import com.mplauction.android.ui.draft.ImportPlayersScreen
 import com.mplauction.android.ui.home.HomeScreen
 import com.mplauction.android.ui.join.JoinAuctionScreen
 import com.mplauction.android.ui.teams.TeamDetailScreen
@@ -103,9 +105,22 @@ private fun SignedInNav(state: AuthState.SignedIn) {
             onOpenAuction = { auction -> backStack.add(AuctionDetail(auction.auctionId, auction.name)) },
             onOpenTeam = { team -> backStack.add(TeamDetail(team.teamId, team.teamName)) },
             onClaimAdmin = { backStack.add(ClaimAdmin) },
+            onOpenMatch = { matchId -> backStack.add(MatchLobby(matchId)) },
             onSignOut = { container.authRepository.signOut() },
             modifier = Modifier.fillMaxSize(),
           )
+        }
+        entry<MatchLobby> { key ->
+          DraftScreen(
+            matchId = key.matchId,
+            currentUser = state.user,
+            onExit = { backStack.removeLastOrNull() },
+            onImportPlayers = { backStack.add(ImportDraftPlayers(key.matchId)) },
+            modifier = Modifier.fillMaxSize(),
+          )
+        }
+        entry<ImportDraftPlayers> { key ->
+          ImportPlayersScreen(matchId = key.matchId, currentUser = state.user, onDone = { backStack.removeLastOrNull() }, modifier = Modifier.fillMaxSize())
         }
         entry<ClaimAdmin> {
           DetailScaffold(title = "Claim Admin Access", onBack = { backStack.removeLastOrNull() }) { modifier ->

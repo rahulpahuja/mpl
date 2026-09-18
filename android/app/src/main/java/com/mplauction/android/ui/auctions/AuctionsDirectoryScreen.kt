@@ -48,14 +48,16 @@ import com.mplauction.android.data.SPORTS
 import com.mplauction.android.data.location.ANY
 import com.mplauction.android.data.location.summarize
 import com.mplauction.android.data.model.Auction
+import com.mplauction.android.data.model.AppUser
 import com.mplauction.android.data.model.AuctionStatus
+import com.mplauction.android.data.model.UserRole
 import com.mplauction.android.data.sportName
 import com.mplauction.android.ui.theme.BrandMint
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuctionsDirectoryScreen(
-  currentUserUid: String,
+  user: AppUser,
   canCreate: Boolean,
   onOpenAuction: (Auction) -> Unit,
   modifier: Modifier = Modifier,
@@ -64,7 +66,7 @@ fun AuctionsDirectoryScreen(
   val container = context.appContainer()
   val viewModel: AuctionsDirectoryViewModel =
     viewModel(key = "auctions-directory") {
-      AuctionsDirectoryViewModel(container.auctionRepository, currentUserUid)
+      AuctionsDirectoryViewModel(container.auctionRepository, container.userRepository, user.uid)
     }
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -101,6 +103,9 @@ fun AuctionsDirectoryScreen(
     }
     if (canCreate) {
       item { CreateAuctionCard(uiState, viewModel::onNameChanged, { viewModel.createAuction {} }) }
+    }
+    if (user.role == UserRole.viewer) {
+      item { RequestPlayerCard(playerRequested = user.playerRequested == true, requesting = uiState.requestingPlayer, onRequest = { viewModel.requestPlayer(user.uid) }) }
     }
     uiState.error?.let { error ->
       item { Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
@@ -236,6 +241,28 @@ private fun CreateAuctionCard(uiState: AuctionsDirectoryUiState, onNameChanged: 
       )
       Button(onClick = onCreate, enabled = uiState.newAuctionName.isNotBlank() && !uiState.creating) {
         Text(if (uiState.creating) "Creating..." else "Create")
+      }
+    }
+  }
+}
+
+// Mirrors Home.tsx's viewer-only card: self-service instead of an admin
+// having to spot a new signup in a crowd (see UserRepository.requestToBePlayer).
+@Composable
+private fun RequestPlayerCard(playerRequested: Boolean, requesting: Boolean, onRequest: () -> Unit) {
+  Card {
+    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+      Text(
+        "Want to be up for auction? Request to become a Player and an Admin, Auction Manager, or Captain can approve it.",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+      if (playerRequested) {
+        Text("Request pending approval...", style = MaterialTheme.typography.bodySmall, color = Color(0xFFD97706))
+      } else {
+        Button(onClick = onRequest, enabled = !requesting) {
+          Text(if (requesting) "Requesting..." else "Request to become a Player")
+        }
       }
     }
   }

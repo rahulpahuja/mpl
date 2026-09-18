@@ -46,6 +46,14 @@ class UserRepository {
     db.collection("users").document(uid).update(mapOf("role" to "player", "playerRequested" to false)).await()
   }
 
+  // Self-service: a viewer flags that they'd like to be promoted to Player,
+  // so admins/managers can spot and approve the request (promoteViewerToPlayer
+  // above) instead of having to notice them in a crowd. Mirrors
+  // requestToBePlayer in src/lib/users.ts.
+  suspend fun requestToBePlayer(uid: String) {
+    db.collection("users").document(uid).update("playerRequested", true).await()
+  }
+
   // Admin-only per firestore.rules — broader than promoteViewerToPlayer,
   // which any manager can call but only for the viewer -> player step.
   suspend fun updateUserRole(uid: String, role: UserRole) {

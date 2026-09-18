@@ -40,6 +40,7 @@ class TournamentRepository {
       db.collection("tournaments").document(tournamentId).addSnapshotListener { snap, error ->
         if (error != null) {
           Log.e(TAG, "tournament $tournamentId listener error", error)
+          trySend(null)
           return@addSnapshotListener
         }
         trySend(snap?.toObjectOrNull<Tournament>())

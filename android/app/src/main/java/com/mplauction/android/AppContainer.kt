@@ -3,6 +3,7 @@ package com.mplauction.android
 import com.mplauction.android.data.repository.AuctionRepository
 import com.mplauction.android.data.repository.AuthRepository
 import com.mplauction.android.data.repository.BootstrapRepository
+import com.mplauction.android.data.repository.DraftMatchRepository
 import com.mplauction.android.data.repository.InviteRepository
 import com.mplauction.android.data.repository.TeamRepository
 import com.mplauction.android.data.repository.TournamentRepository
@@ -23,4 +24,5 @@ class AppContainer {
   val venueRepository = VenueRepository()
   val tournamentRepository = TournamentRepository()
   val inviteRepository = InviteRepository()
+  val draftMatchRepository = DraftMatchRepository()
 }

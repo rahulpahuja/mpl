@@ -1,11 +1,8 @@
 package com.mplauction.android.ui.auction
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -26,10 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,11 +33,11 @@ import com.mplauction.android.data.model.Auction
 import com.mplauction.android.data.model.Player
 import com.mplauction.android.data.model.PlayerStatus
 import com.mplauction.android.data.model.TeamManagerEntry
+import com.mplauction.android.ui.common.ConfettiBurst
 import com.mplauction.android.ui.common.PlayerAvatar
 import com.mplauction.android.ui.common.TeamAvatar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.random.Random
 
 // Every player who just sold together (more than one when the lead player —
 // the one that was currentPlayerId — is part of a combo lot) plus the team
@@ -85,10 +79,6 @@ fun rememberJustSoldPlayer(auction: Auction?): Pair<JustSoldPlayer?, () -> Unit>
 }
 
 private const val AUTO_DISMISS_MS = 3800L
-private const val CONFETTI_DURATION_MS = 2600
-private val CONFETTI_COLORS = listOf(Color(0xFFFACC15), Color(0xFFFB923C), Color(0xFF3B82F6), Color(0xFFF87171), Color(0xFF34D399), Color.White)
-
-private class ConfettiPiece(val x0: Float, val y0: Float, val vx: Float, val vy0: Float, val spin0: Float, val spinSpeed: Float, val color: Color, val size: Float)
 
 // Full-screen "SOLD!" moment: confetti burst, the sale price, and the
 // winning team's reveal — the auction's main event, so unlike the rest of
@@ -101,9 +91,6 @@ fun SoldCelebrationOverlay(sold: JustSoldPlayer, onDismiss: () -> Unit) {
     delay(AUTO_DISMISS_MS)
     onDismiss()
   }
-
-  val confettiProgress = remember(sold) { Animatable(0f) }
-  LaunchedEffect(sold) { confettiProgress.animateTo(1f, tween(CONFETTI_DURATION_MS, easing = LinearEasing)) }
 
   val stampScale = remember(sold) { Animatable(0.4f) }
   LaunchedEffect(sold) {
@@ -119,7 +106,7 @@ fun SoldCelebrationOverlay(sold: JustSoldPlayer, onDismiss: () -> Unit) {
       .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onDismiss),
     contentAlignment = Alignment.Center,
   ) {
-    ConfettiCanvas(confettiProgress, jerseyColor, Modifier.fillMaxSize())
+    ConfettiBurst(modifier = Modifier.fillMaxSize(), colors = listOfNotNull(jerseyColor), key = sold)
 
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
       Text(
@@ -172,38 +159,6 @@ fun SoldCelebrationOverlay(sold: JustSoldPlayer, onDismiss: () -> Unit) {
         style = MaterialTheme.typography.labelSmall,
         modifier = Modifier.padding(top = 24.dp),
       )
-    }
-  }
-}
-
-@Composable
-private fun ConfettiCanvas(progress: Animatable<Float, *>, jerseyColor: Color?, modifier: Modifier = Modifier) {
-  val pieces =
-    remember {
-      val palette = if (jerseyColor != null) listOf(jerseyColor) + CONFETTI_COLORS else CONFETTI_COLORS
-      List(90) {
-        ConfettiPiece(
-          x0 = Random.nextFloat(),
-          y0 = -0.05f - Random.nextFloat() * 0.15f,
-          vx = (Random.nextFloat() - 0.5f) * 0.5f,
-          vy0 = 0.35f + Random.nextFloat() * 0.45f,
-          spin0 = Random.nextFloat() * 360f,
-          spinSpeed = (Random.nextFloat() - 0.5f) * 720f,
-          color = palette.random(),
-          size = 6f + Random.nextFloat() * 6f,
-        )
-      }
-    }
-  Canvas(modifier) {
-    val t = progress.value
-    val gravity = 1.4f
-    pieces.forEach { piece ->
-      val px = (piece.x0 + piece.vx * t) * size.width
-      val py = (piece.y0 + piece.vy0 * t + 0.5f * gravity * t * t) * size.height
-      val alpha = (1f - t).coerceIn(0f, 1f).let { if (it > 0.3f) 1f else it / 0.3f }
-      rotate(piece.spin0 + piece.spinSpeed * t, pivot = Offset(px, py)) {
-        drawRect(color = piece.color.copy(alpha = alpha), topLeft = Offset(px - piece.size / 2, py - piece.size / 4), size = Size(piece.size, piece.size / 2))
-      }
     }
   }
 }

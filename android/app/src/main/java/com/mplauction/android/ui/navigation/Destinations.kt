@@ -17,6 +17,16 @@ import kotlinx.serialization.Serializable
 
 @Serializable data class TeamDetail(val teamId: String, val teamName: String) : NavKey
 
+// Pushed from the Matches tab — a specific match's lobby/draft/reveal flow
+// (see DraftScreen). Unlike AuctionDetail, DraftScreen doesn't need a name
+// carried in for its top-bar title: reachable equally by tapping a known
+// match or typing an unknown ID to join, so it always resolves the title
+// from the live doc instead.
+@Serializable data class MatchLobby(val matchId: String) : NavKey
+
+// Pushed from the lobby's "Import players" button — see ImportPlayersScreen.
+@Serializable data class ImportDraftPlayers(val matchId: String) : NavKey
+
 // Public, no-login destinations — reachable from the signed-out Login
 // screen (see JoinAuctionScreen) and also pushed for a signed-in user
 // without an Auction Manager/team-manager stake in a live auction.

@@ -19,6 +19,7 @@ import com.mplauction.android.data.location.withSport
 import com.mplauction.android.data.location.withState
 import com.mplauction.android.data.model.Auction
 import com.mplauction.android.data.repository.AuctionRepository
+import com.mplauction.android.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +38,7 @@ data class AuctionsDirectoryUiState(
   val newAuctionName: String = "",
   val creating: Boolean = false,
   val detectingLocation: Boolean = false,
+  val requestingPlayer: Boolean = false,
   val error: String? = null,
 )
 
@@ -44,6 +46,7 @@ data class AuctionsDirectoryUiState(
 // the sport/location filtering + KPI derivation).
 class AuctionsDirectoryViewModel(
   private val auctionRepository: AuctionRepository,
+  private val userRepository: UserRepository,
   private val currentUserUid: String,
 ) : ViewModel() {
   private val filterState = MutableStateFlow(SPORT_LOCATION_ANY)
@@ -53,6 +56,7 @@ class AuctionsDirectoryViewModel(
   private val countriesState = MutableStateFlow<List<CountryEntry>>(emptyList())
   private val statesState = MutableStateFlow<List<String>>(emptyList())
   private val errorState = MutableStateFlow<String?>(null)
+  private val requestingPlayerState = MutableStateFlow(false)
 
   // Filter-adjacent state (the picked value, the loaded country list, the
   // states available for the picked country, and the in-flight "detecting"
@@ -72,9 +76,12 @@ class AuctionsDirectoryViewModel(
       FilterUi(filter, countries, states, detecting)
     }
 
-  private data class FormUi(val name: String, val creating: Boolean, val error: String?)
+  private data class FormUi(val name: String, val creating: Boolean, val requestingPlayer: Boolean, val error: String?)
 
-  private val formUi = combine(nameState, creatingState, errorState) { name, creating, error -> FormUi(name, creating, error) }
+  private val formUi =
+    combine(nameState, creatingState, requestingPlayerState, errorState) { name, creating, requestingPlayer, error ->
+      FormUi(name, creating, requestingPlayer, error)
+    }
 
   val uiState: StateFlow<AuctionsDirectoryUiState> =
     combine(
@@ -98,6 +105,7 @@ class AuctionsDirectoryViewModel(
         newAuctionName = formUiState.name,
         creating = formUiState.creating,
         detectingLocation = filterUiState.detecting,
+        requestingPlayer = formUiState.requestingPlayer,
         error = formUiState.error,
       )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AuctionsDirectoryUiState())
@@ -155,6 +163,20 @@ class AuctionsDirectoryViewModel(
 
   fun onNameChanged(name: String) {
     nameState.value = name
+  }
+
+  fun requestPlayer(uid: String) {
+    if (requestingPlayerState.value) return
+    requestingPlayerState.value = true
+    viewModelScope.launch {
+      try {
+        userRepository.requestToBePlayer(uid)
+      } catch (e: Exception) {
+        errorState.value = e.message ?: "Couldn't send that request"
+      } finally {
+        requestingPlayerState.value = false
+      }
+    }
   }
 
   fun createAuction(onCreated: (String) -> Unit) {

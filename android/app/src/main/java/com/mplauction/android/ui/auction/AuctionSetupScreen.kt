@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -23,12 +26,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mplauction.android.appContainer
+import com.mplauction.android.ui.common.PlayerAvatar
 import com.mplauction.android.ui.common.auctionBackground
 import com.mplauction.android.data.model.AppUser
 import com.mplauction.android.data.model.Team
@@ -56,7 +61,7 @@ fun AuctionSetupScreen(auctionId: String, onLive: () -> Unit, modifier: Modifier
     item { AddTeamCard(uiState, viewModel) }
     item { AddPlayerCard(uiState, viewModel) }
     item { ImportPlayersCard(uiState, viewModel) }
-    item { AddRegisteredPlayerCard(uiState, viewModel) }
+    item { BulkImportCsvCard(uiState, viewModel) }
     item { Text("Teams", style = MaterialTheme.typography.titleSmall) }
     items(auction.teamManagers, key = { it.teamId }) { tm ->
       Card(modifier = Modifier.fillMaxWidth()) {
@@ -171,10 +176,10 @@ private fun AddPlayerCard(uiState: AuctionSetupUiState, viewModel: AuctionSetupV
 }
 
 @Composable
-private fun ImportPlayersCard(uiState: AuctionSetupUiState, viewModel: AuctionSetupViewModel) {
+private fun BulkImportCsvCard(uiState: AuctionSetupUiState, viewModel: AuctionSetupViewModel) {
   Card {
     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-      Text("Import players", style = MaterialTheme.typography.titleSmall)
+      Text("Bulk import (CSV)", style = MaterialTheme.typography.titleSmall)
       Text(
         "One player per line: name, position, base price. Position and base price are optional.",
         style = MaterialTheme.typography.bodySmall,
@@ -189,20 +194,24 @@ private fun ImportPlayersCard(uiState: AuctionSetupUiState, viewModel: AuctionSe
       )
       uiState.importResult?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
       Button(onClick = viewModel::importCsv, enabled = !uiState.importingCsv && uiState.csvText.isNotBlank()) {
-        Text(if (uiState.importingCsv) "Importing..." else "Import players")
+        Text(if (uiState.importingCsv) "Importing..." else "Import")
       }
     }
   }
 }
 
+// Port of AuctionSetup.tsx's "Import players" dialog: search users who
+// already hold the Player role and aren't on this roster yet, and add them
+// — this links the lot to their profile (photo, batting/bowling style)
+// instead of a plain typed name. The full list shows by default (an empty
+// search matches everyone), narrowing as you type, same as the web dialog.
 @Composable
-private fun AddRegisteredPlayerCard(uiState: AuctionSetupUiState, viewModel: AuctionSetupViewModel) {
+private fun ImportPlayersCard(uiState: AuctionSetupUiState, viewModel: AuctionSetupViewModel) {
   Card {
     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-      Text("Add a registered player", style = MaterialTheme.typography.titleSmall)
+      Text("Import players", style = MaterialTheme.typography.titleSmall)
       Text(
-        "Search players who already have an account — adding them here links this lot to their " +
-          "profile (photo, batting/bowling style) instead of a plain typed name.",
+        "Search users with the Player role who aren't on this roster yet, by name, email, phone, or ID.",
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
       )
@@ -213,11 +222,15 @@ private fun AddRegisteredPlayerCard(uiState: AuctionSetupUiState, viewModel: Auc
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
       )
-      if (uiState.registeredPlayerSearch.isNotBlank()) {
-        if (uiState.registeredPlayers.isEmpty()) {
-          Text("No registered players match.", style = MaterialTheme.typography.bodySmall)
+      if (uiState.registeredPlayers.isEmpty()) {
+        Text(
+          if (uiState.registeredPlayerSearch.isBlank()) "No registered players available to add." else "No players match.",
+          style = MaterialTheme.typography.bodySmall,
+        )
+      } else {
+        Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+          uiState.registeredPlayers.forEach { user -> RegisteredPlayerRow(user, uiState, viewModel) }
         }
-        uiState.registeredPlayers.forEach { user -> RegisteredPlayerRow(user, uiState, viewModel) }
       }
     }
   }
@@ -226,7 +239,8 @@ private fun AddRegisteredPlayerCard(uiState: AuctionSetupUiState, viewModel: Auc
 @Composable
 private fun RegisteredPlayerRow(user: AppUser, uiState: AuctionSetupUiState, viewModel: AuctionSetupViewModel) {
   val adding = user.uid in uiState.addingRegisteredPlayerIds
-  Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+  Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    PlayerAvatar(photoURL = user.photoURL, avatarId = user.avatarId, name = user.displayName, size = 36.dp)
     Text(user.displayName, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
     OutlinedTextField(
       value = uiState.registeredBasePrices[user.uid] ?: "",

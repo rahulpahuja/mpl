@@ -96,9 +96,35 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pendingPhotoRequest']);
     }
 
+    // A lightweight, host-run "pick two captains, draft the rest" pre-match
+    // roster session — separate from /matches (live scoring, gated to
+    // admin/auctionManager) since any signed-in user should be able to run a
+    // pickup game. Turn order and pick legality are enforced client-side
+    // (DraftMatchRepository), the same trust boundary /auctions/{id}/bids
+    // already relies on for bid amounts — the rules below only gate who's a
+    // participant, not whether a given write is the "right" one.
+    function isDraftHost(draftMatch) {
+      return isSignedIn() && request.auth.uid == draftMatch.hostUid;
+    }
+
+    // Joining is itself a write (appending your own uid before the rule
+    // that trusts "already joined" would apply to you) — scoped so it can
+    // only add the caller's own uid, never anyone else's or a broader edit.
+    function isJoiningDraftMatch(draftMatch) {
+      return isSignedIn() &&
+        !(request.auth.uid in draftMatch.joinedUids) &&
+        request.auth.uid in request.resource.data.joinedUids &&
+        request.resource.data.diff(draftMatch).affectedKeys().hasOnly(['joinedUids', 'players']);
+    }
+
     match /users/{userId} {
       allow get: if isSignedIn();
-      allow list: if isAdmin() || (isSignedIn() && (role() == 'auctionManager' || role() == 'manager'));
+      // Broadened from admin/auctionManager/manager-only so any signed-in
+      // host can search the platform's player directory when building a
+      // Team Draft match roster (see draftMatches below) — every doc here
+      // was already readable one-by-one via `get` to any signed-in user, so
+      // this only changes enumeration, not per-doc visibility.
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && request.auth.uid == userId &&
         request.resource.data.assignedAuctions.size() == 0 &&
         (request.resource.data.role == 'viewer' ||
@@ -208,6 +234,16 @@ service cloud.firestore {
           (isSignedIn() &&
             request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.scorerIds);
       }
+    }
+
+    match /draftMatches/{matchId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.hostUid;
+      allow update: if isDraftHost(resource.data) ||
+        (isSignedIn() && request.auth.uid in resource.data.joinedUids) ||
+        isJoiningDraftMatch(resource.data);
+      allow delete: if isDraftHost(resource.data);
     }
 
     match /tournaments/{tournamentId} {

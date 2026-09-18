@@ -49,7 +49,7 @@ import com.mplauction.android.data.model.UserRole
 import com.mplauction.android.data.repository.BootstrapRepository
 import com.mplauction.android.ui.auctions.AuctionsDirectoryScreen
 import com.mplauction.android.ui.common.GradientTopBar
-import com.mplauction.android.ui.common.StubScreen
+import com.mplauction.android.ui.draft.MatchesListScreen
 import com.mplauction.android.ui.players.PlayersScreen
 import com.mplauction.android.ui.profile.ProfileScreen
 import com.mplauction.android.ui.teams.TeamsScreen
@@ -101,6 +101,7 @@ fun HomeScreen(
   onOpenAuction: (Auction) -> Unit,
   onOpenTeam: (Team) -> Unit,
   onClaimAdmin: () -> Unit,
+  onOpenMatch: (String) -> Unit,
   onSignOut: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
@@ -169,7 +170,7 @@ fun HomeScreen(
             when (section) {
               HomeSection.Auctions ->
                 AuctionsDirectoryScreen(
-                  currentUserUid = user.uid,
+                  user = user,
                   canCreate = user.role == UserRole.admin || user.role == UserRole.auctionManager,
                   onOpenAuction = onOpenAuction,
                   modifier = Modifier.fillMaxSize(),
@@ -178,7 +179,7 @@ fun HomeScreen(
               HomeSection.Players -> PlayersScreen(modifier = Modifier.fillMaxSize())
               HomeSection.Venues -> VenuesScreen(modifier = Modifier.fillMaxSize())
               HomeSection.Tourneys -> TournamentsScreen(currentUserUid = user.uid, modifier = Modifier.fillMaxSize())
-              HomeSection.Matches -> StubScreen("Matches", "Live match scoring is coming in a later build.")
+              HomeSection.Matches -> MatchesListScreen(currentUser = user, onOpenMatch = onOpenMatch, modifier = Modifier.fillMaxSize())
               HomeSection.Profile -> ProfileScreen(user, onSignOut, modifier = Modifier.fillMaxSize())
               HomeSection.Users -> UsersScreen(isAdmin = user.role == UserRole.admin, modifier = Modifier.fillMaxSize())
             }

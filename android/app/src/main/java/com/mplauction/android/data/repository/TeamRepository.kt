@@ -41,6 +41,7 @@ class TeamRepository {
       db.collection("teams").document(teamId).addSnapshotListener { snap, error ->
         if (error != null) {
           Log.e(TAG, "team $teamId listener error", error)
+          trySend(null)
           return@addSnapshotListener
         }
         trySend(snap?.toObjectOrNull<Team>())

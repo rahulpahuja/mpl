@@ -17,16 +17,15 @@ import com.mplauction.android.data.model.Team
 import com.mplauction.android.data.model.TeamManagerEntry
 import com.mplauction.android.data.model.TeamPlayerRecord
 import com.mplauction.android.data.remote.Firebase
+import com.mplauction.android.data.remote.generateShortId
 import com.mplauction.android.data.remote.toObjectOrNull
 import java.util.Date
-import kotlin.random.Random
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 private const val TAG = "AuctionRepository"
-private const val ID_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
 
 data class NewPlayer(val name: String, val position: String, val basePrice: Long)
 
@@ -47,7 +46,14 @@ class AuctionRepository {
             // Mirrors useAuctionsList.ts's error handler — an unhandled
             // listener error here previously left the whole page hung (see
             // the bootstrap-admin bug this app already fixed once on web).
+            // Still needs its own trySend, though: any screen that combines
+            // this flow with others (Flow.combine waits for every source to
+            // emit at least once) stays frozen at its initial state forever
+            // otherwise — including unrelated local UI state like a typed
+            // text field (this is what broke DraftMatchRepository's
+            // observeOpenMatches before it got the same fix).
             Log.e(TAG, "auctions listener error", error)
+            trySend(emptyList())
             return@addSnapshotListener
           }
           val auctions = snap?.documents?.mapNotNull { it.toObjectOrNull<Auction>() } ?: emptyList()
@@ -63,7 +69,7 @@ class AuctionRepository {
     location: AuctionLocationFields,
     bidIncrement: Long = 10,
   ): String {
-    val auctionId = generateAuctionId()
+    val auctionId = generateShortId()
     val doc =
       mapOf(
         "auctionId" to auctionId,
@@ -91,9 +97,6 @@ class AuctionRepository {
     return auctionId
   }
 
-  private fun generateAuctionId(): String =
-    (1..6).map { ID_ALPHABET[Random.nextInt(ID_ALPHABET.length)] }.joinToString("").uppercase()
-
   private fun auctionRef(auctionId: String) = db.collection("auctions").document(auctionId)
   private fun teamStatsRef(auctionId: String, teamId: String) =
     auctionRef(auctionId).collection("teams").document(teamId)
@@ -105,6 +108,7 @@ class AuctionRepository {
       auctionRef(auctionId).addSnapshotListener { snap, error ->
         if (error != null) {
           Log.e(TAG, "auction $auctionId listener error", error)
+          trySend(null)
           return@addSnapshotListener
         }
         trySend(snap?.toObjectOrNull<Auction>())
