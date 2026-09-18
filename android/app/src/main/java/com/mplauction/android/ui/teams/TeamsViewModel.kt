@@ -47,7 +47,14 @@ class TeamsViewModel(private val teamRepository: TeamRepository) : ViewModel() {
   fun onCodeChanged(v: String) { codeState.value = v }
   fun onColorChanged(v: String) { colorState.value = v }
 
-  fun createTeam() {
+  fun clearForm() {
+    nameState.value = ""
+    codeState.value = ""
+    colorState.value = ""
+    errorState.value = null
+  }
+
+  fun createTeam(onCreated: () -> Unit) {
     val name = nameState.value.trim()
     val code = codeState.value.trim()
     if (name.isEmpty() || code.isEmpty() || creatingState.value) return
@@ -57,9 +64,8 @@ class TeamsViewModel(private val teamRepository: TeamRepository) : ViewModel() {
       try {
         val manager = teamRepository.findUserByCode(code) ?: throw IllegalStateException("No user found with code $code")
         teamRepository.createTeam(name, manager.uid, manager.displayName, colorState.value.trim().ifBlank { null })
-        nameState.value = ""
-        codeState.value = ""
-        colorState.value = ""
+        clearForm()
+        onCreated()
       } catch (e: Exception) {
         errorState.value = e.message ?: "Couldn't create the team"
       } finally {

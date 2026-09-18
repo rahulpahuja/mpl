@@ -33,7 +33,7 @@ import com.mplauction.android.ui.common.ConfettiBurst
 import kotlinx.coroutines.delay
 
 @Composable
-fun DraftTeamRevealScreen(teams: List<DraftTeam>, onDone: () -> Unit, modifier: Modifier = Modifier) {
+fun DraftTeamRevealScreen(teams: List<DraftTeam>, actionLabel: String, onAction: () -> Unit, modifier: Modifier = Modifier) {
   var showTitle by remember { mutableStateOf(false) }
   var showTeams by remember { mutableStateOf(false) }
   var showConfetti by remember { mutableStateOf(false) }
@@ -65,7 +65,7 @@ fun DraftTeamRevealScreen(teams: List<DraftTeam>, onDone: () -> Unit, modifier: 
       }
       Spacer(Modifier.height(32.dp))
       AnimatedVisibility(showTeams, enter = fadeIn(tween(300))) {
-        Button(onClick = onDone) { Text("Let's Play") }
+        Button(onClick = onAction) { Text(actionLabel) }
       }
       Spacer(Modifier.height(24.dp))
     }

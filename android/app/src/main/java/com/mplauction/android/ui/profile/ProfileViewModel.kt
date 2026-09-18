@@ -35,6 +35,11 @@ class ProfileViewModel(private val userRepository: UserRepository, initial: Prof
       )
   }
 
+  // Drops any unsaved edits — the edit dialog calls this on open and on Cancel.
+  fun reset(displayName: String, phone: String, whatsapp: String, location: String) {
+    _uiState.value = ProfileEditState(displayName = displayName, phone = phone, whatsapp = whatsapp, location = location)
+  }
+
   fun save(uid: String) {
     val state = _uiState.value
     if (state.saving || state.displayName.isBlank()) return

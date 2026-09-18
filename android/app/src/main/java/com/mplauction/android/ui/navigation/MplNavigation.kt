@@ -25,6 +25,8 @@ import com.mplauction.android.ui.draft.DraftScreen
 import com.mplauction.android.ui.draft.ImportPlayersScreen
 import com.mplauction.android.ui.home.HomeScreen
 import com.mplauction.android.ui.join.JoinAuctionScreen
+import com.mplauction.android.ui.match.MatchConfigScreen
+import com.mplauction.android.ui.match.MatchScreen
 import com.mplauction.android.ui.teams.TeamDetailScreen
 import com.mplauction.android.ui.viewer.ViewerFeedScreen
 
@@ -106,6 +108,7 @@ private fun SignedInNav(state: AuthState.SignedIn) {
             onOpenTeam = { team -> backStack.add(TeamDetail(team.teamId, team.teamName)) },
             onClaimAdmin = { backStack.add(ClaimAdmin) },
             onOpenMatch = { matchId -> backStack.add(MatchLobby(matchId)) },
+            onOpenLiveMatch = { matchId -> backStack.add(LiveMatch(matchId)) },
             onSignOut = { container.authRepository.signOut() },
             modifier = Modifier.fillMaxSize(),
           )
@@ -116,8 +119,26 @@ private fun SignedInNav(state: AuthState.SignedIn) {
             currentUser = state.user,
             onExit = { backStack.removeLastOrNull() },
             onImportPlayers = { backStack.add(ImportDraftPlayers(key.matchId)) },
+            onLetsPlay = { isHost -> backStack.add(if (isHost) MatchConfig(key.matchId) else LiveMatch(key.matchId)) },
             modifier = Modifier.fillMaxSize(),
           )
+        }
+        entry<MatchConfig> { key ->
+          MatchConfigScreen(
+            matchId = key.matchId,
+            currentUser = state.user,
+            onBack = { backStack.removeLastOrNull() },
+            // Replace the finished draft + setup with the live match, so
+            // back from the match returns to the Matches list.
+            onStarted = {
+              while (backStack.lastOrNull().let { it is MatchConfig || it is MatchLobby }) backStack.removeLastOrNull()
+              backStack.add(LiveMatch(key.matchId))
+            },
+            modifier = Modifier.fillMaxSize(),
+          )
+        }
+        entry<LiveMatch> { key ->
+          MatchScreen(matchId = key.matchId, currentUser = state.user, onExit = { backStack.removeLastOrNull() }, modifier = Modifier.fillMaxSize())
         }
         entry<ImportDraftPlayers> { key ->
           ImportPlayersScreen(matchId = key.matchId, currentUser = state.user, onDone = { backStack.removeLastOrNull() }, modifier = Modifier.fillMaxSize())

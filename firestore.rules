@@ -217,7 +217,12 @@ service cloud.firestore {
       // watchable without an account.
       allow get: if true;
       allow list: if true;
-      allow create: if isSignedIn() && (role() == 'admin' || role() == 'auctionManager') &&
+      // Broadened from admin/auctionManager-only so a Team Draft host (see
+      // isDraftHost below — any signed-in user, not just admin/
+      // auctionManager) can go straight from "Let's Play" into live
+      // scoring for their own casual match, the same trust boundary
+      // draftMatches already uses.
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.createdBy &&
         request.auth.uid in request.resource.data.scorerIds;
       // Any signed-in user the creator has added to scorerIds can operate the
       // live counter — deliberately not restricted to admin/auctionManager,
@@ -259,7 +264,13 @@ service cloud.firestore {
     match /playerStats/{playerId} {
       allow get: if true;
       allow list: if true;
-      allow write: if isAdmin() || (isSignedIn() && role() == 'auctionManager');
+      // Also writable by a scorer of the completed match the write names in
+      // lastMatchId — the one who records a match's final ball applies it
+      // to career stats, and a Team Draft host isn't necessarily an admin.
+      allow write: if isAdmin() || (isSignedIn() && role() == 'auctionManager') ||
+        (isSignedIn() && request.resource.data.lastMatchId is string &&
+          get(/databases/$(database)/documents/matches/$(request.resource.data.lastMatchId)).data.status == 'completed' &&
+          request.auth.uid in get(/databases/$(database)/documents/matches/$(request.resource.data.lastMatchId)).data.scorerIds);
     }
   }
 }

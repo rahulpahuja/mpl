@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.mplauction.android.data.model.AppUser
 import com.mplauction.android.data.model.DraftMatch
 import com.mplauction.android.data.model.DraftMatchStatus
+import com.mplauction.android.data.model.Match
 import com.mplauction.android.data.repository.DraftMatchRepository
+import com.mplauction.android.data.repository.MatchRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +17,8 @@ import kotlinx.coroutines.launch
 
 data class MatchesListUiState(
   val matches: List<DraftMatch> = emptyList(),
+  // Live-scored matches (started from a finished draft), newest first.
+  val liveMatches: List<Match> = emptyList(),
   val newMatchName: String = "",
   val creating: Boolean = false,
   val joinId: String = "",
@@ -24,15 +28,27 @@ data class MatchesListUiState(
 // Backs the Matches tab: browse draft matches that haven't finished yet
 // (still in the lobby, or mid-draft), create a new one, or jump straight to
 // one by ID. Long-pressing a match you host offers to delete it.
-class MatchesListViewModel(private val repository: DraftMatchRepository, private val currentUser: AppUser) : ViewModel() {
+class MatchesListViewModel(
+  private val repository: DraftMatchRepository,
+  matchRepository: MatchRepository,
+  private val currentUser: AppUser,
+) : ViewModel() {
   private val nameState = MutableStateFlow("")
   private val creatingState = MutableStateFlow(false)
   private val joinIdState = MutableStateFlow("")
   private val errorState = MutableStateFlow<String?>(null)
 
+  private data class Form(val name: String, val creating: Boolean, val joinId: String, val error: String?)
+
+  private val form = combine(nameState, creatingState, joinIdState, errorState, ::Form)
+
   val uiState: StateFlow<MatchesListUiState> =
-    combine(repository.observeOpenMatches(), nameState, creatingState, joinIdState, errorState) { matches, name, creating, joinId, error ->
-      MatchesListUiState(matches.filter { it.status != DraftMatchStatus.complete }, name, creating, joinId, error)
+    combine(repository.observeOpenMatches(), matchRepository.observeRecentMatches(), form) { matches, live, f ->
+      // A finished draft stays listed ("teams ready") until its live match
+      // exists — otherwise the host has no way back to "Let's Play".
+      val started = live.map { it.matchId }.toSet()
+      val open = matches.filter { it.status != DraftMatchStatus.complete || it.matchId !in started }
+      MatchesListUiState(open, live, f.name, f.creating, f.joinId, f.error)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MatchesListUiState())
 
   fun onNameChanged(v: String) { nameState.value = v }

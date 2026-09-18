@@ -102,6 +102,12 @@ enum class MatchStatus {
   abandoned,
 }
 
+// Android-only (no web equivalent yet): the synced coin flip, Match.coinToss.
+enum class CoinSide {
+  heads,
+  tails,
+}
+
 enum class TossDecision {
   bat,
   bowl,

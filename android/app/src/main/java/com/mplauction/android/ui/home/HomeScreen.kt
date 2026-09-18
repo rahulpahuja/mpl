@@ -102,6 +102,7 @@ fun HomeScreen(
   onOpenTeam: (Team) -> Unit,
   onClaimAdmin: () -> Unit,
   onOpenMatch: (String) -> Unit,
+  onOpenLiveMatch: (String) -> Unit,
   onSignOut: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
@@ -179,7 +180,7 @@ fun HomeScreen(
               HomeSection.Players -> PlayersScreen(modifier = Modifier.fillMaxSize())
               HomeSection.Venues -> VenuesScreen(modifier = Modifier.fillMaxSize())
               HomeSection.Tourneys -> TournamentsScreen(currentUserUid = user.uid, modifier = Modifier.fillMaxSize())
-              HomeSection.Matches -> MatchesListScreen(currentUser = user, onOpenMatch = onOpenMatch, modifier = Modifier.fillMaxSize())
+              HomeSection.Matches -> MatchesListScreen(currentUser = user, onOpenMatch = onOpenMatch, onOpenLiveMatch = onOpenLiveMatch, modifier = Modifier.fillMaxSize())
               HomeSection.Profile -> ProfileScreen(user, onSignOut, modifier = Modifier.fillMaxSize())
               HomeSection.Users -> UsersScreen(isAdmin = user.role == UserRole.admin, modifier = Modifier.fillMaxSize())
             }

@@ -27,6 +27,14 @@ import kotlinx.serialization.Serializable
 // Pushed from the lobby's "Import players" button — see ImportPlayersScreen.
 @Serializable data class ImportDraftPlayers(val matchId: String) : NavKey
 
+// The host's "Let's Play" after a draft completes: overs + location, then
+// the match starts (see MatchConfigScreen). matchId is the draft's ID, which
+// the live match reuses as its own.
+@Serializable data class MatchConfig(val matchId: String) : NavKey
+
+// The live match — toss, scoring, scorecard, result (see MatchScreen).
+@Serializable data class LiveMatch(val matchId: String) : NavKey
+
 // Public, no-login destinations — reachable from the signed-out Login
 // screen (see JoinAuctionScreen) and also pushed for a signed-in user
 // without an Auction Manager/team-manager stake in a live auction.

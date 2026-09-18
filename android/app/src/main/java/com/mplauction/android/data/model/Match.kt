@@ -24,6 +24,9 @@ data class Match(
   val teamA: MatchTeamSide = MatchTeamSide(),
   val teamB: MatchTeamSide = MatchTeamSide(),
   val toss: Toss? = null,
+  // Written the moment the scorer calls, before the bat/bowl decision, so
+  // every open device animates the same flip landing on the same side.
+  val coinToss: CoinToss? = null,
   val currentInnings: Long = 1,
   val innings1: InningsState? = null,
   val innings2: InningsState? = null,
@@ -48,6 +51,15 @@ data class MatchTeamSide(
 data class Toss(
   val wonByTeamId: String = "",
   val decision: TossDecision = TossDecision.bat,
+)
+
+data class CoinToss(
+  val callerTeamId: String = "",
+  val call: CoinSide = CoinSide.heads,
+  val outcome: CoinSide = CoinSide.heads,
+  // Epoch millis on the scorer's device; viewers only animate a flip that's
+  // recent, and show a stale one already landed.
+  val flippedAt: Long = 0,
 )
 
 data class DismissalInfo(
@@ -79,6 +91,10 @@ data class BowlerInningsStat(
   val maidens: Long = 0,
   val fours: Long = 0,
   val sixes: Long = 0,
+  // Deliveries, not runs (a wide that runs for 2 more is still one wide).
+  // Android-only; the web scorer's object spread carries them through.
+  val wides: Long = 0,
+  val noBalls: Long = 0,
 )
 
 data class CurrentOverBall(
@@ -165,11 +181,17 @@ data class BallOutcome(
 data class PlayerStats(
   val playerId: String = "",
   val matchesPlayed: Long = 0,
+  val wins: Long = 0,
+  val losses: Long = 0,
+  val ties: Long = 0,
   val batting: BattingCareerStats = BattingCareerStats(),
   val bowling: BowlingCareerStats = BowlingCareerStats(),
   val fielding: FieldingCareerStats = FieldingCareerStats(),
   val wicketKeeping: WicketKeepingCareerStats = WicketKeepingCareerStats(),
   val updatedAt: Timestamp? = null,
+  // The match most recently folded in — firestore.rules checks it to let
+  // that match's scorer (not only an admin) write these stats.
+  val lastMatchId: String? = null,
 )
 
 data class BattingCareerStats(
@@ -179,6 +201,7 @@ data class BattingCareerStats(
   val fours: Long = 0,
   val sixes: Long = 0,
   val notOuts: Long = 0,
+  val ducks: Long = 0,
   val highScore: Long = 0,
   val twentyFives: Long = 0,
   val fifties: Long = 0,

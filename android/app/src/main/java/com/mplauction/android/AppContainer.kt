@@ -5,6 +5,8 @@ import com.mplauction.android.data.repository.AuthRepository
 import com.mplauction.android.data.repository.BootstrapRepository
 import com.mplauction.android.data.repository.DraftMatchRepository
 import com.mplauction.android.data.repository.InviteRepository
+import com.mplauction.android.data.repository.MatchRepository
+import com.mplauction.android.data.repository.PlayerStatsRepository
 import com.mplauction.android.data.repository.TeamRepository
 import com.mplauction.android.data.repository.TournamentRepository
 import com.mplauction.android.data.repository.UserRepository
@@ -25,4 +27,6 @@ class AppContainer {
   val tournamentRepository = TournamentRepository()
   val inviteRepository = InviteRepository()
   val draftMatchRepository = DraftMatchRepository()
+  val playerStatsRepository = PlayerStatsRepository()
+  val matchRepository = MatchRepository(playerStatsRepository)
 }
