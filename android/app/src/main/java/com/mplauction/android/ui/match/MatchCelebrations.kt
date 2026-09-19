@@ -9,6 +9,8 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mplauction.android.data.model.ExtraType
 import com.mplauction.android.ui.common.ConfettiBurst
+import com.mplauction.android.ui.theme.BrandBlue
 import com.mplauction.android.ui.theme.BrandOrange
 import kotlinx.coroutines.delay
 
@@ -43,7 +47,15 @@ sealed interface MatchMoment {
   data object Six : MatchMoment
   data object Wicket : MatchMoment
   data class OverComplete(val inningsNumber: Long, val overNumber: Long) : MatchMoment
+  data class Milestone(val playerName: String, val runs: Long) : MatchMoment
 }
+
+private val MILESTONES = listOf(100L, 50L, 25L)
+
+// The id makes back-to-back identical moments (FOUR then FOUR) distinct;
+// keyed on the moment alone, the overlay's dismiss timer never restarted
+// for the second one and it stayed on screen for good.
+data class QueuedMoment(val id: Long, val moment: MatchMoment)
 
 // Watches Match.lastBall.ballSeq for a transition, like useJustScored.ts —
 // lastBall is denormalized onto the match doc precisely so every viewer,
@@ -51,41 +63,53 @@ sealed interface MatchMoment {
 // is only a baseline, so opening a match mid-game doesn't replay a moment.
 // Undo never bumps ballSeq, so it can't trigger one either.
 @Composable
-fun rememberMatchMoments(state: MatchUiState): Pair<MatchMoment?, () -> Unit> {
-  val queue = remember { mutableStateListOf<MatchMoment>() }
+fun rememberMatchMoments(state: MatchUiState): Pair<QueuedMoment?, () -> Unit> {
+  val queue = remember { mutableStateListOf<QueuedMoment>() }
+  var nextId by remember { mutableLongStateOf(0L) }
+  fun enqueue(moment: MatchMoment) {
+    queue += QueuedMoment(nextId++, moment)
+  }
   var previousSeq by remember { mutableStateOf<Long?>(null) }
-  var initialized by remember { mutableStateOf(false) }
+  // Runs per batter as of the previous snapshot, to spot a 25/50/100 being
+  // crossed. Refreshed on every snapshot (including undo, picks), so it
+  // never holds a stale total.
+  var previousRuns by remember { mutableStateOf<Map<String, Long>?>(null) }
   val match = state.match
-  val seq = match?.lastBall?.ballSeq
 
-  LaunchedEffect(seq) {
+  // Keyed on the whole match, not just ballSeq: a match opened before its
+  // first ball has no ballSeq yet, and keying on it alone left the first
+  // ball as the baseline instead of celebrating it.
+  LaunchedEffect(match) {
     if (match == null) return@LaunchedEffect
-    if (!initialized) {
-      initialized = true
-      previousSeq = seq
-      return@LaunchedEffect
-    }
+    val innings = state.innings
+    val runsNow = innings?.battingStats?.mapValues { it.value.runs }.orEmpty()
+    val baseline = previousRuns
     val last = match.lastBall
-    if (last != null && last.ballSeq != previousSeq) {
+    if (baseline != null && last != null && last.ballSeq != previousSeq) {
       when {
-        last.isWicket -> queue += MatchMoment.Wicket
-        last.isBoundary == 6L -> queue += MatchMoment.Six
-        last.isBoundary == 4L -> queue += MatchMoment.Four
+        last.isWicket -> enqueue(MatchMoment.Wicket)
+        last.isBoundary == 6L -> enqueue(MatchMoment.Six)
+        last.isBoundary == 4L -> enqueue(MatchMoment.Four)
       }
-      val innings = state.innings
+      innings?.battingStats?.values?.forEach { bat ->
+        val before = baseline[bat.playerId] ?: 0L
+        MILESTONES.firstOrNull { before < it && bat.runs >= it }?.let { enqueue(MatchMoment.Milestone(bat.name, it)) }
+      }
       val legal = last.extraType != ExtraType.wide && last.extraType != ExtraType.noBall
       if (legal && innings != null && innings.completedReason == null && innings.legalBallsBowled > 0 && innings.legalBallsBowled % 6 == 0L) {
-        queue += MatchMoment.OverComplete(innings.inningsNumber, innings.legalBallsBowled / 6)
+        enqueue(MatchMoment.OverComplete(innings.inningsNumber, innings.legalBallsBowled / 6))
       }
     }
-    previousSeq = seq
+    previousSeq = last?.ballSeq
+    previousRuns = runsNow
   }
 
   return queue.firstOrNull() to { if (queue.isNotEmpty()) queue.removeAt(0) }
 }
 
 @Composable
-fun MatchMomentOverlay(moment: MatchMoment?, state: MatchUiState, onDone: () -> Unit) {
+fun MatchMomentOverlay(queued: QueuedMoment?, state: MatchUiState, onDone: () -> Unit) {
+  val moment = queued?.moment
   val haptic = LocalHapticFeedback.current
   var shown by remember { mutableStateOf(moment) }
   if (moment != null) shown = moment
@@ -95,16 +119,25 @@ fun MatchMomentOverlay(moment: MatchMoment?, state: MatchUiState, onDone: () -> 
   // count restarts it for back-to-back boundaries.
   var burst by remember { mutableStateOf<Pair<Color, Int>?>(null) }
 
-  LaunchedEffect(moment) {
+  LaunchedEffect(queued?.id) {
     if (moment == null) return@LaunchedEffect
     momentColor(moment)?.let { color -> burst = color to (burst?.second ?: 0) + 1 }
     MatchSounds.play(moment)
-    if (moment is MatchMoment.Wicket || moment is MatchMoment.Six) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-    delay(if (moment is MatchMoment.OverComplete) 2200 else 1500)
+    if (moment is MatchMoment.Wicket || moment is MatchMoment.Six || moment is MatchMoment.Milestone) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+    delay(if (moment is MatchMoment.OverComplete || moment is MatchMoment.Milestone) 2200 else 1500)
     onDone()
   }
 
   Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    // While a moment is up, a dim layer swallows every tap, so a nervous
+    // double/triple tap on the pad can't record extra balls behind it.
+    if (moment != null) {
+      Box(
+        Modifier.fillMaxSize()
+          .background(Color.Black.copy(alpha = 0.35f))
+          .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {},
+      )
+    }
     burst?.let { (color, count) -> ConfettiBurst(Modifier.fillMaxSize(), colors = listOf(color), key = count) }
     AnimatedVisibility(visible = moment != null, enter = fadeIn(tween(150)) + scaleIn(initialScale = 0.5f), exit = fadeOut(tween(200)) + scaleOut(targetScale = 1.2f)) {
       when (val current = shown) {
@@ -112,9 +145,28 @@ fun MatchMomentOverlay(moment: MatchMoment?, state: MatchUiState, onDone: () -> 
         MatchMoment.Six -> MomentText("SIX! 🚀", momentColor(current)!!)
         MatchMoment.Wicket -> MomentText("WICKET! 💥", momentColor(current)!!)
         is MatchMoment.OverComplete -> OverCompleteCard(current, state)
+        is MatchMoment.Milestone -> MilestoneCard(current, momentColor(current)!!)
         null -> Unit
       }
     }
+  }
+}
+
+private fun milestoneTitle(runs: Long) =
+  when (runs) {
+    100L -> "CENTURY! 💯"
+    50L -> "FIFTY! 🏏"
+    else -> "$runs UP! 🏏"
+  }
+
+@Composable
+private fun MilestoneCard(moment: MatchMoment.Milestone, color: Color) {
+  Column(
+    Modifier.clip(MaterialTheme.shapes.extraLarge).background(color.copy(alpha = 0.94f)).padding(horizontal = 28.dp, vertical = 16.dp),
+    horizontalAlignment = Alignment.CenterHorizontally,
+  ) {
+    Text(milestoneTitle(moment.runs), color = Color.White, fontSize = 40.sp, fontWeight = FontWeight.Black)
+    Text(moment.playerName, color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
   }
 }
 
@@ -124,8 +176,11 @@ private fun momentColor(moment: MatchMoment): Color? =
     MatchMoment.Four -> BoundaryGreen
     MatchMoment.Six -> BrandOrange
     MatchMoment.Wicket -> WicketRed
+    is MatchMoment.Milestone -> if (moment.runs >= 50) MilestoneGold else BrandBlue
     is MatchMoment.OverComplete -> null
   }
+
+private val MilestoneGold = Color(0xFFD4A017)
 
 @Composable
 private fun MomentText(text: String, color: Color) {

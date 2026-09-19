@@ -6,6 +6,7 @@ import com.mplauction.android.data.model.AppUser
 import com.mplauction.android.data.model.DraftMatch
 import com.mplauction.android.data.model.DraftMatchStatus
 import com.mplauction.android.data.model.Match
+import com.mplauction.android.data.model.MatchStatus
 import com.mplauction.android.data.repository.DraftMatchRepository
 import com.mplauction.android.data.repository.MatchRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +24,14 @@ data class MatchesListUiState(
   val creating: Boolean = false,
   val joinId: String = "",
   val error: String? = null,
-)
+) {
+  // Toss through innings break is "live"; finished or abandoned is "recent".
+  val activeMatches: List<Match>
+    get() = liveMatches.filter { it.status != MatchStatus.completed && it.status != MatchStatus.abandoned }
+
+  val finishedMatches: List<Match>
+    get() = liveMatches.filter { it.status == MatchStatus.completed || it.status == MatchStatus.abandoned }
+}
 
 // Backs the Matches tab: browse draft matches that haven't finished yet
 // (still in the lobby, or mid-draft), create a new one, or jump straight to

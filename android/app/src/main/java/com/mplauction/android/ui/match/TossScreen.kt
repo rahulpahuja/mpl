@@ -43,12 +43,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mplauction.android.data.MatchRules
 import com.mplauction.android.data.model.CoinSide
 import com.mplauction.android.data.model.TossDecision
-import com.mplauction.android.ui.draft.CaptainCard
+import com.mplauction.android.ui.common.PlayerAvatar
+import com.mplauction.android.ui.draft.DraftPlayer
+import com.mplauction.android.ui.draft.draftTeamColor
 import com.mplauction.android.ui.theme.BrandBlue
 import com.mplauction.android.ui.theme.BrandOrange
 import kotlin.math.PI
@@ -63,8 +66,8 @@ private const val REPLAY_WINDOW_MS = 10_000L
 
 // Share of the animation spent in the air; the rest is the landing bounce.
 private const val AIRBORNE = 0.86f
-private val TOSS_HEIGHT = 170.dp
-private val COIN_SIZE = 116.dp
+private val TOSS_HEIGHT = 120.dp
+private val COIN_SIZE = 96.dp
 
 private val CoinGold = Color(0xFFFACC15)
 private val CoinGoldDark = Color(0xFFCA8A04)
@@ -103,16 +106,18 @@ fun TossScreen(
     landed = true
   }
 
+  // Sized to fit one phone screen: compact captain badges and a shorter toss
+  // arc; the scroll is only a fallback for very short screens.
   Column(
-    modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+    modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
     horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.spacedBy(16.dp),
+    verticalArrangement = Arrangement.spacedBy(10.dp),
   ) {
     Text("TIME FOR THE TOSS", color = MatchTextDim, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-      CaptainCard(captainA, 0)
-      Text("VS", color = Color.White, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
-      CaptainCard(captainB, 1)
+    Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+      CaptainBadge(captainA, 0, Modifier.weight(1f))
+      Text("VS", color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
+      CaptainBadge(captainB, 1, Modifier.weight(1f))
     }
 
     TossedCoin(progress.value, coin?.let { halfTurns(it.flippedAt, it.outcome) } ?: 0)
@@ -150,14 +155,26 @@ fun TossScreen(
 }
 
 @Composable
+private fun CaptainBadge(player: DraftPlayer, teamIndex: Int, modifier: Modifier = Modifier) {
+  val color = draftTeamColor(teamIndex)
+  Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+    Box(Modifier.size(64.dp).clip(CircleShape).border(2.dp, color, CircleShape).padding(3.dp)) {
+      PlayerAvatar(photoURL = player.photoURL, avatarId = player.avatarId, name = player.name, size = 58.dp)
+    }
+    Text(player.name, color = Color.White, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
+    Text("CAPTAIN ${teamIndex + 1}", color = color, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+  }
+}
+
+@Composable
 private fun TossResult(outcome: CoinSide, callerName: String, call: CoinSide, winnerName: String, canDecide: Boolean, busy: Boolean, onDecide: (TossDecision) -> Unit) {
   val appear = remember { MutableTransitionState(false).apply { targetState = true } }
   AnimatedVisibility(appear, enter = fadeIn(tween(250)) + scaleIn(initialScale = 0.6f)) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-      Text(outcome.name.uppercase(), color = CoinGold, fontSize = 40.sp, fontWeight = FontWeight.Black)
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+      Text(outcome.name.uppercase(), color = CoinGold, fontSize = 32.sp, fontWeight = FontWeight.Black)
       Text("$callerName called ${call.name.uppercase()}", color = MatchTextDim)
       Text("$winnerName wins the toss!", color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-      Spacer(Modifier.height(8.dp))
+      Spacer(Modifier.height(4.dp))
       if (!canDecide) {
         Text("Waiting for $winnerName to choose…", color = MatchTextDim)
         return@Column
@@ -230,7 +247,7 @@ private fun TossedCoin(progress: Float, halfTurns: Int) {
       Text(
         if (showingTails) "T" else "H",
         color = Color(0xFF713F12),
-        fontSize = 48.sp,
+        fontSize = 40.sp,
         fontWeight = FontWeight.Black,
         modifier = Modifier.graphicsLayer { rotationX = if (showingTails) 180f else 0f },
       )

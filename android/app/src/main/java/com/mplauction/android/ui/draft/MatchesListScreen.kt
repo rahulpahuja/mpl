@@ -6,25 +6,36 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -44,6 +55,9 @@ import com.mplauction.android.data.model.MatchStatus
 import com.mplauction.android.ui.theme.BrandBlue
 import com.mplauction.android.ui.theme.BrandMint
 import com.mplauction.android.ui.theme.BrandOrange
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 // One colour per stage of a match's life, so the list reads at a glance:
 // blue/violet/amber while drafting, mint once teams are ready, red while
@@ -85,70 +99,44 @@ fun MatchesListScreen(currentUser: AppUser, onOpenMatch: (String) -> Unit, onOpe
     viewModel(key = "matches-list") { MatchesListViewModel(container.draftMatchRepository, container.matchRepository, currentUser) }
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   var pendingDelete by remember { mutableStateOf<DraftMatch?>(null) }
+  var tab by rememberSaveable { mutableStateOf(MatchesTab.OPEN) }
+  var starting by remember { mutableStateOf(false) }
 
-  LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), modifier = modifier) {
-    item {
-      Card(modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-          Text("Start a Team Draft", style = MaterialTheme.typography.titleSmall)
-          Text(
-            "Create a match, pick two Captains, and draft the rest live with anyone who joins.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-          )
-          OutlinedTextField(
-            value = uiState.newMatchName,
-            onValueChange = viewModel::onNameChanged,
-            label = { Text("Match name") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-          )
-          Button(
-            onClick = { viewModel.createMatch(onOpenMatch) },
-            enabled = !uiState.creating && uiState.newMatchName.isNotBlank(),
-            modifier = Modifier.fillMaxWidth(),
-          ) {
-            Text(if (uiState.creating) "Creating..." else "Create match")
-          }
+  Box(modifier) {
+    Column(Modifier.fillMaxSize()) {
+      PrimaryTabRow(selectedTabIndex = tab.ordinal) {
+        MatchesTab.entries.forEach { t ->
+          val count =
+            when (t) {
+              MatchesTab.LIVE -> uiState.activeMatches.size
+              MatchesTab.RECENT -> uiState.finishedMatches.size
+              MatchesTab.OPEN -> uiState.matches.size
+            }
+          Tab(selected = tab == t, onClick = { tab = t }, text = { Text(if (count > 0) "${t.title} ($count)" else t.title) })
         }
       }
-    }
-
-    if (uiState.liveMatches.isNotEmpty()) {
-      item { Text("Live & recent matches", style = MaterialTheme.typography.titleSmall) }
-      items(uiState.liveMatches, key = { "live-${it.matchId}" }) { match -> LiveMatchRow(match, onOpen = { onOpenLiveMatch(match.matchId) }) }
-    }
-
-    item { Text("Open matches", style = MaterialTheme.typography.titleSmall) }
-    items(uiState.matches, key = { it.matchId }) { match ->
-      MatchRow(
-        match = match,
-        isHost = match.hostUid == currentUser.uid,
-        onOpen = { onOpenMatch(match.matchId) },
-        onLongPressDelete = { pendingDelete = match },
-      )
-    }
-    if (uiState.matches.isEmpty()) item { Text("No matches are open right now — create one above.", style = MaterialTheme.typography.bodyMedium) }
-
-    item {
-      Card(modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-          Text("Join by match ID", style = MaterialTheme.typography.titleSmall)
-          OutlinedTextField(
-            value = uiState.joinId,
-            onValueChange = viewModel::onJoinIdChanged,
-            label = { Text("Match ID, e.g. A1B2C3") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-          )
-          Button(onClick = { onOpenMatch(uiState.joinId.trim()) }, enabled = uiState.joinId.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
-            Text("Join")
+      // Bottom padding keeps the last row clear of the + button.
+      LazyColumn(contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp), verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxSize()) {
+        when (tab) {
+          MatchesTab.LIVE -> {
+            items(uiState.activeMatches, key = { it.matchId }) { match -> LiveMatchRow(match, onOpen = { onOpenLiveMatch(match.matchId) }) }
+            if (uiState.activeMatches.isEmpty()) item { EmptyTabText("No live matches right now — tap + to start one.") }
           }
+          MatchesTab.RECENT -> {
+            items(uiState.finishedMatches, key = { it.matchId }) { match -> LiveMatchRow(match, onOpen = { onOpenLiveMatch(match.matchId) }) }
+            if (uiState.finishedMatches.isEmpty()) item { EmptyTabText("No finished matches yet.") }
+          }
+          MatchesTab.OPEN -> openTabItems(uiState, viewModel, currentUser, onOpenMatch, onDelete = { pendingDelete = it })
         }
+        uiState.error?.let { error -> item { Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) } }
       }
     }
-
-    uiState.error?.let { error -> item { Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) } }
+    FloatingActionButton(
+      onClick = { viewModel.onNameChanged(defaultMatchName()); starting = true },
+      modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+    ) {
+      Icon(Icons.Filled.Add, contentDescription = "Start a match")
+    }
   }
 
   pendingDelete?.let { match ->
@@ -161,6 +149,82 @@ fun MatchesListScreen(currentUser: AppUser, onOpenMatch: (String) -> Unit, onOpe
       },
       dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text("Cancel") } },
     )
+  }
+
+  // Pre-filled name, so starting a match is + then Start.
+  if (starting) {
+    AlertDialog(
+      onDismissRequest = { if (!uiState.creating) starting = false },
+      title = { Text("Start a match") },
+      text = {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+          Text("Pick two Captains and draft the rest live with anyone who joins.", style = MaterialTheme.typography.bodySmall)
+          OutlinedTextField(
+            value = uiState.newMatchName,
+            onValueChange = viewModel::onNameChanged,
+            label = { Text("Match name") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+          )
+        }
+      },
+      confirmButton = {
+        TextButton(
+          onClick = { viewModel.createMatch { id -> starting = false; onOpenMatch(id) } },
+          enabled = !uiState.creating && uiState.newMatchName.isNotBlank(),
+        ) {
+          Text(if (uiState.creating) "Starting..." else "Start")
+        }
+      },
+      dismissButton = { TextButton(onClick = { starting = false }, enabled = !uiState.creating) { Text("Cancel") } },
+    )
+  }
+}
+
+private fun defaultMatchName(): String = "Match · " + SimpleDateFormat("d MMM, h:mm a", Locale.getDefault()).format(Date())
+
+private enum class MatchesTab(val title: String) { OPEN("Open"), LIVE("Live"), RECENT("Recent") }
+
+@Composable
+private fun EmptyTabText(text: String) {
+  Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+// Drafts still forming teams, plus joining one by its ID (starting a new
+// one is the + button).
+private fun LazyListScope.openTabItems(
+  uiState: MatchesListUiState,
+  viewModel: MatchesListViewModel,
+  currentUser: AppUser,
+  onOpenMatch: (String) -> Unit,
+  onDelete: (DraftMatch) -> Unit,
+) {
+  items(uiState.matches, key = { it.matchId }) { match ->
+    MatchRow(
+      match = match,
+      isHost = match.hostUid == currentUser.uid,
+      onOpen = { onOpenMatch(match.matchId) },
+      onLongPressDelete = { onDelete(match) },
+    )
+  }
+  if (uiState.matches.isEmpty()) item { EmptyTabText("No matches are open right now — tap + to start one.") }
+
+  item {
+    Card(modifier = Modifier.fillMaxWidth()) {
+      Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Join by match ID", style = MaterialTheme.typography.titleSmall)
+        OutlinedTextField(
+          value = uiState.joinId,
+          onValueChange = viewModel::onJoinIdChanged,
+          label = { Text("Match ID, e.g. A1B2C3") },
+          singleLine = true,
+          modifier = Modifier.fillMaxWidth(),
+        )
+        Button(onClick = { onOpenMatch(uiState.joinId.trim()) }, enabled = uiState.joinId.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
+          Text("Join")
+        }
+      }
+    }
   }
 }
 

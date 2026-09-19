@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.mplauction.android.data.model.AppUser
 import com.mplauction.android.data.model.DraftMatch
 import com.mplauction.android.data.model.DraftMatchPlayer
-import com.mplauction.android.data.model.UserRole
 import com.mplauction.android.data.repository.DraftMatchRepository
 import com.mplauction.android.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,7 +55,9 @@ class DraftViewModel(
     val rosterIds = match.players.map { it.playerId }.toSet()
     val query = registered.search.trim().lowercase()
     val candidates =
-      users.filter { it.role == UserRole.player && it.uid !in rosterIds }
+      // Anyone signed in can be added to a casual match, not only the
+      // Player role (which is about being up for auction).
+      users.filter { it.uid !in rosterIds }
         .filter { u ->
           query.isEmpty() ||
             u.displayName.lowercase().contains(query) ||

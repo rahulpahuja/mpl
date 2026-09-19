@@ -24,12 +24,24 @@ import kotlinx.coroutines.launch
 object MatchSounds {
   private const val RATE = 22_050
   private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-  private val cache = mutableMapOf<MatchMoment, ShortArray>()
+  private enum class Kind { FOUR, SIX, WICKET }
+
+  private val cache = mutableMapOf<Kind, ShortArray>()
+
+  // A 25 gets the FOUR sound; a 50 or 100 the bigger SIX roar.
+  private fun kindFor(moment: MatchMoment): Kind? =
+    when (moment) {
+      MatchMoment.Four -> Kind.FOUR
+      MatchMoment.Six -> Kind.SIX
+      MatchMoment.Wicket -> Kind.WICKET
+      is MatchMoment.Milestone -> if (moment.runs >= 50) Kind.SIX else Kind.FOUR
+      is MatchMoment.OverComplete -> null
+    }
 
   fun play(moment: MatchMoment) {
-    if (moment is MatchMoment.OverComplete) return
+    val kind = kindFor(moment) ?: return
     scope.launch {
-      val pcm = synchronized(cache) { cache.getOrPut(moment) { render(moment) } }
+      val pcm = synchronized(cache) { cache.getOrPut(kind) { render(kind) } }
       val track =
         AudioTrack.Builder()
           .setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
@@ -46,27 +58,26 @@ object MatchSounds {
     }
   }
 
-  private fun render(moment: MatchMoment): ShortArray {
+  private fun render(kind: Kind): ShortArray {
     val out = FloatArray((RATE * 1.6).toInt())
-    when (moment) {
-      MatchMoment.Wicket -> {
+    when (kind) {
+      Kind.WICKET -> {
         noiseBurst(out, 0.0, 0.05, 0.18, 900.0)
         tone(out, 160.0, 0.04, 0.3, Wave.SAW, 0.12)
         tone(out, 85.0, 0.08, 0.34, Wave.SINE, 0.14)
         crowdRoar(out, 0.28, 1.3)
       }
-      MatchMoment.Six -> {
+      Kind.SIX -> {
         noiseBurst(out, 0.0, 0.05, 0.2, 2200.0)
         tone(out, 880.0, 0.02, 0.4, Wave.SINE, 0.14)
         tone(out, 1318.0, 0.1, 0.45, Wave.SINE, 0.1)
         crowdRoar(out, 0.34, 1.5)
       }
-      MatchMoment.Four -> {
+      Kind.FOUR -> {
         noiseBurst(out, 0.0, 0.045, 0.17, 1800.0)
         tone(out, 660.0, 0.02, 0.28, Wave.TRIANGLE, 0.1)
         crowdRoar(out, 0.22, 1.0)
       }
-      is MatchMoment.OverComplete -> Unit
     }
     return ShortArray(out.size) { i -> (out[i].coerceIn(-1f, 1f) * Short.MAX_VALUE).toInt().toShort() }
   }

@@ -3,8 +3,6 @@ package com.mplauction.android.ui.navigation
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
-@Serializable data object Login : NavKey
-
 @Serializable data object ClaimAdmin : NavKey
 
 @Serializable data object Home : NavKey
@@ -35,9 +33,8 @@ import kotlinx.serialization.Serializable
 // The live match — toss, scoring, scorecard, result (see MatchScreen).
 @Serializable data class LiveMatch(val matchId: String) : NavKey
 
-// Public, no-login destinations — reachable from the signed-out Login
-// screen (see JoinAuctionScreen) and also pushed for a signed-in user
-// without an Auction Manager/team-manager stake in a live auction.
+// Read-only auction viewing, pushed for a signed-in user without an
+// Auction Manager/team-manager stake in a live auction.
 @Serializable data object Watch : NavKey
 
 @Serializable data class ViewerFeed(val auctionId: String, val name: String) : NavKey

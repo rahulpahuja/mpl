@@ -73,7 +73,7 @@ fun ImportPlayersScreen(matchId: String, currentUser: AppUser, onDone: () -> Uni
         .padding(16.dp),
     ) {
       Text(
-        "Search users with the Player role who aren't on this roster yet, by name, email, phone, or ID.",
+        "Search anyone signed in to Baato who isn't on this roster yet, by name, email, phone, or user code.",
         color = Color.White.copy(alpha = 0.6f),
         style = MaterialTheme.typography.bodyMedium,
       )

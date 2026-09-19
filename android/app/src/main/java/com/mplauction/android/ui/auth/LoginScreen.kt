@@ -16,7 +16,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -31,7 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mplauction.android.appContainer
 
 @Composable
-fun LoginScreen(onWatch: () -> Unit, modifier: Modifier = Modifier) {
+fun LoginScreen(modifier: Modifier = Modifier) {
   val context = LocalContext.current
   val container = context.appContainer()
   val viewModel: LoginViewModel = viewModel { LoginViewModel(container.authRepository) }
@@ -51,8 +50,8 @@ fun LoginScreen(onWatch: () -> Unit, modifier: Modifier = Modifier) {
       )
       Text("Auction Manager", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
       Text(
-        "Sign in with Google to get an account. An Admin then assigns you as a Captain or " +
-          "Auction Manager — you don't need an account at all just to watch as a Viewer.",
+        "Sign in with Google to continue. Your account lets captains and hosts find you by " +
+          "name, phone, or email and add you to a match.",
         style = MaterialTheme.typography.bodyMedium,
         textAlign = TextAlign.Center,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -68,7 +67,6 @@ fun LoginScreen(onWatch: () -> Unit, modifier: Modifier = Modifier) {
         Text(if (uiState.loading) "Signing in..." else "Continue with Google")
       }
       uiState.error?.let { Text(it, color = Color(0xFFDC2626), style = MaterialTheme.typography.bodySmall) }
-      TextButton(onClick = onWatch, modifier = Modifier.padding(top = 8.dp)) { Text("Join an auction as a viewer instead") }
     }
   }
 }

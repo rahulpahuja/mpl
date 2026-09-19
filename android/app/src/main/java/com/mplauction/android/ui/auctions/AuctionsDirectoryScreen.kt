@@ -5,6 +5,8 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -41,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mplauction.android.appContainer
@@ -156,10 +159,23 @@ private fun KpiRow(auctions: List<Auction>) {
 
 @Composable
 private fun Kpi(label: String, value: Int, containerColor: Color, contentColor: Color, modifier: Modifier = Modifier) {
+  // Four cards share one row, so a label like "Players pooled" can't fit at
+  // a fixed size on a narrow phone. Each line shrinks to fit its card
+  // instead of wrapping or cropping.
   Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = containerColor, contentColor = contentColor)) {
-    Column(Modifier.padding(12.dp)) {
-      Text(label, style = MaterialTheme.typography.labelSmall)
-      Text("$value", style = MaterialTheme.typography.headlineSmall)
+    Column(Modifier.padding(horizontal = 8.dp, vertical = 12.dp)) {
+      BasicText(
+        label,
+        style = MaterialTheme.typography.labelSmall.copy(color = contentColor),
+        maxLines = 1,
+        autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = MaterialTheme.typography.labelSmall.fontSize),
+      )
+      BasicText(
+        "$value",
+        style = MaterialTheme.typography.headlineSmall.copy(color = contentColor),
+        maxLines = 1,
+        autoSize = TextAutoSize.StepBased(minFontSize = 12.sp, maxFontSize = MaterialTheme.typography.headlineSmall.fontSize),
+      )
     }
   }
 }

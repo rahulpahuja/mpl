@@ -1,6 +1,11 @@
 package com.mplauction.android.data.model
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.PropertyName
+
+// Every `isX` property carries @get:PropertyName("isX"): without it
+// Firestore's bean mapper strips the prefix (writes "wicket", not
+// "isWicket") and then can't read the value back — it silently stays false.
 
 // matches/{matchId} — mirrors Match in src/types/index.ts. Model only in
 // this pass; the live scorer/viewer UI and lib/matches.ts-equivalent
@@ -78,7 +83,7 @@ data class BatsmanInningsStat(
   val balls: Long = 0,
   val fours: Long = 0,
   val sixes: Long = 0,
-  val isOut: Boolean = false,
+  @get:PropertyName("isOut") val isOut: Boolean = false,
   val dismissal: DismissalInfo? = null,
 )
 
@@ -100,7 +105,7 @@ data class BowlerInningsStat(
 data class CurrentOverBall(
   val runs: Long = 0,
   val extraType: ExtraType? = null,
-  val isWicket: Boolean = false,
+  @get:PropertyName("isWicket") val isWicket: Boolean = false,
 )
 
 data class FallOfWicket(
@@ -131,7 +136,7 @@ data class InningsState(
   val nonStrikerId: String? = null,
   val currentBowlerId: String? = null,
   val lastOverBowlerId: String? = null,
-  val isFreeHit: Boolean = false,
+  @get:PropertyName("isFreeHit") val isFreeHit: Boolean = false,
   val battingStats: Map<String, BatsmanInningsStat> = emptyMap(),
   val bowlingStats: Map<String, BowlerInningsStat> = emptyMap(),
   val fallOfWickets: List<FallOfWicket> = emptyList(),
@@ -143,8 +148,8 @@ data class InningsState(
 data class LastBall(
   val runs: Long = 0,
   val extraType: ExtraType? = null,
-  val isWicket: Boolean = false,
-  val isBoundary: Long? = null,
+  @get:PropertyName("isWicket") val isWicket: Boolean = false,
+  @get:PropertyName("isBoundary") val isBoundary: Long? = null,
   val ballSeq: Long = 0,
 )
 
@@ -167,11 +172,11 @@ data class BallOutcome(
   val runs: Long = 0,
   val extraType: ExtraType? = null,
   val extraRuns: Long = 0,
-  val isWicket: Boolean = false,
+  @get:PropertyName("isWicket") val isWicket: Boolean = false,
   val wicketType: WicketType? = null,
   val dismissedPlayerId: String? = null,
   val fielderId: String? = null,
-  val isFreeHit: Boolean = false,
+  @get:PropertyName("isFreeHit") val isFreeHit: Boolean = false,
   val scoredBy: String = "",
   val timestamp: Timestamp? = null,
 )

@@ -41,7 +41,9 @@ fun MplNavigation() {
 
   when (val state = authState) {
     AuthState.Loading -> LoadingScreen()
-    AuthState.SignedOut -> SignedOutNav()
+    // Everyone signs in with Google — no anonymous path — so every person
+    // has an account that can be found and added to a match.
+    AuthState.SignedOut -> LoginScreen(modifier = Modifier.fillMaxSize())
     is AuthState.SignedIn -> SignedInNav(state)
   }
 }
@@ -51,34 +53,6 @@ private fun LoadingScreen() {
   Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
 }
 
-// No auth required for Watch/ViewerFeed — mirrors the web app's public
-// JoinAuction.tsx / ViewerFeed.tsx routes, reachable without signing in.
-@Composable
-private fun SignedOutNav() {
-  val backStack = rememberNavBackStack(Login)
-  NavDisplay(
-    backStack = backStack,
-    onBack = { backStack.removeLastOrNull() },
-    entryProvider =
-      entryProvider {
-        entry<Login> { LoginScreen(onWatch = { backStack.add(Watch) }, modifier = Modifier.fillMaxSize()) }
-        entry<Watch> {
-          DetailScaffold(title = "Join an auction", onBack = { backStack.removeLastOrNull() }) { modifier ->
-            JoinAuctionScreen(
-              onJoin = { auction -> backStack.add(ViewerFeed(auction.auctionId, auction.name)) },
-              onJoinById = { id -> backStack.add(ViewerFeed(id, "")) },
-              modifier = modifier.fillMaxSize(),
-            )
-          }
-        }
-        entry<ViewerFeed> { key ->
-          DetailScaffold(title = key.name.ifBlank { "Live auction" }, onBack = { backStack.removeLastOrNull() }) { modifier ->
-            ViewerFeedScreen(auctionId = key.auctionId, currentUserUid = null, modifier = modifier.fillMaxSize())
-          }
-        }
-      },
-  )
-}
 
 @Composable
 private fun SignedInNav(state: AuthState.SignedIn) {

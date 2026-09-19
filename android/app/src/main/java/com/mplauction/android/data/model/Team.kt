@@ -1,6 +1,7 @@
 package com.mplauction.android.data.model
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.PropertyName
 
 // teams/{teamId} — the global team registry, mirrors Team in
 // src/types/index.ts. Not yet wired to a screen in this pass — a later slice
@@ -22,7 +23,7 @@ data class Team(
 data class RosterPlayer(
   val playerId: String = "",
   val name: String = "",
-  val isRegisteredUser: Boolean = false,
+  @get:PropertyName("isRegisteredUser") val isRegisteredUser: Boolean = false,
   val playingRole: PlayingRole? = null,
   val battingHandedness: Handedness? = null,
   val bowlingHandedness: Handedness? = null,
