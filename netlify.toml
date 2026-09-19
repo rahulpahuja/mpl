@@ -2,6 +2,12 @@
   command = "npm run build"
   publish = "dist"
 
+# Firebase client config is public by design (it ships in every page bundle,
+# and the Android app's google-services.json carries the same values), so
+# Netlify's secret scanner shouldn't fail the build on these keys.
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "VITE_FIREBASE_MESSAGING_SENDER_ID,VITE_FIREBASE_PROJECT_ID,VITE_FIREBASE_STORAGE_BUCKET"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
