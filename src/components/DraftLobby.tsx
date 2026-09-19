@@ -14,8 +14,6 @@ import { DraftPlayerCard } from './DraftCards'
 import type { DraftRun } from './DraftCards'
 import type { AppUser, DraftMatch } from '../types'
 
-const MAX_SEARCH_RESULTS = 20
-
 // Rendered only for the host, so only they pay for the users-collection
 // listener. Anyone signed in can be added to a casual match, not only the
 // Player role (which is about being up for auction).
@@ -34,12 +32,11 @@ function ImportPlayers({ match, run }: { match: DraftMatch; run: DraftRun }) {
         u.phone?.includes(q) ||
         u.userCode?.toLowerCase().includes(q),
     )
-    .slice(0, MAX_SEARCH_RESULTS)
 
   return (
     <div className="glass-card p-4">
       <div className="relative z-[3] space-y-2">
-        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Import players</p>
+        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Import players ({candidates.length})</p>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -47,7 +44,7 @@ function ImportPlayers({ match, run }: { match: DraftMatch; run: DraftRun }) {
           aria-label="Search players"
           className="input-glass w-full rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
         />
-        <ul className="max-h-64 space-y-1 overflow-y-auto">
+        <ul className="max-h-96 space-y-1 overflow-y-auto">
           {candidates.map((u) => (
             <li key={u.uid} className="flex items-center gap-2 rounded-lg surface-inset px-3 py-2">
               <Avatar name={u.displayName} photoURL={u.photoURL} avatarId={u.avatarId} filenPhotoId={u.filenPhotoId} size={7} />
