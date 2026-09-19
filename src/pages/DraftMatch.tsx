@@ -65,7 +65,7 @@ export function DraftMatch() {
         {match.status === 'lobby' && <DraftLobby match={match} user={user} isHost={isHost} run={run} />}
         {match.status === 'captainReveal' && <DraftCaptainReveal match={match} />}
         {match.status === 'drafting' && <DraftBoard match={match} canPick={canPick} run={run} />}
-        {match.status === 'complete' && <DraftTeamsReady match={match} isHost={isHost} />}
+        {match.status === 'complete' && <DraftTeamsReady match={match} />}
       </div>
     </Layout>
   )
