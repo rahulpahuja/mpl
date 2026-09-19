@@ -1,4 +1,18 @@
-import { Timestamp, arrayUnion, deleteDoc, doc, getDoc, runTransaction, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
+import {
+  Timestamp,
+  arrayUnion,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  runTransaction,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  where,
+} from 'firebase/firestore'
 import type { Transaction } from 'firebase/firestore'
 import { db } from './firebase'
 import { setPlayingXI } from './matches'
@@ -48,19 +62,25 @@ async function transact(matchId: string, mutate: (tx: Transaction, match: DraftM
   })
 }
 
+async function listPlayerUsers(): Promise<AppUser[]> {
+  const snap = await getDocs(query(collection(db, 'users'), where('role', '==', 'player')))
+  return snap.docs.map((d) => d.data() as AppUser)
+}
+
 // The host joins their own match immediately — the common case is hosting
-// your own pickup game. From a match's setup page, the draft is a pool the
-// organiser imports players into for dividing that match's sides; they
-// aren't necessarily playing, so they aren't added to the roster.
+// your own pickup game. A pool opened from a match's setup page also starts
+// with every registered Player already in it (the host prunes or imports
+// more from the lobby).
 export async function createDraftMatch(name: string, host: AppUser, linkedMatchId: string | null = null): Promise<string> {
   const matchId = generateShortId()
+  const others = linkedMatchId ? (await listPlayerUsers()).filter((u) => u.uid !== host.uid) : []
   const match: Omit<DraftMatch, 'createdAt'> = {
     matchId,
     name,
     hostUid: host.uid,
     hostName: host.displayName,
     status: 'lobby',
-    players: linkedMatchId ? [] : [playerFromUser(host)],
+    players: [host, ...others].map(playerFromUser),
     joinedUids: [host.uid],
     captainIds: [],
     teams: [],
