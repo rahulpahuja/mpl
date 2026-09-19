@@ -9,6 +9,19 @@ export function isDarkHour(date = new Date()): boolean {
   return hour >= DARK_FROM_HOUR || hour < DARK_UNTIL_HOUR
 }
 
+// Pages that are always dark (the Team Draft screens) hold this while
+// mounted, so the minute-by-minute re-apply doesn't flip them back to light.
+let forcedDarkHolders = 0
+
 export function applyTimeBasedTheme() {
-  document.documentElement.classList.toggle('dark', isDarkHour())
+  document.documentElement.classList.toggle('dark', forcedDarkHolders > 0 || isDarkHour())
+}
+
+export function forceDarkTheme(): () => void {
+  forcedDarkHolders++
+  applyTimeBasedTheme()
+  return () => {
+    forcedDarkHolders--
+    applyTimeBasedTheme()
+  }
 }

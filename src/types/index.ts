@@ -585,3 +585,61 @@ export interface Venue {
   retired?: boolean
   retiredAt?: Timestamp | null
 }
+
+// draftMatches/{matchId} — a host-run "pick two captains, draft the rest"
+// Team Draft session, shared with the Android app (see its DraftMatch.kt —
+// both clients read and write the same document shape). Any signed-in user
+// can host one; unlike Match, it isn't gated to admin/auctionManager.
+export type DraftMatchStatus = 'lobby' | 'captainReveal' | 'drafting' | 'complete'
+
+export interface DraftMatchPlayer {
+  playerId: string
+  name: string
+  // Set only for a real account (joined themselves, or a registered user the
+  // host added by search) — null for someone typed in with no account.
+  uid?: string | null
+  photoURL?: string | null
+  avatarId?: string | null
+  phone?: string | null
+  email?: string | null
+  role?: PlayingRole | null
+}
+
+export interface DraftMatchTeam {
+  captainId: string
+  name: string
+  // Includes captainId as its first entry.
+  playerIds: string[]
+}
+
+export interface DraftMatchPick {
+  playerId: string
+  teamIndex: number
+  auto: boolean
+  // Epoch millis — doubles as a change token for the "X joins Team Y" toast.
+  at: number
+}
+
+export interface DraftMatch {
+  matchId: string
+  name: string
+  hostUid: string
+  hostName: string
+  createdAt: Timestamp | null
+  status: DraftMatchStatus
+  players: DraftMatchPlayer[]
+  // uids of real accounts that joined — the set firestore.rules'
+  // isJoiningDraftMatch lets a caller append themselves to.
+  joinedUids: string[]
+  // 0, 1, or 2 player ids.
+  captainIds: string[]
+  teams: DraftMatchTeam[]
+  // Undrafted player ids.
+  pool: string[]
+  turnIndex: number
+  turnSeconds: number
+  // Shared pick deadline: every client derives its own countdown from this,
+  // like Auction.timerEndsAt.
+  timerEndsAt: Timestamp | null
+  lastPick: DraftMatchPick | null
+}

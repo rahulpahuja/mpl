@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { applyTimeBasedTheme } from '../lib/timeBasedTheme'
+import { applyTimeBasedTheme, forceDarkTheme } from '../lib/timeBasedTheme'
 
 // main.tsx applies the theme once before the initial render; this keeps it
 // current for however long the tab stays open, so crossing 6pm/6am flips the
@@ -9,4 +9,9 @@ export function useTimeBasedTheme() {
     const id = setInterval(applyTimeBasedTheme, 60_000)
     return () => clearInterval(id)
   }, [])
+}
+
+// Keeps the app dark for as long as the calling page is mounted.
+export function useForcedDarkTheme() {
+  useEffect(() => forceDarkTheme(), [])
 }

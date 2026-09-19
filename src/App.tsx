@@ -11,6 +11,7 @@ import { lazyWithRetry } from './lib/lazyWithRetry'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
 import { Sports } from './pages/Sports'
+import type { UserRole } from './types'
 
 // Every route below is role- or flow-specific — a Team Manager never needs the
 // Admin dashboard's code, a Viewer never needs the bidding page, etc. Lazy
@@ -57,9 +58,14 @@ const AdminTournaments = lazyWithRetry(() =>
 const MatchSetup = lazyWithRetry(() => import('./pages/MatchSetup').then((m) => ({ default: m.MatchSetup })))
 const MatchScorer = lazyWithRetry(() => import('./pages/MatchScorer').then((m) => ({ default: m.MatchScorer })))
 const MatchViewer = lazyWithRetry(() => import('./pages/MatchViewer').then((m) => ({ default: m.MatchViewer })))
+const DraftMatches = lazyWithRetry(() => import('./pages/DraftMatches').then((m) => ({ default: m.DraftMatches })))
+const DraftMatch = lazyWithRetry(() => import('./pages/DraftMatch').then((m) => ({ default: m.DraftMatch })))
 const MatchScorecard = lazyWithRetry(() =>
   import('./pages/MatchScorecard').then((m) => ({ default: m.MatchScorecard })),
 )
+
+// Team Draft is open to anyone signed in, whatever their role.
+const ALL_ROLES: UserRole[] = ['admin', 'auctionManager', 'manager', 'player', 'viewer']
 
 export default function App() {
   useTimeBasedTheme()
@@ -84,6 +90,22 @@ export default function App() {
             <Route path="/matches/:matchId" element={<MatchScorecard />} />
             <Route path="/score/:matchId" element={<MatchScorer />} />
 
+            <Route
+              path="/draft"
+              element={
+                <ProtectedRoute roles={ALL_ROLES}>
+                  <DraftMatches />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/draft/:matchId"
+              element={
+                <ProtectedRoute roles={ALL_ROLES}>
+                  <DraftMatch />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/admin"
               element={

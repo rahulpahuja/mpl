@@ -27,6 +27,7 @@ export const DRAWER_GROUPS = ['Main', 'Account'] as const
 // to be added here once.
 export const NAV_DESTINATIONS: NavDestination[] = [
   { to: '/home', label: 'Home', section: 'drawer', chord: 'g h', icon: 'home', group: 'Main' },
+  { to: '/draft', label: 'Team Draft', section: 'drawer', chord: 'g r', icon: 'diversity_3', group: 'Main' },
   { to: '/settings', label: 'Settings', roles: ['admin'], section: 'drawer', chord: 'g s', icon: 'settings', group: 'Main' },
   { to: '/admin/users', label: 'Users', roles: ['admin', 'auctionManager'], section: 'drawer', chord: 'g u', icon: 'group', group: 'Main' },
   { to: '/admin/venues', label: 'Venues', roles: ['admin', 'auctionManager'], section: 'drawer', chord: 'g v', icon: 'stadium', group: 'Main' },

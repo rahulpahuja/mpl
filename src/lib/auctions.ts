@@ -18,6 +18,7 @@ import {
 import { db } from './firebase'
 import { assertUnsoldAssignment, assertValidBid, computeCommonPurseUpdate } from './auctionRules'
 import { DEFAULT_SPORT_ID } from './sports'
+import { generateShortId } from './shortId'
 import type { AuctionLocationFields } from './sportLocationFilter'
 import type {
   Auction,
@@ -41,10 +42,6 @@ function bidsRef(auctionId: string, playerId: string) {
 
 function teamRef(auctionId: string, teamId: string) {
   return doc(db, 'auctions', auctionId, 'teams', teamId)
-}
-
-function generateAuctionId(): string {
-  return Math.random().toString(36).slice(2, 8).toUpperCase()
 }
 
 // Players grouped into one auction lot via createCombo share a comboId (see
@@ -76,7 +73,7 @@ export async function createAuction(
   bidIncrement = 10,
   opts: { sport?: string; location?: AuctionLocationFields } = {},
 ): Promise<string> {
-  const auctionId = generateAuctionId()
+  const auctionId = generateShortId()
   const auction: Omit<Auction, 'createdAt' | 'startTime'> = {
     auctionId,
     name,
@@ -1066,7 +1063,7 @@ export async function duplicateAuction(auctionId: string): Promise<string> {
   if (!snap.exists()) throw new Error('Auction not found')
   const source = snap.data() as Auction
 
-  const newAuctionId = generateAuctionId()
+  const newAuctionId = generateShortId()
   const players: Player[] = source.players.map((p) => ({
     ...p,
     currentBid: 0,
