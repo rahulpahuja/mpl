@@ -6,7 +6,6 @@ import { ProfileSetupModal } from './components/ProfileSetupModal'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { SplashScreen } from './components/SplashScreen'
 import { useGlassPointer } from './hooks/useGlassPointer'
-import { useTimeBasedTheme } from './hooks/useTimeBasedTheme'
 import { lazyWithRetry } from './lib/lazyWithRetry'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
@@ -68,7 +67,6 @@ const MatchScorecard = lazyWithRetry(() =>
 const ALL_ROLES: UserRole[] = ['admin', 'auctionManager', 'manager', 'player', 'viewer']
 
 export default function App() {
-  useTimeBasedTheme()
   useGlassPointer()
   return (
     <AuthProvider>

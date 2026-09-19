@@ -1,9 +1,8 @@
 @import "tailwindcss";
 
-/* Dark mode is driven by a `.dark` class on <html> (set by
-   lib/timeBasedTheme.ts based on local wall-clock time), not by the
-   browser/OS color-scheme preference — this makes `dark:` utilities key off
-   that class instead of the default `prefers-color-scheme` media query. */
+/* The app is always dark: index.html ships <html class="dark">, and `dark:`
+   utilities key off that class instead of the default
+   `prefers-color-scheme` media query. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
@@ -50,9 +49,9 @@ body {
   background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
 }
 
-/* Always-dark screens (see forceDarkTheme in lib/timeBasedTheme.ts) drop the
-   pitch stripes for the Android Team Draft screen's plain near-black gradient. */
-:root.forced-dark body {
+/* The Team Draft screens (see hooks/usePlainBackdrop.ts) drop the pitch
+   stripes for the Android draft screen's plain near-black gradient. */
+:root.plain-backdrop body {
   background: linear-gradient(180deg, #0b0f1a 0%, #12172a 50%, #0b0f1a 100%);
 }
 

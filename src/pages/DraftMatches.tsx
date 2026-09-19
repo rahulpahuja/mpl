@@ -4,7 +4,7 @@ import { Layout } from '../components/Layout'
 import { useDraftMatchesList } from '../hooks/useDraftMatchesList'
 import { useMatchesList } from '../hooks/useMatchesList'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { useForcedDarkTheme } from '../hooks/useTimeBasedTheme'
+import { usePlainBackdrop } from '../hooks/usePlainBackdrop'
 import { createDraftMatch, deleteDraftMatch } from '../lib/draftMatches'
 import { useAuthStore } from '../store/authStore'
 import type { DraftMatch, DraftMatchStatus } from '../types'
@@ -26,7 +26,7 @@ function defaultMatchName(): string {
 // tab: browse drafts still forming teams, start a new one, or join by ID.
 export function DraftMatches() {
   usePageTitle('Team Draft')
-  useForcedDarkTheme()
+  usePlainBackdrop()
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)!
   const { matches, loading } = useDraftMatchesList()

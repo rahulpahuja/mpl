@@ -6,7 +6,7 @@ import { DraftCaptainReveal, DraftTeamsReady } from '../components/DraftReveal'
 import { Layout } from '../components/Layout'
 import { useDraftMatch } from '../hooks/useDraftMatch'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { useForcedDarkTheme } from '../hooks/useTimeBasedTheme'
+import { usePlainBackdrop } from '../hooks/usePlainBackdrop'
 import { useAuthStore } from '../store/authStore'
 import type { DraftRun } from '../components/DraftCards'
 
@@ -14,7 +14,7 @@ import type { DraftRun } from '../components/DraftCards'
 // lobby → captain reveal → drafting → teams ready.
 export function DraftMatch() {
   const { matchId } = useParams<{ matchId: string }>()
-  useForcedDarkTheme()
+  usePlainBackdrop()
   const { match, loading } = useDraftMatch(matchId?.toUpperCase())
   const user = useAuthStore((s) => s.user)!
   const [error, setError] = useState<string | null>(null)
