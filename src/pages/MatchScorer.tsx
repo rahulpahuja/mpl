@@ -5,7 +5,7 @@ import { TeamAvatar } from '../components/TeamAvatar'
 import { BallCelebration } from '../components/BallCelebration'
 import { useAuthStore } from '../store/authStore'
 import { useMatch } from '../hooks/useMatch'
-import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
+import { useMatchRosters } from '../hooks/useMatchRosters'
 import { useJustScored } from '../hooks/useJustScored'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { formatOvers } from '../lib/matchRules'
@@ -26,10 +26,6 @@ const WICKET_LABELS: Record<WicketType, string> = {
 
 function activeInnings(match: Match): InningsState | null {
   return match.currentInnings === 1 ? match.innings1 : match.innings2
-}
-
-function rosterFor(teams: ReturnType<typeof useTeamsRegistry>['teams'], teamId: string): RosterPlayer[] {
-  return teams.find((t) => t.teamId === teamId)?.roster ?? []
 }
 
 function nameFor(roster: RosterPlayer[], playerId: string): string {
@@ -220,7 +216,7 @@ function WicketModal({
 export function MatchScorer() {
   const { matchId } = useParams<{ matchId: string }>()
   const { match, loading } = useMatch(matchId)
-  const { teams } = useTeamsRegistry()
+  const { rosterFor } = useMatchRosters(matchId)
   const user = useAuthStore((s) => s.user)
   usePageTitle(match ? `${match.name} · Score` : 'Score match')
   const { event: justScored, clear: clearJustScored } = useJustScored(match)
@@ -307,8 +303,8 @@ export function MatchScorer() {
 
   const battingSide = match.teamA.teamId === innings.battingTeamId ? match.teamA : match.teamB
   const bowlingSide = match.teamA.teamId === innings.bowlingTeamId ? match.teamA : match.teamB
-  const battingRoster = rosterFor(teams, battingSide.teamId)
-  const bowlingRoster = rosterFor(teams, bowlingSide.teamId)
+  const battingRoster = rosterFor(battingSide.teamId)
+  const bowlingRoster = rosterFor(bowlingSide.teamId)
 
   const needsBatsman = !innings.strikerId || !innings.nonStrikerId
   const needsBowler = !innings.currentBowlerId

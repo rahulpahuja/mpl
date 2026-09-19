@@ -4,15 +4,14 @@ import { Layout } from '../components/Layout'
 import { Avatar } from '../components/Avatar'
 import { TeamAvatar } from '../components/TeamAvatar'
 import { DraftTeamCard } from '../components/DraftCards'
-import { useLinkedDraft } from '../hooks/useLinkedDraft'
+import { useMatchRosters } from '../hooks/useMatchRosters'
 import { useMatch } from '../hooks/useMatch'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
 import { applyDraftToMatch, createDraftMatch } from '../lib/draftMatches'
 import { MIN_PLAYING_XI, recordToss, setPlayingXI } from '../lib/matches'
 import { useAuthStore } from '../store/authStore'
 import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
-import type { Match, RosterPlayer, TossDecision } from '../types'
+import type { DraftMatch, Match, RosterPlayer, TossDecision } from '../types'
 
 function SideXIEditor({
   match,
@@ -170,10 +169,9 @@ function SideXIEditor({
 // them into the two sides — a Team Draft linked to this match, which every
 // participant can open and watch live at /draft/<id>. Once it's finished,
 // the organiser applies the result as both sides' rosters and Playing XIs.
-function DivideTeamsPanel({ match }: { match: Match }) {
+function DivideTeamsPanel({ match, draft }: { match: Match; draft: DraftMatch | null }) {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)!
-  const draft = useLinkedDraft(match.matchId)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [applied, setApplied] = useState(false)
@@ -225,7 +223,7 @@ function DivideTeamsPanel({ match }: { match: Match }) {
               <Link to={`/draft/${draft.matchId}`} className="btn-glass rounded-lg border px-4 py-2.5 text-sm font-medium">
                 {draft.status === 'complete' ? 'View division' : 'Open player pool'}
               </Link>
-              {draft.status === 'complete' && (
+              {draft.status === 'complete' && draft.linkedMatchId === match.matchId && (
                 <button
                   type="button"
                   onClick={() => run(async () => {
@@ -239,7 +237,7 @@ function DivideTeamsPanel({ match }: { match: Match }) {
                 </button>
               )}
             </div>
-            {draft.status === 'complete' && (
+            {draft.status === 'complete' && draft.linkedMatchId === match.matchId && (
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {draft.teams[0]?.name} plays as {match.teamA.teamName}, {draft.teams[1]?.name} as {match.teamB.teamName}.
               </p>
@@ -317,7 +315,7 @@ function TossSection({ match }: { match: Match }) {
 export function MatchSetup() {
   const { matchId } = useParams<{ matchId: string }>()
   const { match, loading } = useMatch(matchId)
-  const { teams } = useTeamsRegistry()
+  const { draft, rosterFor } = useMatchRosters(matchId)
   usePageTitle(match ? `Set up · ${match.name}` : 'Set up match')
 
   if (loading) {
@@ -335,8 +333,8 @@ export function MatchSetup() {
     )
   }
 
-  const teamARoster = teams.find((t) => t.teamId === match.teamA.teamId)?.roster ?? []
-  const teamBRoster = teams.find((t) => t.teamId === match.teamB.teamId)?.roster ?? []
+  const teamARoster = rosterFor(match.teamA.teamId)
+  const teamBRoster = rosterFor(match.teamB.teamId)
 
   return (
     <Layout>
@@ -363,7 +361,7 @@ export function MatchSetup() {
           </p>
         )}
 
-        {(match.status === 'setup' || match.status === 'toss') && <DivideTeamsPanel match={match} />}
+        {(match.status === 'setup' || match.status === 'toss') && <DivideTeamsPanel match={match} draft={draft} />}
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <SideXIEditor match={match} side="teamA" roster={teamARoster} />

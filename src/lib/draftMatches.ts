@@ -211,6 +211,13 @@ function toRosterPlayer(p: DraftMatchPlayer): RosterPlayer {
   }
 }
 
+// A match started from a draft on the Android app uses each draft captain's
+// id as its side's teamId — this maps such a side back to its drafted players.
+export function draftSideRoster(draft: DraftMatch, teamId: string): RosterPlayer[] {
+  const team = draft.teams.find((t) => t.captainId === teamId)
+  return team ? team.playerIds.map((id) => toRosterPlayer(playerById(draft.players, id))) : []
+}
+
 // Draft team 1 becomes the match's teamA and team 2 its teamB: each side's
 // drafted players are added to that team's roster (skipping anyone already
 // on it) and saved as its Playing XI, with the draft captain as captain.
