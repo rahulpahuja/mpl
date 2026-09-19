@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   assertCanRecordBall,
   computeMatchResult,
+  maxWickets,
   formatOvers,
   netRunRate,
   recordBall,
@@ -251,5 +252,17 @@ describe('formatOvers / netRunRate / computeMatchResult', () => {
     })
     expect(winnerTeamId).toBe('teamB')
     expect(result).toBe('Titans won by 6 wickets')
+  })
+})
+
+describe('maxWickets', () => {
+  it('is one fewer than the Playing XI, for any side size', () => {
+    expect(maxWickets({ playingXI: ['a', 'b', 'c', 'd', 'e', 'f'] })).toBe(5)
+    expect(maxWickets({ playingXI: Array.from({ length: 11 }, (_, i) => String(i)) })).toBe(10)
+  })
+
+  it('never drops below 1, and falls back to 10 with no XI recorded', () => {
+    expect(maxWickets({ playingXI: ['a'] })).toBe(1)
+    expect(maxWickets({ playingXI: [] })).toBe(10)
   })
 })

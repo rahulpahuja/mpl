@@ -3,14 +3,16 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { Avatar } from '../components/Avatar'
 import { TeamAvatar } from '../components/TeamAvatar'
+import { DraftTeamCard } from '../components/DraftCards'
+import { useLinkedDraft } from '../hooks/useLinkedDraft'
 import { useMatch } from '../hooks/useMatch'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useTeamsRegistry } from '../hooks/useTeamsRegistry'
-import { recordToss, setPlayingXI } from '../lib/matches'
+import { applyDraftToMatch, createDraftMatch } from '../lib/draftMatches'
+import { MIN_PLAYING_XI, recordToss, setPlayingXI } from '../lib/matches'
+import { useAuthStore } from '../store/authStore'
 import { PLAYING_ROLE_LABELS } from '../lib/playingRoles'
 import type { Match, RosterPlayer, TossDecision } from '../types'
-
-const REQUIRED_XI = 11
 
 function SideXIEditor({
   match,
@@ -28,7 +30,7 @@ function SideXIEditor({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const locked = match.status !== 'setup' && match.status !== 'toss'
-  const alreadySaved = team.playingXI.length === REQUIRED_XI
+  const alreadySaved = team.playingXI.length >= MIN_PLAYING_XI
 
   function toggle(playerId: string) {
     if (locked) return
@@ -38,7 +40,7 @@ function SideXIEditor({
         next.delete(playerId)
         if (captainId === playerId) setCaptainId('')
         if (wicketKeeperId === playerId) setWicketKeeperId('')
-      } else if (next.size < REQUIRED_XI) {
+      } else {
         next.add(playerId)
       }
       return next
@@ -46,7 +48,7 @@ function SideXIEditor({
   }
 
   async function handleSave() {
-    if (selected.size !== REQUIRED_XI) return
+    if (selected.size < MIN_PLAYING_XI) return
     setError(null)
     setSaving(true)
     try {
@@ -72,12 +74,12 @@ function SideXIEditor({
         )}
       </div>
       <p className="relative z-[3] mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
-        {selected.size} / {REQUIRED_XI} selected
+        {selected.size} selected · at least {MIN_PLAYING_XI}
       </p>
 
       {roster.length === 0 ? (
         <p className="relative z-[3] mt-3 text-sm text-gray-500">
-          This team has no roster yet — add players from the{' '}
+          This team has no roster yet — divide a player pool above, or add players from the{' '}
           <Link to="/admin/teams" className="font-medium text-orange-600 dark:text-orange-400 hover:underline">
             Teams page
           </Link>{' '}
@@ -91,7 +93,7 @@ function SideXIEditor({
               <li key={p.playerId}>
                 <button
                   type="button"
-                  disabled={locked || (!isSelected && selected.size >= REQUIRED_XI)}
+                  disabled={locked}
                   onClick={() => toggle(p.playerId)}
                   className={`flex w-full min-w-0 items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition-colors disabled:opacity-50 ${
                     isSelected
@@ -113,7 +115,7 @@ function SideXIEditor({
         </ul>
       )}
 
-      {selected.size === REQUIRED_XI && (
+      {selected.size >= MIN_PLAYING_XI && (
         <div className="relative z-[3] mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div>
             <label className="text-xs text-gray-500 dark:text-gray-400">Captain</label>
@@ -154,12 +156,99 @@ function SideXIEditor({
       {!locked && (
         <button
           onClick={handleSave}
-          disabled={saving || selected.size !== REQUIRED_XI}
+          disabled={saving || selected.size < MIN_PLAYING_XI}
           className="btn-brand relative z-[3] mt-3 w-full rounded-lg px-4 py-2.5 text-sm font-medium sm:w-auto"
         >
           {saving ? 'Saving...' : 'Save Playing XI'}
         </button>
       )}
+    </section>
+  )
+}
+
+// Import players into a shared pool, then two captains take turns picking
+// them into the two sides — a Team Draft linked to this match, which every
+// participant can open and watch live at /draft/<id>. Once it's finished,
+// the organiser applies the result as both sides' rosters and Playing XIs.
+function DivideTeamsPanel({ match }: { match: Match }) {
+  const navigate = useNavigate()
+  const user = useAuthStore((s) => s.user)!
+  const draft = useLinkedDraft(match.matchId)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [applied, setApplied] = useState(false)
+
+  async function run(action: () => Promise<void>) {
+    setBusy(true)
+    setError(null)
+    try {
+      await action()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const startPool = () =>
+    run(async () => navigate(`/draft/${await createDraftMatch(`${match.name} · teams`, user, match.matchId)}`))
+
+  return (
+    <section className="glass-card p-4">
+      <div className="relative z-[3] space-y-3">
+        <div>
+          <h2 className="text-base font-medium text-gray-900 dark:text-gray-100">Divide teams</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Import players into a pool, pick two captains, and they take turns picking their side — everyone with the
+            link watches the division live.
+          </p>
+        </div>
+
+        {!draft ? (
+          <button type="button" onClick={startPool} disabled={busy} className="btn-brand rounded-lg px-4 py-2.5 text-sm font-medium">
+            Import players &amp; divide teams
+          </button>
+        ) : (
+          <>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Player pool <span className="font-mono font-semibold tracking-widest">{draft.matchId}</span> ·{' '}
+              {draft.players.length} players · share this ID so captains and players can open it from Team Draft.
+            </p>
+            {draft.status === 'complete' && (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {draft.teams.map((team, i) => (
+                  <DraftTeamCard key={team.captainId} team={team} teamIndex={i} players={draft.players} />
+                ))}
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Link to={`/draft/${draft.matchId}`} className="btn-glass rounded-lg border px-4 py-2.5 text-sm font-medium">
+                {draft.status === 'complete' ? 'View division' : 'Open player pool'}
+              </Link>
+              {draft.status === 'complete' && (
+                <button
+                  type="button"
+                  onClick={() => run(async () => {
+                    await applyDraftToMatch(draft, match)
+                    setApplied(true)
+                  })}
+                  disabled={busy}
+                  className="btn-brand rounded-lg px-4 py-2.5 text-sm font-medium"
+                >
+                  {busy ? 'Applying...' : 'Use these teams'}
+                </button>
+              )}
+            </div>
+            {draft.status === 'complete' && (
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {draft.teams[0]?.name} plays as {match.teamA.teamName}, {draft.teams[1]?.name} as {match.teamB.teamName}.
+              </p>
+            )}
+            {applied && <p className="text-sm text-green-600 dark:text-green-400">Teams applied — both Playing XIs are set.</p>}
+          </>
+        )}
+        {error && <p className="text-sm text-red-600">{error}</p>}
+      </div>
     </section>
   )
 }
@@ -273,6 +362,8 @@ export function MatchSetup() {
             </Link>
           </p>
         )}
+
+        {(match.status === 'setup' || match.status === 'toss') && <DivideTeamsPanel match={match} />}
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <SideXIEditor match={match} side="teamA" roster={teamARoster} />

@@ -642,4 +642,7 @@ export interface DraftMatch {
   // like Auction.timerEndsAt.
   timerEndsAt: Timestamp | null
   lastPick: DraftMatchPick | null
+  // Set when the draft was started from a match's setup page to divide a
+  // player pool into that match's two sides (see applyDraftToMatch).
+  linkedMatchId?: string | null
 }

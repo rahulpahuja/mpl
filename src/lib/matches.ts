@@ -18,6 +18,9 @@ import { recomputeStandings } from './tournaments'
 import type { BallOutcome, BallType, DayNight, GroundType, Match, MatchFormat, MatchTeamSide, TossDecision } from '../types'
 import type { ScoreBallInput } from './matchRules'
 
+// Sides can be any size — see matchRules.maxWickets.
+export const MIN_PLAYING_XI = 2
+
 function matchRef(matchId: string) {
   return doc(db, 'matches', matchId)
 }
@@ -106,7 +109,7 @@ export async function setPlayingXI(
   captainId: string | null,
   wicketKeeperId: string | null,
 ) {
-  if (playingXI.length !== 11) throw new Error('A Playing XI needs exactly 11 players')
+  if (playingXI.length < MIN_PLAYING_XI) throw new Error(`A Playing XI needs at least ${MIN_PLAYING_XI} players`)
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(matchRef(matchId))
     if (!snap.exists()) throw new Error('Match not found')
@@ -118,7 +121,7 @@ export async function setPlayingXI(
     const updatedSide: MatchTeamSide = { ...match[sideKey], playingXI, captainId, wicketKeeperId }
     const teamA = sideKey === 'teamA' ? updatedSide : match.teamA
     const teamB = sideKey === 'teamB' ? updatedSide : match.teamB
-    const bothSet = teamA.playingXI.length === 11 && teamB.playingXI.length === 11
+    const bothSet = teamA.playingXI.length >= MIN_PLAYING_XI && teamB.playingXI.length >= MIN_PLAYING_XI
     tx.update(matchRef(matchId), { teamA, teamB, status: bothSet ? 'toss' : 'setup' })
   })
 }
@@ -185,7 +188,7 @@ export async function recordBall(matchId: string, input: ScoreBallInput) {
     const { innings: updatedInnings, ball, inningsCompleted } = matchRules.recordBall(
       innings,
       match.oversLimit,
-      10,
+      matchRules.maxWickets(match[sideKeyFor(match, innings.battingTeamId)]),
       input,
     )
 

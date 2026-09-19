@@ -10,8 +10,16 @@ import type {
   ExtraType,
   InningsState,
   Match,
+  MatchTeamSide,
   WicketType,
 } from '../types'
+
+// Sides can be any size (a 6-a-side Team Draft, say), so "all out" is one
+// fewer than the Playing XI — same rule as the Android app's MatchRules.
+// A side with no XI recorded falls back to standard 11-a-side.
+export function maxWickets(side: Pick<MatchTeamSide, 'playingXI'>): number {
+  return side.playingXI.length === 0 ? 10 : Math.max(side.playingXI.length - 1, 1)
+}
 
 export interface ScoreBallInput {
   // Runs to credit for this delivery — meaning depends on extraType:
@@ -341,8 +349,7 @@ export function computeMatchResult(match: Pick<Match, 'teamA' | 'teamB' | 'innin
   const team1 = match.teamA.teamId === innings1.battingTeamId ? match.teamA : match.teamB
   const team2 = match.teamA.teamId === innings2.battingTeamId ? match.teamA : match.teamB
   if (innings2.totalRuns > innings1.totalRuns) {
-    const maxWickets = 10
-    const wicketsInHand = maxWickets - innings2.wickets
+    const wicketsInHand = maxWickets(team2) - innings2.wickets
     return {
       result: `${team2.teamName} won by ${wicketsInHand} wicket${wicketsInHand === 1 ? '' : 's'}`,
       winnerTeamId: team2.teamId,

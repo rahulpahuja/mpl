@@ -59,9 +59,10 @@ export function DraftCaptainReveal({ match }: { match: DraftMatch }) {
   )
 }
 
-// Live scoring of a drafted match is started from the Android app for now;
-// once it exists, anyone on the web can follow it.
-export function DraftTeamsReady({ match }: { match: DraftMatch }) {
+// A draft started from a match's setup page hands its teams back to that
+// match; otherwise live scoring is started from the Android app, and once it
+// exists anyone on the web can follow it.
+export function DraftTeamsReady({ match, isHost }: { match: DraftMatch; isHost: boolean }) {
   const reducedMotion = usePrefersReducedMotion()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { match: liveMatch } = useMatch(match.matchId)
@@ -82,7 +83,13 @@ export function DraftTeamsReady({ match }: { match: DraftMatch }) {
         ))}
       </div>
       <div className="text-center">
-        {liveMatch ? (
+        {match.linkedMatchId && !isHost ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400">The organiser is setting these teams on the match.</p>
+        ) : match.linkedMatchId ? (
+          <Link to={`/admin/matches/${match.linkedMatchId}/setup`} className="btn-brand inline-block rounded-lg px-5 py-2.5 text-sm font-medium">
+            Back to match setup
+          </Link>
+        ) : liveMatch ? (
           <Link to={`/watch/${match.matchId}`} className="btn-brand inline-block rounded-lg px-5 py-2.5 text-sm font-medium">
             Watch the match
           </Link>

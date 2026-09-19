@@ -1,8 +1,9 @@
-import { Timestamp, deleteDoc, doc, runTransaction, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
+import { Timestamp, arrayUnion, deleteDoc, doc, getDoc, runTransaction, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
 import type { Transaction } from 'firebase/firestore'
 import { db } from './firebase'
+import { setPlayingXI } from './matches'
 import { generateShortId } from './shortId'
-import type { AppUser, DraftMatch, DraftMatchPlayer, DraftMatchStatus, DraftMatchTeam } from '../types'
+import type { AppUser, DraftMatch, DraftMatchPlayer, DraftMatchStatus, DraftMatchTeam, Match, RosterPlayer, Team } from '../types'
 
 // Web port of the Android app's DraftMatchRepository — same document shape
 // and the same transactions, so a Team Draft can be run from a phone and a
@@ -48,8 +49,10 @@ async function transact(matchId: string, mutate: (tx: Transaction, match: DraftM
 }
 
 // The host joins their own match immediately — the common case is hosting
-// your own pickup game.
-export async function createDraftMatch(name: string, host: AppUser): Promise<string> {
+// your own pickup game. From a match's setup page, the draft is a pool the
+// organiser imports players into for dividing that match's sides; they
+// aren't necessarily playing, so they aren't added to the roster.
+export async function createDraftMatch(name: string, host: AppUser, linkedMatchId: string | null = null): Promise<string> {
   const matchId = generateShortId()
   const match: Omit<DraftMatch, 'createdAt'> = {
     matchId,
@@ -57,7 +60,7 @@ export async function createDraftMatch(name: string, host: AppUser): Promise<str
     hostUid: host.uid,
     hostName: host.displayName,
     status: 'lobby',
-    players: [playerFromUser(host)],
+    players: linkedMatchId ? [] : [playerFromUser(host)],
     joinedUids: [host.uid],
     captainIds: [],
     teams: [],
@@ -66,6 +69,7 @@ export async function createDraftMatch(name: string, host: AppUser): Promise<str
     turnSeconds: DEFAULT_TURN_SECONDS,
     timerEndsAt: null,
     lastPick: null,
+    linkedMatchId,
   }
   await setDoc(matchRef(matchId), { ...match, createdAt: serverTimestamp() })
   return matchId
@@ -123,8 +127,18 @@ export async function setDraftCaptains(matchId: string, captainIds: string[]) {
   await updateDoc(matchRef(matchId), { captainIds })
 }
 
+// Captains with an account are marked joined too — firestore.rules only lets
+// joined users write, and an imported captain may never have clicked Join.
 export async function confirmDraftCaptains(matchId: string) {
-  await updateDoc(matchRef(matchId), { status: 'captainReveal' satisfies DraftMatchStatus })
+  await transact(matchId, (tx, match) => {
+    const captainUids = match.captainIds
+      .map((id) => match.players.find((p) => p.playerId === id)?.uid)
+      .filter((uid): uid is string => !!uid && !match.joinedUids.includes(uid))
+    tx.update(matchRef(matchId), {
+      status: 'captainReveal' satisfies DraftMatchStatus,
+      joinedUids: [...match.joinedUids, ...captainUids],
+    })
+  })
 }
 
 // Host-only per firestore.rules (isDraftHost).
@@ -184,4 +198,34 @@ export async function autoPickIfExpired(matchId: string) {
     if (match.pool.length === 0) return
     applyPick(tx, matchId, match, match.pool[Math.floor(Math.random() * match.pool.length)], true)
   })
+}
+
+function toRosterPlayer(p: DraftMatchPlayer): RosterPlayer {
+  return {
+    playerId: p.playerId,
+    name: p.name,
+    isRegisteredUser: !!p.uid,
+    playingRole: p.role ?? null,
+    avatarId: p.avatarId ?? null,
+    photoURL: p.photoURL ?? null,
+  }
+}
+
+// Draft team 1 becomes the match's teamA and team 2 its teamB: each side's
+// drafted players are added to that team's roster (skipping anyone already
+// on it) and saved as its Playing XI, with the draft captain as captain.
+export async function applyDraftToMatch(draft: DraftMatch, match: Match) {
+  if (draft.status !== 'complete' || draft.teams.length !== 2) throw new Error('The draft is not finished yet')
+  const sides = [match.teamA, match.teamB]
+  for (const [i, team] of draft.teams.entries()) {
+    const teamId = sides[i].teamId
+    const snap = await getDoc(doc(db, 'teams', teamId))
+    if (!snap.exists()) throw new Error(`Team ${sides[i].teamName} not found`)
+    const onRoster = new Set(((snap.data() as Team).roster ?? []).map((p) => p.playerId))
+    const newcomers = team.playerIds
+      .filter((id) => !onRoster.has(id))
+      .map((id) => toRosterPlayer(playerById(draft.players, id)))
+    if (newcomers.length > 0) await updateDoc(doc(db, 'teams', teamId), { roster: arrayUnion(...newcomers) })
+    await setPlayingXI(match.matchId, teamId, team.playerIds, team.captainId, null)
+  }
 }
