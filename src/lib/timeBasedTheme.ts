@@ -14,7 +14,9 @@ export function isDarkHour(date = new Date()): boolean {
 let forcedDarkHolders = 0
 
 export function applyTimeBasedTheme() {
-  document.documentElement.classList.toggle('dark', forcedDarkHolders > 0 || isDarkHour())
+  const root = document.documentElement
+  root.classList.toggle('forced-dark', forcedDarkHolders > 0)
+  root.classList.toggle('dark', forcedDarkHolders > 0 || isDarkHour())
 }
 
 export function forceDarkTheme(): () => void {

@@ -50,6 +50,12 @@ body {
   background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
 }
 
+/* Always-dark screens (see forceDarkTheme in lib/timeBasedTheme.ts) drop the
+   pitch stripes for the Android Team Draft screen's plain near-black gradient. */
+:root.forced-dark body {
+  background: linear-gradient(180deg, #0b0f1a 0%, #12172a 50%, #0b0f1a 100%);
+}
+
 /* iOS WebKit (Safari and Chrome-on-iOS both use it) has a long-standing bug
    where `background-attachment: fixed` on body can make it miscalculate the
    scrollable document height, clipping scroll to the initial viewport on
