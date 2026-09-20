@@ -9,7 +9,7 @@ export function AuctionJoinQr({ auctionId }: { auctionId: string }) {
     <>
       <button
         onClick={() => setExpanded(true)}
-        className="glass-card fixed bottom-24 right-4 z-40 flex flex-col items-center gap-1 p-2 shadow-lg"
+        className="glass-card fixed! bottom-24 right-4 z-40 flex flex-col items-center gap-1 p-2 shadow-lg"
         title="Scan to join this auction"
       >
         <span className="relative z-[3] rounded bg-white p-1">

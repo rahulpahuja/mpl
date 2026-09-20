@@ -139,6 +139,7 @@ export function TeamManagerBidding() {
   }
 
   const sortedBids = [...(bids?.bids ?? [])].sort((a, b) => b.timestamp - a.timestamp)
+  const teamsByBalance = [...auction.teamManagers].sort((a, b) => b.remainingTokens - a.remainingTokens)
 
   return (
     <Layout>
@@ -171,6 +172,22 @@ export function TeamManagerBidding() {
             </p>
           </div>
         </div>
+
+        {/* Every captain's live balance, kept above the bid panel so rivals'
+            purses stay in view while bidding — the full "All teams" breakdown
+            sits far below the fold on a phone. */}
+        <ul className="relative z-[3] -mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          {teamsByBalance.map((tm) => (
+            <li
+              key={tm.managerId}
+              className={`flex min-w-0 items-center gap-2 rounded-full surface-inset px-3 py-1 text-xs ${tm.managerId === user.uid ? 'ring-1 ring-orange-500/60' : ''}`}
+            >
+              <TeamAvatar teamName={tm.name} logoId={tm.logoId} logoImage={tm.logoImage} jerseyColor={tm.jerseyColor} size={5} />
+              <span className="min-w-0 flex-1 truncate text-gray-600 dark:text-gray-300">{tm.name}</span>
+              <span className="shrink-0 font-mono font-semibold text-gray-900 dark:text-gray-100">{tm.remainingTokens}</span>
+            </li>
+          ))}
+        </ul>
 
         {auction.status === 'completed' && (
           <div className="glass-card relative z-[3] flex flex-wrap items-center justify-between gap-3 border-red-300/70! px-4 py-3 dark:border-red-700/60!">
@@ -349,55 +366,53 @@ export function TeamManagerBidding() {
           <section className="glass-card lg:col-span-3 p-6">
             <h2 className="relative z-[3] text-lg font-medium text-gray-900 dark:text-gray-100">All teams</h2>
             <div className="relative z-[3] mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[...auction.teamManagers]
-                .sort((a, b) => b.remainingTokens - a.remainingTokens)
-                .map((tm) => {
-                  const squad = auction.players
-                    .filter((p) => p.currentBidder === tm.managerId && p.status === 'sold')
-                    .sort((a, b) => b.currentBid - a.currentBid)
-                  return (
-                    <div key={tm.managerId} className="rounded-lg surface-inset p-4 text-sm">
-                      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                        <span className="flex min-w-0 items-center gap-2 font-medium text-gray-900 dark:text-gray-100">
-                          <TeamAvatar
-                            teamName={tm.name}
-                            logoId={tm.logoId}
-                            logoImage={tm.logoImage}
-                            jerseyColor={tm.jerseyColor}
-                          />
-                          <span className="truncate">{tm.name}</span>
-                        </span>
-                        <span className="shrink-0 text-gray-500">
-                          Balance{' '}
-                          <span className="font-mono text-gray-900 dark:text-gray-100">{tm.remainingTokens}</span>
-                        </span>
-                      </div>
-                      {tm.managerName && (
-                        <p className="mt-0.5 truncate text-xs text-gray-500">Captain: {tm.managerName}</p>
-                      )}
-                      <p className="mt-1 text-xs text-gray-500">
-                        {squad.length} / {tm.maxPlayers} players
-                      </p>
-                      <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto">
-                        {squad.map((p) => (
-                          <li key={p.playerId} className="flex justify-between gap-2 text-gray-600 dark:text-gray-400">
-                            <span className="min-w-0 truncate flex items-center gap-1.5">
-                              <span className="truncate">{p.name}</span>
-                              {p.wasUnsoldAssigned && (
-                                <span
-                                  title="Went unsold, later assigned to this team"
-                                  className="shrink-0 inline-block h-2 w-2 rounded-full bg-amber-500"
-                                />
-                              )}
-                            </span>
-                            <span className="shrink-0 font-mono">{p.currentBid}</span>
-                          </li>
-                        ))}
-                        {squad.length === 0 && <li className="text-gray-500">No players won yet.</li>}
-                      </ul>
+              {teamsByBalance.map((tm) => {
+                const squad = auction.players
+                  .filter((p) => p.currentBidder === tm.managerId && p.status === 'sold')
+                  .sort((a, b) => b.currentBid - a.currentBid)
+                return (
+                  <div key={tm.managerId} className="rounded-lg surface-inset p-4 text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                      <span className="flex min-w-0 items-center gap-2 font-medium text-gray-900 dark:text-gray-100">
+                        <TeamAvatar
+                          teamName={tm.name}
+                          logoId={tm.logoId}
+                          logoImage={tm.logoImage}
+                          jerseyColor={tm.jerseyColor}
+                        />
+                        <span className="truncate">{tm.name}</span>
+                      </span>
+                      <span className="shrink-0 text-gray-500">
+                        Balance{' '}
+                        <span className="font-mono text-gray-900 dark:text-gray-100">{tm.remainingTokens}</span>
+                      </span>
                     </div>
-                  )
-                })}
+                    {tm.managerName && (
+                      <p className="mt-0.5 truncate text-xs text-gray-500">Captain: {tm.managerName}</p>
+                    )}
+                    <p className="mt-1 text-xs text-gray-500">
+                      {squad.length} / {tm.maxPlayers} players
+                    </p>
+                    <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto">
+                      {squad.map((p) => (
+                        <li key={p.playerId} className="flex justify-between gap-2 text-gray-600 dark:text-gray-400">
+                          <span className="min-w-0 truncate flex items-center gap-1.5">
+                            <span className="truncate">{p.name}</span>
+                            {p.wasUnsoldAssigned && (
+                              <span
+                                title="Went unsold, later assigned to this team"
+                                className="shrink-0 inline-block h-2 w-2 rounded-full bg-amber-500"
+                              />
+                            )}
+                          </span>
+                          <span className="shrink-0 font-mono">{p.currentBid}</span>
+                        </li>
+                      ))}
+                      {squad.length === 0 && <li className="text-gray-500">No players won yet.</li>}
+                    </ul>
+                  </div>
+                )
+              })}
               {auction.teamManagers.length === 0 && (
                 <p className="text-sm text-gray-500">No teams added yet.</p>
               )}
